@@ -1,0 +1,227 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 24px 80px 24px;
+}
+
+.titleBlock {
+  text-align: center;
+  margin-bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titleBlock h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--on-background);
+  letter-spacing: -0.02em;
+}
+
+.titleBlock p {
+  font-size: 1.05rem;
+  color: var(--secondary-text);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Categories & Products grids */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+.card {
+  background: var(--sterile-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(15, 111, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(15, 111, 255, 0.08);
+}
+
+.imageBox {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background-color: var(--surface-gray);
+}
+
+.imageBox img {
+  object-fit: cover;
+}
+
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--on-background);
+}
+
+.cardDesc {
+  font-size: 0.95rem;
+  color: var(--secondary-text);
+  line-height: 1.6;
+}
+
+.actionBtn {
+  margin-top: auto;
+  align-self: flex-start;
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Detail View Layout (Split Panel) */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 56px;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .detailGrid {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.gallerySection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mainMediaWrapper {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--on-background);
+}
+
+.mainMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mediaThumbnails {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  background-color: var(--surface-gray);
+}
+
+.thumbActive {
+  border-color: var(--color-primary);
+}
+
+.thumb img {
+  object-fit: cover;
+}
+
+.thumbVideoIcon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  font-size: 1.25rem;
+}
+
+/* Product Info Right Column */
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.categoryTag {
+  color: var(--color-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.productTitle {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-subtle);
+}
+
+.infoDesc {
+  font-size: 1.05rem;
+  color: var(--secondary-text);
+  line-height: 1.7;
+}
+
+.catalogDownloadBtn {
+  background: var(--color-primary);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  box-shadow: 0 4px 14px var(--color-primary-glow);
+  transition: var(--transition-smooth);
+}
+
+.catalogDownloadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 111, 255, 0.4);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80px 24px;
+}
