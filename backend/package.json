@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Express + MongoDB Backend for Delta Healthcare",
+  "description": "Express + MongoDB Backend for Medico Valley",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.4.1",
     "multer": "^2.2.0",
+    "nodemailer": "^9.0.1",
     "slugify": "^1.6.9"
   },
   "devDependencies": {
@@ -27,6 +28,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/node": "^20.14.2",
+    "@types/nodemailer": "^8.0.1",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

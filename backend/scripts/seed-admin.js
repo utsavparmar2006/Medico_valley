@@ -42,8 +42,8 @@ async function runSeed() {
     });
     console.log('Database connected.');
 
-    const email = 'admin@deltahealthcare.com';
-    const plainPassword = 'DeltaAdminSecret2026!';
+    const email = 'admin@medicovalley.com';
+    const plainPassword = 'MedicoValleyAdminSecret2026!';
     
     // Hash password
     console.log('Hashing password...');
@@ -56,14 +56,14 @@ async function runSeed() {
 
     if (existing) {
       console.log('Admin already exists. Updating password and name...');
-      existing.name = 'Delta Admin';
+      existing.name = 'Medico Valley Admin';
       existing.password = hashedPassword;
       await existing.save();
       console.log('Admin updated successfully.');
     } else {
       console.log('Creating new Admin...');
       await Admin.create({
-        name: 'Delta Admin',
+        name: 'Medico Valley Admin',
         email,
         password: hashedPassword,
       });

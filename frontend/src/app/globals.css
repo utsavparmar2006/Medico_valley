@@ -24,6 +24,8 @@
   --color-bg: #FFFFFF;
   --color-text: #4A5568;
 
+  --app-bg: #eaeaea;
+
   /* Card/Panel variables */
   --card-bg: rgba(255, 255, 255, 0.03);
   --card-border: rgba(255, 255, 255, 0.1);
@@ -36,17 +38,13 @@
   margin: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-sans);
   color: var(--on-background);
-  background-color: var(--sterile-white);
+  background-color: var(--app-bg);
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -58,14 +56,14 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-dark-navy);
+  background: #f9f9ff;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--primary-light), var(--primary));
+  background: #E5E7EB;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-secondary);
+  background: var(--primary);
 }
 
 a {
@@ -94,3 +92,41 @@ a {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
 }
+
+/* Global Premium Typography System */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--on-background);
+}
+
+body {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Lenis smooth scroll helper styles */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis-scrolling iframe {
+  pointer-events: none;
+}
+

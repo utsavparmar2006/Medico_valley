@@ -6,6 +6,8 @@ import slugify from 'slugify';
 import Admin from '../models/Admin';
 import Category from '../models/Category';
 import Product from '../models/Product';
+import Inquiry from '../models/Inquiry';
+import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
@@ -239,6 +241,101 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
   }
 });
 
+// Update Category
+router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, description, imageUrl } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Category ID format' });
+  }
+
+  if (!name || !description || !imageUrl) {
+    return res.status(400).json({ message: 'Name, description, and imageUrl are required' });
+  }
+
+  try {
+    const slug = slugify(name, { lower: true, strict: true });
+    const duplicate = await Category.findOne({ slug, _id: { $ne: id } });
+    if (duplicate) {
+      return res.status(400).json({ message: 'A category with this name or slug already exists' });
+    }
+
+    const category = await Category.findByIdAndUpdate(
+      id,
+      { name: name.trim(), slug, description: description.trim(), imageUrl },
+      { new: true, runValidators: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    return res.json({ success: true, data: category });
+  } catch (error: any) {
+    console.error('Update category error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update Product
+router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, description, categoryId, mediaUrls, catalogUrl } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Product ID format' });
+  }
+
+  if (!name || !description || !categoryId || !Array.isArray(mediaUrls) || mediaUrls.length === 0) {
+    return res.status(400).json({ message: 'Name, description, categoryId, and at least one media URL are required' });
+  }
+
+  if (!isValidObjectId(categoryId)) {
+    return res.status(400).json({ message: 'Invalid Category ID format' });
+  }
+
+  try {
+    const [categoryExists, duplicate] = await Promise.all([
+      Category.findById(categoryId),
+      Product.findOne({
+        slug: slugify(name, { lower: true, strict: true }),
+        _id: { $ne: id },
+      }),
+    ]);
+
+    if (!categoryExists) {
+      return res.status(400).json({ message: 'Target category does not exist' });
+    }
+
+    if (duplicate) {
+      return res.status(400).json({ message: 'A product with this name or slug already exists' });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      id,
+      {
+        name: name.trim(),
+        slug: slugify(name, { lower: true, strict: true }),
+        description: description.trim(),
+        category: categoryId,
+        mediaUrls,
+        catalogUrl: catalogUrl || undefined,
+      },
+      { new: true, runValidators: true }
+    ).populate('category', 'name slug');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    return res.json({ success: true, data: product });
+  } catch (error: any) {
+    console.error('Update product error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
 // Delete Product (protected)
 router.delete('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
@@ -283,6 +380,144 @@ router.delete('/categories/:id', authMiddleware, async (req: AuthenticatedReques
     return res.json({ success: true, message: 'Category deleted successfully' });
   } catch (error: any) {
     console.error('Delete category error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// 12. Get all inquiries (protected)
+router.get('/inquiries', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const inquiries = await Inquiry.find({}).sort({ createdAt: -1 });
+    return res.json({ success: true, data: inquiries });
+  } catch (error: any) {
+    console.error('Get inquiries error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// 13. Update inquiry status (protected)
+router.put('/inquiries/:id/status', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ['Pending', 'Contacted', 'Quoted', 'Completed'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Invalid status value' });
+  }
+
+  try {
+    const inquiry = await Inquiry.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!inquiry) {
+      return res.status(404).json({ message: 'Inquiry not found' });
+    }
+
+    return res.json({ success: true, data: inquiry });
+  } catch (error: any) {
+    console.error('Update inquiry status error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// DELTA DIFFERENCE CARDS CRUD ROUTES
+// ==========================================
+
+// Get all Delta Difference cards (protected)
+router.get('/delta-difference', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const cards = await DeltaDifferenceCard.find({}).sort({ displayOrder: 1 });
+    return res.json({ success: true, data: cards });
+  } catch (error: any) {
+    console.error('Get admin delta difference cards error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a new card (protected)
+router.post('/delta-difference', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const count = await DeltaDifferenceCard.countDocuments();
+    if (count >= 5) {
+      return res.status(400).json({ message: 'You have reached the maximum limit of 5 cards.' });
+    }
+    const { title, category, description, initials, iconImage, displayOrder, isActive } = req.body;
+    if (!title || !category || !description || !initials || displayOrder === undefined) {
+      return res.status(400).json({ message: 'Title, category, description, initials, and display order are required.' });
+    }
+    const newCard = await DeltaDifferenceCard.create({
+      title,
+      category,
+      description,
+      initials,
+      iconImage,
+      displayOrder: Number(displayOrder),
+      isActive: isActive !== undefined ? isActive : true
+    });
+    return res.status(201).json({ success: true, data: newCard });
+  } catch (error: any) {
+    console.error('Create delta difference card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update a card (protected)
+router.put('/delta-difference/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid card ID format' });
+  }
+  try {
+    const { title, category, description, initials, iconImage, displayOrder, isActive } = req.body;
+    
+    // Check if the card exists
+    const card = await DeltaDifferenceCard.findById(id);
+    if (!card) {
+      return res.status(404).json({ message: 'Card not found' });
+    }
+
+    const updatedCard = await DeltaDifferenceCard.findByIdAndUpdate(
+      id,
+      {
+        title,
+        category,
+        description,
+        initials,
+        iconImage,
+        displayOrder: displayOrder !== undefined ? Number(displayOrder) : undefined,
+        isActive: isActive !== undefined ? isActive : undefined
+      },
+      { new: true, runValidators: true }
+    );
+    return res.json({ success: true, data: updatedCard });
+  } catch (error: any) {
+    console.error('Update delta difference card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a card (protected)
+router.delete('/delta-difference/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid card ID format' });
+  }
+  try {
+    const count = await DeltaDifferenceCard.countDocuments();
+    if (count <= 5) {
+      return res.status(400).json({ message: 'Minimum 5 cards are required to maintain the homepage layout.' });
+    }
+    const deleted = await DeltaDifferenceCard.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Card not found' });
+    }
+    return res.json({ success: true, message: 'Card deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete delta difference card error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

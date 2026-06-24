@@ -41,24 +41,38 @@ const ProductSchema = new mongoose.Schema({
 const Category = mongoose.models.Category || mongoose.model('Category', CategorySchema);
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
+const DeltaDifferenceCardSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  category: { type: String, required: true },
+  description: { type: String, required: true },
+  initials: { type: String, required: true },
+  iconImage: { type: String },
+  displayOrder: { type: Number, required: true },
+  isActive: { type: Boolean, default: true },
+}, {
+  timestamps: true
+});
+
+const DeltaDifferenceCard = mongoose.models.DeltaDifferenceCard || mongoose.model('DeltaDifferenceCard', DeltaDifferenceCardSchema);
+
 const mockCategories = [
   {
     name: 'Anatomy Models',
     slug: 'anatomy-models',
     description: 'Highest range of Anatomy Models in India. Helping students, professors, and patients in visualizing 3D anatomy with unmatched clinical accuracy.',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDyMJ39m7nhOmR0SmIl-1umL7BlY9GBDUzss6l-V7ONR1rx_55TLnBW9tQFrWyGA43L_knq10EPrAUa0wPo9KegOikBBSpMJmKBNlgCzB1D-0nBip831lqvpYcaqtSR-E5_N3VAA5MCceUgIOtbXdwpDeunw_vI-ymsnlvOtTq-oX8Aq3LZ3p6bUd4PzXF32GtbCt2qy5paUhTVgV1uN_KaudR_M7Cn-GHfPkZDj_uS17r-U6qgnYtuZIbMJ8YKW_H2_tGUcj1jFujY',
+    imageUrl: '/anatommy model/heart_model.png',
   },
   {
     name: 'Medical Simulators',
     slug: 'medical-simulators',
     description: 'Our simulators offer a risk-free environment, bringing further advancement to clinical skills and promoting quantifiable training standards.',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFim8xQP4kYOWzQeQ-30l-sJ4Z9wRAEikZtZEv2H_sm3nezFJaGNJ3zGXFP_f05MkpccqT4IbnD3PFJ0r3gElmiDc7ENuNb1spVydF-JpbCLgAiH5oQendjk3i12I92DFsP76ZCq6ZFwxFkrR9WRFP0WuWlUsPp6KuNe1gek-RXepvkenhoNqW-TqRG0SGps5t-_JseYybfey3w3SWgi5upKrv_Jcw8UIZtLM5H67so5SBwjddjo4eEGHxgyRqWbs5WHsfbBmMiN2x',
+    imageUrl: '/products/medical simulators/patient_simulator.png',
   },
   {
     name: 'Task Trainers',
     slug: 'task-trainers',
     description: 'Practice specific procedures on repeat mode, improving hand-eye coordination with the highest range of task trainers in India.',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCiXax1i8PLP9A_N62prhnWfEZj13Bo33cHHHHSLKr15NLwSuUhWXxbx-orEY_TQEIc5DSK3jCm1UpcNIbH2oozuXwoEq2A_HteM4CoxoUleoTc_KUJ98W065jt-DAduz-TOCcTTJekV5pxV8wHLp-U-RlDmlMrmXDHcTUCPPcAIoLKyx-RwojjRwU2STOJE-sKtAH5F9KnIcgAM6yPxNnuHYAsucA6v_Car4ceYFrD50vOPA7NcsvK1oET7gbTEzMfrrICYqxGdJ0M',
+    imageUrl: '/task trainer/airway_trainer_clean.png',
   },
 ];
 
@@ -69,9 +83,10 @@ async function seedData() {
     console.log('Database connected.');
 
     // Clear existing
-    console.log('Clearing old categories and products...');
+    console.log('Clearing old categories, products, and delta difference cards...');
     await Category.deleteMany({});
     await Product.deleteMany({});
+    await DeltaDifferenceCard.deleteMany({});
 
     // Seed Categories
     console.log('Seeding categories...');
@@ -84,37 +99,196 @@ async function seedData() {
 
     // Seed Products
     const mockProducts = [
+      // Anatomy Models
       {
-        name: '3D Human Skull Model',
-        slug: '3d-human-skull-model',
-        description: 'A medically accurate 3-part human skull reproduction. Includes detachable cranium cap and fully articulated mandible with springs.',
+        name: 'Life-Size Human Heart Model (5-part)',
+        slug: 'life-size-human-heart-model',
+        description: 'Highly detailed 5-part human heart model. Features detachable anterior wall, chambers, valves, and major blood vessels for cardiac education.',
         category: anatomyId,
         mediaUrls: [
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuA5LEWExhVXFOrOQvIOa86LCs_nx3Nb88TDF6fjs0FKq-T6oieMxX7rJOh2x9Ve552TYFRXeMvtzGtU_ILUOHdXURD4Mx6MywlhFl2BLcqv1jwXiI4QEle6IpV5O9GqXZOktPPdBYJJGFhdd9rXGksVZo8A_TvcfUsEmzcR64yG73MDHjppuK6MK0AIxYYqWemHWsbh4E1EaZTS1UUI6knVoawaA3a_l_0JfZi1n1i3RonEVyllZDGc6SGxI9aKKBd7GB-Ua5Y10_FF',
+          '/anatommy model/heart_model.png',
         ],
-        catalogUrl: 'http://localhost:5000/uploads/skull-catalog-sample.pdf',
+        catalogUrl: 'http://localhost:5000/uploads/heart-catalog.pdf',
         isActive: true,
       },
       {
-        name: 'Advanced Patient Simulator',
-        slug: 'advanced-patient-simulator',
-        description: 'Full-body clinical simulator featuring programmable pulse, respiratory contractions, pupil dialation, and responsive simulated patient monitor feed.',
+        name: 'Classic Human Skeleton Model (Stan)',
+        slug: 'classic-human-skeleton-model',
+        description: 'Standard full-size medical skeleton model. Hand-assembled with heavy-duty metal stand and details showing skeletal structure, joints, and articulation.',
+        category: anatomyId,
+        mediaUrls: [
+          '/anatommy model/skeleton_model.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/skeleton-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Deluxe Dual-Sex Muscle Figure (31-part)',
+        slug: 'deluxe-dual-sex-muscle-figure',
+        description: 'Life-size muscle figure model featuring removable organs, dual sex inserts, and detailed muscle groups for deep anatomical exploration.',
+        category: anatomyId,
+        mediaUrls: [
+          '/anatommy model/muscle_figure.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/muscle-figure-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Didactic Human Skull Model (22-part)',
+        slug: 'didactic-human-skull-model',
+        description: '22-part color-coded didactic human skull. Easily detachable bones for thorough study of individual cranial structures.',
+        category: anatomyId,
+        mediaUrls: [
+          '/anatommy model/28e10cba-0346-4f22-b2ea-3f9da10fe067.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/skull-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Dissectible Human Torso Model (16-part)',
+        slug: 'dissectible-human-torso-model',
+        description: 'Dual-sex dissectible human torso. Features detachable head, brain segments, lungs, heart, stomach, liver, and intestinal tract.',
+        category: anatomyId,
+        mediaUrls: [
+          '/anatommy model/57e99808-6c8a-4495-ae7e-1489824377c4.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/torso-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Advanced Dental Hygiene Model',
+        slug: 'advanced-dental-hygiene-model',
+        description: 'Enlarged dental jaw model with flexible joints, realistic teeth structure, and removable gums for teaching proper oral hygiene techniques.',
+        category: anatomyId,
+        mediaUrls: [
+          '/anatommy model/defcecb8-2272-4af0-bd0c-c80f5bc899eb.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/dental-catalog.pdf',
+        isActive: true,
+      },
+
+      // Medical Simulators
+      {
+        name: 'High-Fidelity Adult Patient Simulator',
+        slug: 'high-fidelity-adult-patient-simulator',
+        description: 'Wireless full-body simulator with advanced neurological, cardiovascular, and respiratory responses. Displays responsive vitals to interventions.',
         category: simulatorId,
         mediaUrls: [
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuBD0DK8IKf6mmFHV-5_rb5qr_nGoqIs0k2z-weh_zqK04CXgKBabviKSO8STJiNlZ0RsdOqewK-WEHokVEH1QpxhPcMafYgEW9iLijDLGah5VwtYGPlDWnxHvtnh6kLItrkzMdqwMHs4oyDGwLG8a41GWsq5UXvj3BWhsw1BpRix6zsxOjM_x-5FJGgE-uKtwApBil-MzHq2Gnj-b_PGh9BXqsv764SJrxlGBH5HvEfsj0UMntARIwWLyZru5GHdWYNdKnutGSfvQ1C',
+          '/products/medical simulators/patient_simulator.png',
         ],
-        catalogUrl: 'http://localhost:5000/uploads/simulator-catalog-sample.pdf',
+        catalogUrl: 'http://localhost:5000/uploads/patient-sim-catalog.pdf',
         isActive: true,
       },
       {
-        name: 'Advanced CPR Training Manikin',
-        slug: 'advanced-cpr-training-manikin',
-        description: 'A realistic task trainer designed for learning cardiopulmonary resuscitation. Features electronic feedback for chest compression depth, rate, and lung ventilation volume.',
+        name: 'Interactive Infant Emergency Simulator',
+        slug: 'interactive-infant-emergency-simulator',
+        description: 'Realistic newborn simulator for emergency ventilation, intubation, and CPR training. Features feedback sensors for compression depth.',
+        category: simulatorId,
+        mediaUrls: [
+          '/products/medical simulators/infant_simulator.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/infant-sim-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Advanced Pediatric Simulator',
+        slug: 'advanced-pediatric-simulator',
+        description: 'Lifecast 5-year-old child simulator. Features realistic airway management, vascular access, and cardiac monitoring for pediatric emergencies.',
+        category: simulatorId,
+        mediaUrls: [
+          '/products/medical simulators/pediatric_simulator.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/pediatric-sim-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Clinical Nursing Care Simulator',
+        slug: 'clinical-nursing-care-simulator',
+        description: 'Versatile simulator for basic to advanced patient care procedures, including catheterization, injection, and patient mobilization.',
+        category: simulatorId,
+        mediaUrls: [
+          '/products/medical simulators/7c8292a1-cd45-4cf3-a455-5546e32ba554.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/nursing-sim-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Birthing & Maternal Care Simulator',
+        slug: 'birthing-and-maternal-care-simulator',
+        description: 'Full-scale maternal delivery simulator. Recreates dynamic birthing stages, postpartum hemorrhage, and neonatal resuscitation scenarios.',
+        category: simulatorId,
+        mediaUrls: [
+          '/products/medical simulators/9700d3b2-bb00-4e02-87a2-aa9d949d344d.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/maternal-sim-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Cardiac Auscultation Simulator (Cardionics)',
+        slug: 'cardiac-auscultation-simulator',
+        description: 'Auscultation trainer featuring 30+ programmed heart, lung, and bowel sounds. Guided learning path for stethoscope diagnostics.',
+        category: simulatorId,
+        mediaUrls: [
+          '/products/medical simulators/f8f220ec-abae-4552-adb5-0012d00e80bf.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/auscultation-sim-catalog.pdf',
+        isActive: true,
+      },
+
+      // Task Trainers
+      {
+        name: 'Airway Management Trainer (Adult)',
+        slug: 'airway-management-trainer',
+        description: 'Anatomically correct head and airway model. For teaching endotracheal intubation, bag-valve-mask ventilation, and suctioning.',
         category: trainerId,
         mediaUrls: [
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuAoRCwbgur7qu6qRY381FbsjzjKjZzBhIV1dFP90EINyq2NSkXTAYVngehS6q7FrwemH22DeK94dpdjTTZN75XjgDSgW1KJd5z3f3ycEt-_1QWFNpWLijcUz3R6xXVB_o2lNGcNVvcUHKaJaTlMiuEc8CsWL0D-dUWc8Q4EzeRISuCKDPTLEtHgVTX84jL5mbbgUUY7NmLaJkCtG1sJOk_nrnXun90F9K8rcyfvPJgDEaNENhnGRHwiMotfa2qyfeXyhppPJ7VyIECo',
+          '/task trainer/airway_trainer_clean.png',
         ],
-        catalogUrl: 'http://localhost:5000/uploads/cpr-trainer-catalog-sample.pdf',
+        catalogUrl: 'http://localhost:5000/uploads/airway-trainer-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Vascular Access & IV Injection Arm',
+        slug: 'vascular-access-iv-injection-arm',
+        description: 'Realistic venous system training arm. Mimics flashback, tissue resistance, and supports venipuncture, IV infusion, and injections.',
+        category: trainerId,
+        mediaUrls: [
+          '/task trainer/iv_arm.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/iv-arm-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Advanced Suture Training Board',
+        slug: 'advanced-suture-training-board',
+        description: 'Multi-layered silicone suture pad. Features realistic skin epidermis, dermis, fat, and muscle layers for practicing standard cut sutures.',
+        category: trainerId,
+        mediaUrls: [
+          '/task trainer/suture_board.png',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/suture-board-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'CPR & Defibrillation Training Torso',
+        slug: 'cpr-defibrillation-training-torso',
+        description: 'Lightweight training torso for CPR. Features audio-visual feedback indicators for compression rate and depth, compatible with AED trainers.',
+        category: trainerId,
+        mediaUrls: [
+          '/task trainer/nn7Qd8zjbmuVfyHihPYWPc-yxbFhaQYBGUvedETS6jrXYlYLvEYk03YD3dE02hdIA5iNWzoKDSXM7XFszX5I24AwVQ4YmMXoYRu6OeuF4b5acqFe3j7DWfbQxUbe-pCDGW0mv4gLb99dHyPIZ4Absd6_abCiEMNq2qb9eZwwLuQ.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/cpr-torso-catalog.pdf',
+        isActive: true,
+      },
+      {
+        name: 'Epidural & Spinal Injection Trainer',
+        slug: 'epidural-spinal-injection-trainer',
+        description: 'Anatomical lumbar model featuring needle resistance, loss-of-pressure feeling, and CSF feedback for lumbar punctures.',
+        category: trainerId,
+        mediaUrls: [
+          '/task trainer/qry-5TDtv7jpi4SZDyiY4Pw-YwWqcjdMEN0lSSJ1Xr2I_VZ-ILzLZYohmywQq8IQbewVKc434yBn0UQkiEDADTb1T3mCcx-9ZGhKHEShlno3_7l3_UGegqErBP2dLgRZLTtNBrn5VLZb4H2_e05LlOf0LvaD1ZCNmMAsIKMPOUI.jpg',
+        ],
+        catalogUrl: 'http://localhost:5000/uploads/lumbar-trainer-catalog.pdf',
         isActive: true,
       },
     ];
@@ -122,6 +296,51 @@ async function seedData() {
     console.log('Seeding products...');
     const products = await Product.insertMany(mockProducts);
     console.log(`Seeded ${products.length} products.`);
+
+    console.log('Seeding Delta Difference cards...');
+    await DeltaDifferenceCard.insertMany([
+      {
+        title: "Anatomical Models",
+        category: "Anatomy",
+        description: "Dissectible organs, sagittal divisions, and highly-detailed vascular structures for deep scientific learning.",
+        initials: "AM",
+        displayOrder: 1,
+        isActive: true
+      },
+      {
+        title: "Clinical Skills",
+        category: "Task Trainers",
+        description: "Realistic feedback modules for vascular access, airway management, and suturing techniques.",
+        initials: "CS",
+        displayOrder: 2,
+        isActive: true
+      },
+      {
+        title: "High-Fidelity Manikins",
+        category: "Simulators",
+        description: "Full-body simulation systems with integrated physiology, life-like responses, and clinical monitoring.",
+        initials: "HF",
+        displayOrder: 3,
+        isActive: true
+      },
+      {
+        title: "Immersive Training",
+        category: "Innovation",
+        description: "State-of-the-art virtual clinical environments (VR) for training multiple student teams simultaneously.",
+        initials: "VR",
+        displayOrder: 4,
+        isActive: true
+      },
+      {
+        title: "Exclusive Partnerships",
+        category: "Global Reach",
+        description: "Bringing the world's most trusted, international-standard medical simulation technologies directly to Indian labs.",
+        initials: "EP",
+        displayOrder: 5,
+        isActive: true
+      }
+    ]);
+    console.log('Seeded Delta Difference cards.');
 
     mongoose.connection.close();
     console.log('Seeding complete.');

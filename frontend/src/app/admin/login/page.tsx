@@ -61,7 +61,7 @@ export default function AdminLogin() {
       <div className={styles.loginCard}>
         <div className={styles.header}>
           <div className={styles.logo}>
-            Δ <span className={styles.highlight}>Delta Admin</span>
+            ⊕ <span className={styles.highlight}>Medico Valley Admin</span>
           </div>
           <h2 className={styles.title}>Welcome Back</h2>
           <p className={styles.subtitle}>Log in to manage categories and products.</p>
@@ -75,7 +75,7 @@ export default function AdminLogin() {
             <input
               id="email"
               type="email"
-              placeholder="admin@deltahealthcare.com"
+              placeholder="admin@medicovalley.com"
               className={styles.input}
               value={email}
               onChange={(e) => setEmail(e.target.value)}

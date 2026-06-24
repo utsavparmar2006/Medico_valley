@@ -2,23 +2,23 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
+import ProductInfiniteGrid from '@/components/ProductInfiniteGrid';
 import styles from '../products.module.css';
 
 interface Props {
   params: Promise<{ categorySlug: string }>;
 }
 
-// 1. Dynamic SEO Metadata Generator
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
 
   try {
-    const res = await fetch(`http://localhost:5000/api/public/categories/${categorySlug}`);
+    const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}`);
     const data = await res.json();
-    
+
     if (res.ok && data.success) {
       return {
-        title: `${data.data.name} | Delta Healthcare`,
+        title: `${data.data.name} | Medico Valley`,
         description: data.data.description,
         keywords: [data.data.name.toLowerCase(), 'medical education', 'clinical training models'],
       };
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: 'Category Portfolio | Delta Healthcare',
+    title: 'Category Portfolio | Medico Valley',
   };
 }
 
@@ -40,17 +40,24 @@ interface ProductItem {
   mediaUrls: string[];
 }
 
-// 2. Fetch products inside this category
+interface CategoryItem {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  imageUrl: string;
+}
+
 async function getCategoryProducts(categorySlug: string) {
   try {
-    const res = await fetch(`http://localhost:5000/api/public/categories/${categorySlug}/products`, {
+    const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`, {
       next: { revalidate: 60 },
     });
-    
+
     if (!res.ok) {
       return null;
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error fetching category products:', error);
@@ -58,9 +65,30 @@ async function getCategoryProducts(categorySlug: string) {
   }
 }
 
+async function getCategories() {
+  try {
+    const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const result = await res.json();
+    return result.success ? result.data : [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+}
+
 export default async function CategoryProductsPage({ params }: Props) {
   const { categorySlug } = await params;
-  const result = await getCategoryProducts(categorySlug);
+  const [result, categories] = await Promise.all([
+    getCategoryProducts(categorySlug),
+    getCategories(),
+  ]);
 
   if (!result || !result.success) {
     return (
@@ -77,54 +105,97 @@ export default async function CategoryProductsPage({ params }: Props) {
   }
 
   const { category, data: products } = result;
+  const activeCategory = categories.find((item: CategoryItem) => item.slug === category.slug);
+  const heroImage =
+    products.find((prod: ProductItem) => prod.mediaUrls?.[0] && !prod.mediaUrls[0].endsWith('.mp4'))?.mediaUrls?.[0] ||
+    activeCategory?.imageUrl ||
+    '';
 
   return (
-    <div className={`${styles.container} animate-fade-in`}>
-      <div className={styles.titleBlock}>
-        <span style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Portfolio Range</span>
-        <h1>{category.name}</h1>
-        <p>{category.description}</p>
-      </div>
+    <div className={`${styles.categoryPage} animate-fade-in`}>
+      <header className={styles.categoryHeader}>
+        <div className={styles.categoryHeaderInner}>
+          <Link href="/products" className={styles.categoryBackLink} aria-label="Back to products directory">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span>Back</span>
+          </Link>
+          <nav className={styles.categoryTabs} aria-label="Product categories">
+            {categories.map((item: CategoryItem) => (
+              <Link
+                key={item._id}
+                href={`/products/${item.slug}`}
+                className={item.slug === category.slug ? styles.categoryTabActive : ''}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <section className={styles.categoryHero}>
+        {/* Background photo wrapper with blur filter & dark overlay */}
+        <div className={styles.categoryHeroBgWrapper}>
+          {heroImage ? (
+            <Image
+              src={heroImage}
+              alt={category.name}
+              fill
+              priority
+              sizes="100vw"
+              className={styles.categoryHeroImage}
+            />
+          ) : (
+            <div className={styles.categoryHeroFallback} />
+          )}
+          <div className={styles.categoryHeroOverlay} />
+        </div>
+
+        {/* Liquid Glass Panel */}
+        <div className={styles.glassPanelCard}>
+          {/* Subtle top shine line */}
+          <div className={styles.glassPanelShine} />
+          
+          <div className={styles.glassPanelContent}>
+            {/* Breadcrumb: Home / Products / [Category Name] */}
+            <div className={styles.glassBreadcrumb}>
+              <Link href="/">Home</Link>
+              <span className={styles.breadcrumbSeparator}>/</span>
+              <Link href="/products">Products</Link>
+              <span className={styles.breadcrumbSeparator}>/</span>
+              <span className={styles.breadcrumbCurrent}>{category.name}</span>
+            </div>
+
+            {/* Category Title: Last word in teal, small accent underline below */}
+            <h1 className={styles.glassTitle}>
+              {(() => {
+                const words = category.name.split(' ');
+                if (words.length <= 1) {
+                  return <span className={styles.tealAccentText}>{category.name}</span>;
+                }
+                const lastWord = words.pop();
+                const remainingText = words.join(' ');
+                return (
+                  <>
+                    {remainingText}{' '}
+                    <span className={styles.tealAccentText}>{lastWord}</span>
+                  </>
+                );
+              })()}
+            </h1>
+            <div className={styles.titleUnderline} />
+          </div>
+        </div>
+      </section>
 
       {products.length > 0 ? (
-        <div className={styles.grid}>
-          {products.map((prod: ProductItem) => (
-            <div key={prod._id} className={styles.card}>
-              <div className={styles.imageBox}>
-                {prod.mediaUrls.length > 0 ? (
-                  prod.mediaUrls[0].endsWith('.mp4') ? (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b1f3a' }}>
-                      <span style={{ color: 'white', fontWeight: 600 }}>🎬 Video Preview</span>
-                    </div>
-                  ) : (
-                    <Image
-                      src={prod.mediaUrls[0]}
-                      alt={prod.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  )
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ddd' }}>
-                    <span>No Image Available</span>
-                  </div>
-                )}
-              </div>
-              <div className={styles.content}>
-                <h3 className={styles.cardTitle}>{prod.name}</h3>
-                <p className={styles.cardDesc} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {prod.description}
-                </p>
-                <Link href={`/products/${categorySlug}/${prod.slug}`} className={styles.actionBtn}>
-                  <span>View Technical Details</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProductInfiniteGrid
+          categorySlug={categorySlug}
+          initialProducts={products}
+          initialHasMore={Boolean(result.pagination?.hasMore)}
+        />
       ) : (
         <div className={styles.emptyState}>
           <h3>No Products Added Yet</h3>

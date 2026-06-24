@@ -1,82 +1,194 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Metadata } from 'next';
-import styles from './products.module.css';
+import CategoryCard from '@/components/CategoryCard';
 
-export const metadata: Metadata = {
-  title: 'Products Directory | Delta Healthcare',
-  description: 'Browse Delta Healthcare\'s professional range of anatomy models, clinical simulators, and task trainers. High-fidelity medical solutions tailored for healthcare institutions.',
-  keywords: ['anatomy models', 'medical simulators', 'clinical task trainers', 'medical equipment India'],
-};
-
-interface CategoryItem {
+interface Category {
   _id: string;
   name: string;
   slug: string;
-  description: string;
   imageUrl: string;
 }
 
-// Fetch categories on server side (dynamic caching)
-async function getCategories() {
+interface Product {
+  _id: string;
+  imageUrl?: string;
+  images?: string[];
+  mediaUrls?: string[];
+  category?: { slug: string };
+}
+
+interface CardData extends Category {
+  productImage: string;
+}
+
+async function getCategories(): Promise<Category[]> {
   try {
-    const res = await fetch('http://localhost:5000/api/public/categories', {
-      next: { revalidate: 60 }, // revalidate every 60 seconds
+    const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
+      next: { revalidate: 60 }
     });
-    
-    if (!res.ok) {
-      throw new Error('Failed to fetch categories');
-    }
-    
+    if (!res.ok) return [];
     const data = await res.json();
     return data.success ? data.data : [];
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Error fetching categories for products directory:', error);
     return [];
   }
 }
 
-export default async function ProductsCategoriesPage() {
-  const categories: CategoryItem[] = await getCategories();
+async function getProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch('http://127.0.0.1:5000/api/public/products', {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching products for products directory:', error);
+    return [];
+  }
+}
+
+export default async function ProductsPage() {
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getProducts()
+  ]);
+
+  const cards: CardData[] = categories.map((cat: Category) => {
+    const catProducts = products.filter(
+      (p: Product) => p.category?.slug === cat.slug
+    );
+    const firstProduct = catProducts[0];
+    const productImage =
+      firstProduct?.mediaUrls?.[0] ||
+      firstProduct?.images?.[0] ||
+      firstProduct?.imageUrl ||
+      cat.imageUrl ||
+      '';
+
+    return { ...cat, productImage };
+  });
 
   return (
-    <div className={`${styles.container} animate-fade-in`}>
-      <div className={styles.titleBlock}>
-        <h1>Medical Solutions Portfolio</h1>
-        <p>Select a medical specialty to browse our catalog of high-fidelity simulators, task trainers, and anatomy models.</p>
-      </div>
+    <div style={{ background: '#f5f5f5', minHeight: '100vh', fontFamily: "'Inter', sans-serif", paddingTop: '80px' }}>
 
-      {categories.length > 0 ? (
-        <div className={styles.grid}>
-          {categories.map((cat) => (
-            <div key={cat._id} className={styles.card}>
-              <div className={styles.imageBox}>
-                <Image
-                  src={cat.imageUrl}
-                  alt={cat.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <div className={styles.content}>
-                <h3 className={styles.cardTitle}>{cat.name}</h3>
-                <p className={styles.cardDesc}>{cat.description}</p>
-                <Link href={`/products/${cat.slug}`} className={styles.actionBtn}>
-                  <span>Explore Products</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </Link>
-              </div>
-            </div>
+      {/* Header */}
+      <header className="productsDirectoryHeader" style={{
+        width: '100%',
+        padding: '28px 48px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'transparent',
+      }}>
+        <Link href="/" className="productsHomeLink" style={{
+          fontWeight: 800,
+          fontSize: '1rem',
+          color: '#0F172A',
+          textDecoration: 'none',
+          letterSpacing: '-0.01em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891B2" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Home
+        </Link>
+
+        {/* Category nav tabs */}
+        <nav className="productsCategoryNav" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          {cards.map((cat) => (
+            <Link
+              key={cat._id}
+              href={`/products/${cat.slug}`}
+              style={{
+                fontSize: '0.85rem',
+                color: '#64748B',
+                fontWeight: 500,
+                textDecoration: 'none',
+                transition: 'color 0.2s',
+              }}
+            >
+              {cat.name}
+            </Link>
           ))}
-        </div>
-      ) : (
-        <div className={styles.emptyState}>
-          <p>No product categories found. Please seed the database or check back later.</p>
-        </div>
-      )}
+        </nav>
+      </header>
+
+      {/* Cards Grid */}
+      <main className="productsDirectoryGrid" style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '0 48px 80px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '28px',
+      }}>
+        {cards.map((cat, idx) => (
+          <CategoryCard key={cat._id} cat={cat} index={idx} />
+        ))}
+      </main>
+
+      <style>{`
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(32px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 900px) {
+          .productsDirectoryGrid {
+            grid-template-columns: 1fr !important;
+            padding: 0 20px 60px !important;
+          }
+
+          .productsDirectoryHeader {
+            align-items: flex-start !important;
+            flex-direction: column !important;
+            gap: 18px !important;
+            padding: 18px 20px 22px !important;
+          }
+
+          .productsHomeLink {
+            max-width: 100%;
+            line-height: 1.25;
+          }
+
+          .productsCategoryNav {
+            width: calc(100vw - 40px);
+            max-width: 100%;
+            gap: 18px !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2px 0 8px;
+            scroll-snap-type: x proximity;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .productsCategoryNav::-webkit-scrollbar {
+            display: none;
+          }
+
+          .productsCategoryNav a {
+            flex: 0 0 auto;
+            scroll-snap-align: start;
+            white-space: nowrap;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .productsDirectoryHeader {
+            padding-left: 18px !important;
+            padding-right: 18px !important;
+          }
+
+          .productsCategoryNav {
+            width: calc(100vw - 36px);
+          }
+        }
+      `}</style>
     </div>
   );
 }

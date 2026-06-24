@@ -1,0 +1,393 @@
+/* ═══════════════════════════════════════════
+   PREMIUM CATEGORIES — White card, floating
+   product image, glassmorphism name overlay
+   Brand: #0891B2 / #06B6D4 / #0F172A / #F8FAFC
+═══════════════════════════════════════════ */
+
+/* ─── SECTION ─── */
+.section {
+  background: #F1F5F9;
+  padding: 96px 60px 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 20px 80px;
+  }
+}
+
+/* Dot grid background */
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(8, 145, 178, 0.09) 1px, transparent 1px);
+  background-size: 34px 34px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── SECTION HEADER ─── */
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.headerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #0891B2;
+  margin-bottom: 16px;
+}
+
+.headerLabelDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0891B2;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.headerTitle {
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  line-height: 1.12;
+}
+
+.headerTitleAccent {
+  background: linear-gradient(135deg, #0891B2 0%, #06B6D4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headerSub {
+  font-size: 0.97rem;
+  color: #64748B;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ─── CARDS GRID ─── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .section { padding: 60px 20px 80px; }
+}
+
+/* ─── CARD WRAPPER ─── */
+.card {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  perspective: 1200px;
+  cursor: pointer;
+
+  /* White background */
+  background: #ffffff;
+
+  /* Subtle border + shadow */
+  border: 1px solid rgba(8, 145, 178, 0.10);
+  box-shadow:
+    0 2px 12px rgba(15, 23, 42, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.card:hover {
+  box-shadow:
+    0 20px 56px rgba(8, 145, 178, 0.16),
+    0 4px 16px rgba(15, 23, 42, 0.08);
+  border-color: rgba(8, 145, 178, 0.22);
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── BADGE ─── */
+.badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(8, 145, 178, 0.10);
+  border: 1px solid rgba(8, 145, 178, 0.20);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0891B2;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(6px);
+}
+
+.badgeDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #06B6D4;
+  animation: dotPulse 2s infinite;
+}
+
+/* ─── INDEX NUMBER ─── */
+.indexNum {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 10;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #94A3B8;
+}
+
+/* ─── IMAGE AREA — white bg, product floats ─── */
+.imageArea {
+  flex: 1;
+  position: relative;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* Subtle inner gradient for depth */
+  background: radial-gradient(ellipse at 50% 40%, #f0f9ff 0%, #ffffff 70%);
+}
+
+.imageWrap {
+  position: absolute;
+  inset: 12px;
+  /* object-fit: contain so image floats without cropping */
+}
+
+.image {
+  object-fit: contain;
+  object-position: center;
+  /* Remove any background inherited from parent */
+  mix-blend-mode: multiply; /* removes white bg from images that have it */
+}
+
+/* Soft drop shadow under the product image */
+.imageShadow {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 24px;
+  background: radial-gradient(ellipse, rgba(8, 145, 178, 0.12) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* ─── PLACEHOLDER SVG ─── */
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderSvg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderSvg svg {
+  width: 130px;
+  height: 130px;
+  filter: drop-shadow(0 8px 24px rgba(8, 145, 178, 0.18));
+}
+
+/* ─── GLASS NAME OVERLAY ─── */
+.nameOverlay {
+  position: relative;
+  z-index: 5;
+  padding: 20px 22px 20px;
+  background: #ffffff;
+  border-top: 1px solid rgba(8, 145, 178, 0.09);
+  transition: background 0.3s ease, padding 0.3s ease;
+}
+
+.nameOverlayHovered {
+  background: #F0F9FF;
+  padding-bottom: 22px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+/* ─── CATEGORY NAME ─── */
+.name {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 5px;
+  transition: color 0.2s;
+}
+
+.card:hover .name {
+  color: #0891B2;
+}
+
+.desc {
+  font-size: 0.77rem;
+  color: #94A3B8;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 260px;
+
+  /* Hidden by default, revealed on hover */
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.nameOverlayHovered .desc {
+  max-height: 60px;
+  opacity: 1;
+}
+
+/* ─── EXPLORE CTA ─── */
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.ctaVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ctaLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #0891B2;
+}
+
+.ctaArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0891B2, #06B6D4);
+  color: #fff;
+}
+
+/* ─── TEAL ACCENT BAR (top-left) ─── */
+.accentBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 40%;
+  background: linear-gradient(180deg, #0891B2, #06B6D4, transparent);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.3s ease, height 0.4s ease;
+}
+
+.accentBarActive {
+  opacity: 1;
+  height: 70%;
+}
+
+/* ─── VIEW ALL BUTTON ─── */
+.viewAllWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 34px;
+  border: 2px solid #0891B2;
+  border-radius: 100px;
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: #0891B2;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  background: transparent;
+  transition: background 0.25s, color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+
+.viewAllBtn:hover {
+  background: #0891B2;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(8, 145, 178, 0.28);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .cardLink { height: 380px; }
+}
+
+@media (max-width: 640px) {
+  .cardLink { height: 340px; }
+  .name { font-size: 1rem; }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import styles from '@/app/products/products.module.css';
 
 interface Props {
@@ -13,8 +14,8 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
 
   if (!mediaUrls || mediaUrls.length === 0) {
     return (
-      <div className={styles.mainMediaWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2e8f0' }}>
-        <span style={{ color: '#64748b' }}>No media available</span>
+      <div className={styles.mainMediaWrapper}>
+        <span className={styles.noMediaText}>No media available</span>
       </div>
     );
   }
@@ -31,14 +32,16 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
             src={activeUrl}
             controls
             className={styles.mainMedia}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000' }}
           />
         ) : (
-          <img
+          <Image
             src={activeUrl}
             alt={`${productName} Media`}
+            fill
+            priority={activeIndex === 0}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            style={{ objectFit: 'contain', padding: '18px' }}
             className={styles.mainMedia}
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         )}
       </div>
@@ -61,7 +64,13 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
                     <span>▶</span>
                   </div>
                 ) : (
-                  <img src={url} alt={`${productName} thumbnail ${index + 1}`} style={{ width: '100%', height: '100%' }} />
+                  <Image
+                    src={url}
+                    alt={`${productName} thumbnail ${index + 1}`}
+                    fill
+                    sizes="80px"
+                    style={{ objectFit: 'contain', padding: '6px' }}
+                  />
                 )}
               </div>
             );

@@ -91,7 +91,8 @@
     width: 300px;
     flex-shrink: 0;
     position: sticky;
-    top: 40px;
+    top: 24px;
+    min-height: calc(100vh - 48px);
   }
 }
 
@@ -808,4 +809,849 @@
   border-radius: 30px;
   box-shadow: 0 4px 15px rgba(15, 111, 255, 0.25);
   z-index: 1;
+}
+
+/* Light administration workspace */
+.wrapper {
+  background: #f4f7f8;
+  color: #172033;
+  padding: 34px 4%;
+}
+
+.header {
+  max-width: 1680px;
+  margin: 0 auto 32px;
+  padding-bottom: 20px;
+  border-bottom-color: #dce5e8;
+}
+
+.titleBlock h1 {
+  color: #102a3d;
+  background: none;
+  font-size: 2rem;
+  letter-spacing: 0;
+  text-shadow: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.titleBlock p {
+  color: #667789;
+}
+
+.logoutBtn {
+  background: #ffffff;
+  color: #b4232f;
+  border-color: #efc9cd;
+  border-radius: 8px;
+}
+
+.logoutBtn:hover {
+  background: #b4232f;
+  border-color: #b4232f;
+  box-shadow: 0 8px 20px rgba(180, 35, 47, 0.16);
+}
+
+.dashboardLayout {
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.sidebar,
+.statCard,
+.dashboardListSection,
+.formCard,
+.manageBar {
+  background: #ffffff;
+  border-color: #dfe7ea;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.sidebar {
+  padding: 24px 18px;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(20, 48, 65, 0.07);
+}
+
+.profileBox {
+  padding: 0 6px 20px;
+  border-bottom-color: #e5ecef;
+}
+
+.avatar {
+  background: #0a8d93;
+  box-shadow: 0 6px 16px rgba(10, 141, 147, 0.2);
+}
+
+.profileInfo h3,
+.listSectionTitle,
+.sectionTitle,
+.itemCardTitle,
+.uploadText {
+  color: #132f43;
+}
+
+.profileInfo p,
+.itemCardDesc,
+.uploadSubtext {
+  color: #718096;
+}
+
+.navBtn {
+  color: #657587;
+  border-radius: 7px;
+}
+
+.navBtn:hover {
+  background: #f0f7f7;
+  color: #0a7379;
+}
+
+.navBtnActive {
+  background: #eaf6f6;
+  border-color: #c8e5e6;
+  color: #08777d;
+  box-shadow: none;
+}
+
+.navActiveBg {
+  background: #eaf6f6;
+  border-color: #c8e5e6;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.contentArea {
+  gap: 32px;
+}
+
+.statCard {
+  padding: 22px;
+  border-radius: 8px;
+  box-shadow: 0 7px 22px rgba(20, 48, 65, 0.055);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: #b9dcde;
+  box-shadow: 0 12px 26px rgba(20, 48, 65, 0.08);
+}
+
+.statIcon,
+.statCard:hover .statIcon {
+  background: #e9f6f6;
+  color: #0a8d93;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.statInfo h3 {
+  color: #718096;
+  letter-spacing: 0.06em;
+}
+
+.statInfo p {
+  color: #102a3d;
+}
+
+.dashboardListSection,
+.formCard {
+  padding: 28px;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(20, 48, 65, 0.06);
+}
+
+.listSectionHeader,
+.sectionTitle {
+  border-color: #e4ebee;
+}
+
+.itemCard {
+  background: #ffffff;
+  border-color: #e1e8eb;
+  border-radius: 8px;
+}
+
+.itemCard:hover {
+  transform: translateY(-3px);
+  border-color: #b9dcde;
+  box-shadow: 0 12px 26px rgba(20, 48, 65, 0.09);
+}
+
+.itemCardImg {
+  background: #ffffff;
+}
+
+.itemCardFooter {
+  border-top-color: #e7edef;
+}
+
+.badge {
+  background: #eaf7f7;
+  border-color: #c7e5e6;
+  color: #08777d;
+  border-radius: 999px;
+}
+
+.deleteActionBtn {
+  background: #fff7f7;
+  color: #b4232f;
+  border-color: #efc9cd;
+}
+
+.emptyState {
+  color: #718096;
+  border-color: #cfdde2;
+  border-radius: 8px;
+  background: #f9fbfb;
+}
+
+.label {
+  color: #334b5c;
+}
+
+.input,
+.searchInput {
+  background: #ffffff;
+  border-color: #d6e0e4;
+  color: #172033;
+  border-radius: 7px;
+}
+
+.input:focus,
+.searchInput:focus {
+  background: #ffffff;
+  border-color: #0a8d93;
+  box-shadow: 0 0 0 3px rgba(10, 141, 147, 0.12);
+}
+
+.uploadBox {
+  background: #f8fbfb;
+  border-color: #cbdadd;
+  border-radius: 8px;
+}
+
+.uploadBox:hover {
+  background: #f1f8f8;
+  border-color: #0a8d93;
+}
+
+.uploadIcon,
+.searchWrapper:focus-within .searchIcon {
+  color: #0a8d93;
+  text-shadow: none;
+}
+
+.previewItem,
+.pdfBadge {
+  background: #f8fbfb;
+  border-color: #dbe5e8;
+  border-radius: 7px;
+}
+
+.statusSuccess {
+  background: #edf9f5;
+  border-color: #bfe8d7;
+  color: #176b4b;
+}
+
+.statusError {
+  background: #fff4f4;
+  border-color: #efc9cd;
+  color: #a52531;
+}
+
+.progressBarContainer {
+  background: #dfe9eb;
+}
+
+.progressBar {
+  background: #0a8d93;
+}
+
+.manageBar {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 7px 22px rgba(20, 48, 65, 0.05);
+}
+
+.searchIcon,
+.clearSearchBtn {
+  color: #718096;
+}
+
+.clearSearchBtn {
+  background: #edf2f4;
+}
+
+.toggleGroup {
+  background: #edf3f4;
+  border-color: #dbe4e7;
+  border-radius: 8px;
+}
+
+.toggleBtn {
+  color: #657587;
+  border-radius: 6px;
+}
+
+.toggleBtn:hover {
+  color: #08777d;
+  background: #f7fafa;
+}
+
+.toggleBtnActive {
+  color: #08777d;
+  background: #ffffff;
+  border-color: #c8e1e3;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.toggleActiveBg {
+  background: #ffffff;
+  border-color: #c8e1e3;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.filterPill {
+  background: #ffffff;
+  border-color: #d8e2e5;
+  color: #627486;
+  backdrop-filter: none;
+}
+
+.filterPill:hover {
+  color: #08777d;
+  border-color: #9fcfd2;
+  box-shadow: none;
+}
+
+.filterPillActive {
+  background: #eaf6f6;
+  border-color: #9fcfd2;
+  color: #08777d;
+  box-shadow: none;
+}
+
+.pillActiveBg {
+  background: #eaf6f6;
+  border-color: #9fcfd2;
+  box-shadow: none;
+}
+
+.pillCount,
+.filterPillActive .pillCount {
+  background: #edf3f4;
+  border-color: #dce5e8;
+  color: #53687a;
+}
+
+.mediaFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf3f4;
+  color: #0a8d93;
+}
+
+.productOverviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.productOverviewCard {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #dfe7ea;
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(20, 48, 65, 0.05);
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+}
+
+.productOverviewCard:hover {
+  transform: translateY(-4px);
+  border-color: #abd5d7;
+  box-shadow: 0 14px 30px rgba(20, 48, 65, 0.09);
+}
+
+.productOverviewImage {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.productOverviewImage img {
+  object-fit: contain;
+  padding: 14px;
+  transition: transform 0.32s ease;
+}
+
+.productOverviewCard:hover .productOverviewImage img {
+  transform: scale(1.06);
+}
+
+.productOverviewName {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 15px;
+  background: #fbfcfc;
+}
+
+.productOverviewName h3 {
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  color: #12344d;
+  font-size: 0.88rem;
+  line-height: 1.3;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.productOverviewName > span {
+  color: #0a8d93;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.productOverviewCard:hover .productOverviewName > span {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.categoryOverviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.categoryOverviewCard,
+.productOverviewCard {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.categoryOverviewCard {
+  position: relative;
+  height: 285px;
+  overflow: hidden;
+  border: 1px solid #dce6e9;
+  border-radius: 8px;
+  background: #12344d;
+  box-shadow: 0 8px 24px rgba(20, 48, 65, 0.07);
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+}
+
+.categoryOverviewCard:hover {
+  transform: translateY(-4px);
+  border-color: #8fc5c8;
+  box-shadow: 0 15px 30px rgba(20, 48, 65, 0.13);
+}
+
+.categoryOverviewImage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #e7eef0;
+}
+
+.categoryOverviewImage::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 92px;
+  background: rgba(12, 48, 67, 0.9);
+  content: '';
+}
+
+.categoryOverviewImage img {
+  object-fit: cover;
+  transition: transform 0.38s ease;
+}
+
+.categoryOverviewCard:hover .categoryOverviewImage img {
+  transform: scale(1.045);
+}
+
+.categoryOverviewName {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.categoryOverviewName h3 {
+  flex: 1;
+  color: #ffffff;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
+.categoryOverviewName span {
+  color: #74dce5;
+  transition: transform 0.24s ease;
+}
+
+.categoryOverviewCard:hover .categoryOverviewName span {
+  transform: translateX(4px);
+}
+
+.adminDetailPage {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #dfe7ea;
+  border-radius: 8px;
+  box-shadow: 0 9px 30px rgba(20, 48, 65, 0.07);
+}
+
+.adminDetailHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px;
+  border-bottom: 1px solid #e3eaed;
+}
+
+.adminDetailHeader > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.adminDetailHeader h2 {
+  max-width: 760px;
+  color: #102a3d;
+  font-size: clamp(1.55rem, 2.5vw, 2.15rem);
+  letter-spacing: 0;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #0a7d83;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.backButton span {
+  font-size: 18px;
+}
+
+.detailEyebrow {
+  margin-bottom: 7px;
+  color: #718096;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.detailDeleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: #fff7f7;
+  border: 1px solid #efc9cd;
+  border-radius: 7px;
+  color: #b4232f;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detailDeleteButton span {
+  font-size: 18px;
+}
+
+.categoryDetailLayout,
+.productDetailLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  gap: 0;
+}
+
+.detailMediaPanel,
+.detailEditPanel {
+  padding: 30px;
+}
+
+.detailMediaPanel {
+  background: #f7f9fa;
+  border-right: 1px solid #e3eaed;
+}
+
+.detailEditPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.categoryDetailImage {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  overflow: hidden;
+  border: 1px solid #dfe7ea;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.categoryDetailImage img {
+  object-fit: contain;
+}
+
+.detailUploadButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #eaf6f6;
+  border: 1px solid #b9dcde;
+  border-radius: 7px;
+  color: #08777d;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detailUploadButton span {
+  font-size: 18px;
+}
+
+.adminDetailMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.adminDetailMediaItem {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  border: 1px solid #dfe7ea;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.adminDetailMediaItem img,
+.adminDetailMediaItem video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px;
+}
+
+.adminDetailMediaItem > button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: rgba(180, 35, 47, 0.92);
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.adminDetailMediaItem > button span {
+  font-size: 17px;
+}
+
+.detailPdfRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #f7f9fa;
+  border: 1px solid #dfe7ea;
+  border-radius: 7px;
+}
+
+.detailPdfRow a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #0a7d83;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.detailPdfRow button {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: #b4232f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.noDocumentText {
+  color: #7a8997;
+  font-size: 0.84rem;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 20px;
+  border-top: 1px solid #e5ecef;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 7px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: #0a8d93;
+  border: 1px solid #0a8d93;
+  color: #ffffff;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.primaryButton span {
+  font-size: 18px;
+}
+
+.secondaryButton {
+  background: #ffffff;
+  border: 1px solid #ccd9dd;
+  color: #53687a;
+}
+
+@media (max-width: 1350px) {
+  .productOverviewGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .wrapper {
+    padding: 24px 20px;
+  }
+
+  .productOverviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categoryOverviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categoryOverviewCard {
+    height: 260px;
+  }
+
+  .categoryDetailLayout,
+  .productDetailLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .detailMediaPanel {
+    border-right: 0;
+    border-bottom: 1px solid #e3eaed;
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .titleBlock h1 {
+    font-size: 1.65rem;
+  }
+
+  .logoutBtn {
+    padding: 10px 14px;
+  }
+
+  .dashboardListSection,
+  .formCard {
+    padding: 20px;
+  }
+
+  .productOverviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryOverviewGrid,
+  .adminDetailMediaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryOverviewCard {
+    height: 245px;
+  }
+
+  .adminDetailHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 22px 20px;
+  }
+
+  .detailMediaPanel,
+  .detailEditPanel {
+    padding: 20px;
+  }
+
+  .categoryDetailImage {
+    height: 280px;
+  }
 }
