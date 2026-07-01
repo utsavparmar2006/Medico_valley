@@ -1,74 +1,63 @@
 import React from 'react';
 import Link from 'next/link';
-import CategoryCard from '@/components/CategoryCard';
+import CategoryInfiniteGrid from '@/components/CategoryInfiniteGrid';
 
 interface Category {
   _id: string;
   name: string;
   slug: string;
   imageUrl: string;
-}
-
-interface Product {
-  _id: string;
-  imageUrl?: string;
-  images?: string[];
-  mediaUrls?: string[];
-  category?: { slug: string };
+  productImage?: string;
 }
 
 interface CardData extends Category {
   productImage: string;
 }
 
-async function getCategories(): Promise<Category[]> {
+const PAGE_SIZE = 6;
+
+async function getAllCategories(): Promise<Category[]> {
   try {
     const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
     if (!res.ok) return [];
     const data = await res.json();
     return data.success ? data.data : [];
   } catch (error) {
-    console.error('Error fetching categories for products directory:', error);
+    console.error('Error fetching all categories for products directory:', error);
     return [];
   }
 }
 
-async function getProducts(): Promise<Product[]> {
+async function getPaginatedCategories(page: number, limit: number) {
   try {
-    const res = await fetch('http://127.0.0.1:5000/api/public/products', {
-      next: { revalidate: 60 }
+    const res = await fetch(`http://127.0.0.1:5000/api/public/categories?page=${page}&limit=${limit}`, {
+      cache: 'no-store'
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { data: [], hasMore: false };
     const data = await res.json();
-    return data.success ? data.data : [];
+    return {
+      data: data.success ? data.data : [],
+      hasMore: data.success ? Boolean(data.pagination?.hasMore) : false
+    };
   } catch (error) {
-    console.error('Error fetching products for products directory:', error);
-    return [];
+    console.error('Error fetching paginated categories:', error);
+    return { data: [], hasMore: false };
   }
 }
 
 export default async function ProductsPage() {
-  const [categories, products] = await Promise.all([
-    getCategories(),
-    getProducts()
+  const [allCategories, paginatedResult] = await Promise.all([
+    getAllCategories(),
+    getPaginatedCategories(1, PAGE_SIZE)
   ]);
 
-  const cards: CardData[] = categories.map((cat: Category) => {
-    const catProducts = products.filter(
-      (p: Product) => p.category?.slug === cat.slug
-    );
-    const firstProduct = catProducts[0];
-    const productImage =
-      firstProduct?.mediaUrls?.[0] ||
-      firstProduct?.images?.[0] ||
-      firstProduct?.imageUrl ||
-      cat.imageUrl ||
-      '';
-
-    return { ...cat, productImage };
-  });
+  // Map category data to format expected by the cards
+  const initialCards: CardData[] = paginatedResult.data.map((cat: Category) => ({
+    ...cat,
+    productImage: cat.productImage || cat.imageUrl || ''
+  }));
 
   return (
     <div style={{ background: '#f5f5f5', minHeight: '100vh', fontFamily: "'Inter', sans-serif", paddingTop: '80px' }}>
@@ -100,7 +89,7 @@ export default async function ProductsPage() {
 
         {/* Category nav tabs */}
         <nav className="productsCategoryNav" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-          {cards.map((cat) => (
+          {allCategories.map((cat) => (
             <Link
               key={cat._id}
               href={`/products/${cat.slug}`}
@@ -118,19 +107,12 @@ export default async function ProductsPage() {
         </nav>
       </header>
 
-      {/* Cards Grid */}
-      <main className="productsDirectoryGrid" style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '0 48px 80px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '28px',
-      }}>
-        {cards.map((cat, idx) => (
-          <CategoryCard key={cat._id} cat={cat} index={idx} />
-        ))}
-      </main>
+      {/* Cards Grid with Infinite Scroll */}
+      <CategoryInfiniteGrid
+        initialCategories={initialCards}
+        initialHasMore={paginatedResult.hasMore}
+        pageSize={PAGE_SIZE}
+      />
 
       <style>{`
         @keyframes cardIn {

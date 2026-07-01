@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getBackendUrl } from '@/utils/api';
 
 interface Props {
   productId: string;
@@ -46,7 +47,7 @@ export default function ProductRatingWidget({ productId, productSlug, categorySl
 
     const fetchRatingInfo = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/api/public/products/${productId}/rating-info?visitorId=${visitorId}`);
+        const res = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/products/${productId}/rating-info?visitorId=${visitorId}`));
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
@@ -78,7 +79,7 @@ export default function ProductRatingWidget({ productId, productSlug, categorySl
     setRated(true);
 
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/public/products/${productId}/rate`, {
+      const res = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/products/${productId}/rate`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

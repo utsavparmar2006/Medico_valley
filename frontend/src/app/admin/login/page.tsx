@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { getBackendUrl } from '@/utils/api';
 import styles from './login.module.css';
 
 export default function AdminLogin() {
@@ -23,7 +24,7 @@ export default function AdminLogin() {
 
     startTransition(async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/admin/login', {
+        const response = await fetch(getBackendUrl('http://localhost:5000/api/admin/login'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -51,7 +51,7 @@ interface CategoryItem {
 async function getCategoryProducts(categorySlug: string) {
   try {
     const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -68,7 +68,7 @@ async function getCategoryProducts(categorySlug: string) {
 async function getCategories() {
   try {
     const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -107,8 +107,8 @@ export default async function CategoryProductsPage({ params }: Props) {
   const { category, data: products } = result;
   const activeCategory = categories.find((item: CategoryItem) => item.slug === category.slug);
   const heroImage =
-    products.find((prod: ProductItem) => prod.mediaUrls?.[0] && !prod.mediaUrls[0].endsWith('.mp4'))?.mediaUrls?.[0] ||
     activeCategory?.imageUrl ||
+    products.find((prod: ProductItem) => prod.mediaUrls?.[0] && !prod.mediaUrls[0].endsWith('.mp4'))?.mediaUrls?.[0] ||
     '';
 
   return (

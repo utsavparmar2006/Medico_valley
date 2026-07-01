@@ -1,11 +1,14 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import path from 'path';
+import fs from 'fs';
 import Category from '../models/Category';
 import Product from '../models/Product';
 import Rating from '../models/Rating';
 import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import { sendEmail } from '../utils/email';
+import Blog from '../models/Blog';
 
 const router = express.Router();
 
@@ -20,11 +23,49 @@ router.get('/delta-difference', async (req, res) => {
   }
 });
 
-// 1. Get all categories
+// 1. Get all categories (with optional offset pagination)
 router.get('/categories', async (req, res) => {
+  const page = Math.max(Number(req.query.page) || 0, 0);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 48);
+
   try {
-    const categories = await Category.find({}).sort({ name: 1 });
-    return res.json({ success: true, data: categories });
+    const query = {};
+    const categoriesQuery = Category.find(query).sort({ name: 1 });
+
+    if (page > 0 && limit > 0) {
+      categoriesQuery.skip((page - 1) * limit).limit(limit);
+    }
+
+    const [categories, total] = await Promise.all([
+      categoriesQuery,
+      Category.countDocuments(query),
+    ]);
+
+    // Fetch the first active product's image for each category to display on category cards
+    const data = await Promise.all(
+      categories.map(async (cat) => {
+        const firstProd = await Product.findOne({ category: cat._id, isActive: true })
+          .select('mediaUrls')
+          .sort({ name: 1 });
+        const productImage = firstProd?.mediaUrls?.[0] || cat.imageUrl || '';
+        return {
+          ...cat.toObject(),
+          productImage,
+        };
+      })
+    );
+
+    return res.json({
+      success: true,
+      data,
+      pagination: page > 0 && limit > 0 ? {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasMore: page * limit < total,
+      } : undefined,
+    });
   } catch (error: any) {
     console.error('Fetch categories error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
@@ -279,7 +320,7 @@ router.post('/inquiries', async (req, res) => {
       email,
       phone,
       city,
-      quantity: Number(quantity) || 1,
+      quantity: category === 'General Inquiry' ? 0 : (Number(quantity) || 1),
       message,
       status: 'Pending',
     });
@@ -300,15 +341,45 @@ router.post('/inquiries', async (req, res) => {
     const absoluteProductUrl = productSlug && categorySlug ? `${siteUrl}/products/${categorySlug}/${productSlug}` : '';
 
     let absoluteProductImage = '';
+    let hasEmbeddedImage = false;
+    const attachments: any[] = [];
+
     if (productImage) {
-      if (productImage.startsWith('http')) {
-        absoluteProductImage = productImage;
+      // Normalize absolute localhost URLs (saved during dashboard uploads) back to relative paths
+      let imagePathForResolution = productImage;
+      if (productImage.startsWith('http://localhost:5000') || productImage.startsWith('http://127.0.0.1:5000')) {
+        imagePathForResolution = productImage.replace(/https?:\/\/(localhost|127\.0\.0\.1):5000/, '');
+      } else if (productImage.startsWith('http://localhost:3000') || productImage.startsWith('http://127.0.0.1:3000')) {
+        imagePathForResolution = productImage.replace(/https?:\/\/(localhost|127\.0\.0\.1):3000/, '');
+      } else if (backendUrl && productImage.startsWith(backendUrl)) {
+        imagePathForResolution = productImage.substring(backendUrl.length);
+      } else if (siteUrl && productImage.startsWith(siteUrl)) {
+        imagePathForResolution = productImage.substring(siteUrl.length);
+      }
+
+      if (imagePathForResolution.startsWith('http')) {
+        // External URLs (e.g. Google images, etc.) - keep as-is
+        absoluteProductImage = imagePathForResolution;
       } else {
-        const normalizedPath = productImage.startsWith('/') ? productImage : `/${productImage}`;
+        // Local relative paths
+        const normalizedPath = imagePathForResolution.startsWith('/') ? imagePathForResolution : `/${imagePathForResolution}`;
+        let localFilePath = '';
         if (normalizedPath.startsWith('/uploads')) {
+          const filename = normalizedPath.substring('/uploads/'.length);
+          localFilePath = path.join(__dirname, '../../uploads', filename);
           absoluteProductImage = `${backendUrl}${normalizedPath}`;
         } else {
+          localFilePath = path.join(__dirname, '../../../frontend/public', normalizedPath);
           absoluteProductImage = `${siteUrl}${normalizedPath}`;
+        }
+
+        if (localFilePath && fs.existsSync(localFilePath)) {
+          attachments.push({
+            filename: path.basename(localFilePath),
+            path: localFilePath,
+            cid: 'productImage'
+          });
+          hasEmbeddedImage = true;
         }
       }
       // URL-encode to handle spaces (like '/anatommy model/') in image paths
@@ -983,9 +1054,11 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
         <div class="section-card">
           <h3 class="section-title">Product Details</h3>
           <div class="product-row">
-            ${absoluteProductImage ? `
+            ${hasEmbeddedImage ? `
+            <img class="product-image" src="cid:productImage" alt="${safeProductName}" />
+            ` : (absoluteProductImage ? `
             <img class="product-image" src="${absoluteProductImage}" alt="${safeProductName}" />
-            ` : ''}
+            ` : '')}
             <div class="product-details">
               <h4 class="product-name">${safeProductName}</h4>
               <p class="product-meta">Category: <span>${safeCategory}</span></p>
@@ -1063,6 +1136,7 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
       text: emailText,
       html: emailHtml,
       replyTo,
+      attachments,
     }).catch(err => {
       console.error('SMTP Background Email Sending Failed:', err);
     });
@@ -1070,6 +1144,37 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
     return res.status(201).json({ success: true, data: inquiry });
   } catch (error: any) {
     console.error('Create inquiry error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// PUBLIC BLOG ENDPOINTS
+// ==========================================
+
+// Get all blogs (newest first)
+router.get('/blogs', async (req, res) => {
+  try {
+    const blogs = await Blog.find().sort({ createdAt: -1 });
+    return res.json({ success: true, data: blogs });
+  } catch (error: any) {
+    console.error('Fetch blogs error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Get a single blog by slug
+router.get('/blogs/:slug', async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    const blog = await Blog.findOne({ slug: slug.toLowerCase().trim() });
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog article not found' });
+    }
+    return res.json({ success: true, data: blog });
+  } catch (error: any) {
+    console.error('Fetch blog detail error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

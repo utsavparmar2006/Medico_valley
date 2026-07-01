@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { getBackendUrl } from '@/utils/api';
 
 interface Props {
   isOpen: boolean;
@@ -47,7 +48,7 @@ export default function RequestQuoteModal({
       const productUrl = window.location.href;
 
       // 1. Save Inquiry to MongoDB
-      const res = await fetch('http://127.0.0.1:5000/api/public/inquiries', {
+      const res = await fetch(getBackendUrl('http://127.0.0.1:5000/api/public/inquiries'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,16 +100,16 @@ export default function RequestQuoteModal({
         : 'https://medicovalley.com';
       const absoluteProductUrl = `${siteUrl.replace(/\/$/, '')}${window.location.pathname}`;
 
-      const emojiMail = '\uD83D\uDCE9'; // 📩
-      const emojiHospital = '\uD83C\uDFE5'; // 🏥
-      const emojiId = '\uD83C\uDD94'; // 🆔
-      const emojiCalendar = '\uD83D\uDCC5'; // 📅
-      const emojiUser = '\uD83D\uDC64'; // 👤
-      const emojiBox = '\uD83D\uDCE6'; // 📦
-      const emojiLink = '\uD83D\uDD17'; // 🔗
-      const emojiMemo = '\uD83D\uDCDD'; // 📝
-      const separator = '\u2501'.repeat(20); // ━━━━━━━━━━━━━━━━━━━━
-      const emDash = '\u2014'; // —
+      const emojiMail = '📩';
+      const emojiHospital = '🏥';
+      const emojiId = '🆔';
+      const emojiCalendar = '📅';
+      const emojiUser = '👤';
+      const emojiBox = '📦';
+      const emojiLink = '🔗';
+      const emojiMemo = '📝';
+      const separator = '----------------------------------------';
+      const emDash = '-';
 
       const whatsappText = `${emojiMail} *NEW QUOTATION REQUEST*
 
@@ -120,29 +121,29 @@ ${emojiId} *Inquiry ID*
 ${inquiryId}
 
 ${emojiCalendar} *Submitted*
-${dateStr} • ${timeStr} IST
+${dateStr} - ${timeStr} IST
 
 ${separator}
 
 ${emojiUser} *Customer Details*
 
-• Name: ${fullName}
-• Institution: ${institution}
-• City: ${city}
-• Email: ${email}
-• Phone: ${formattedPhone}
+- Name: ${fullName}
+- Institution: ${institution}
+- City: ${city}
+- Email: ${email}
+- Phone: ${formattedPhone}
 
 ${separator}
 
 ${emojiBox} *Requested Product*
 
-• Product:
+- Product:
 ${productName}
 
-• Category:
+- Category:
 ${categoryName}
 
-• Quantity:
+- Quantity:
 ${quantity} Unit(s)
 
 ${emojiLink} Product Page:
@@ -162,10 +163,13 @@ Thank you.
 
 ${emDash} Medico Valley Website`;
 
+      // Log the generated WhatsApp message before encoding to verify emojis
+      console.log('Generated WhatsApp message:\n', whatsappText);
+
       // 3. Trigger WhatsApp Redirect
       const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
       const encodedText = encodeURIComponent(whatsappText);
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+      const whatsappUrl = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${encodedText}`;
 
       // Reset form states
       setFullName('');
@@ -178,7 +182,9 @@ ${emDash} Medico Valley Website`;
 
       // Open WhatsApp in a new tab
       window.open(whatsappUrl, '_blank');
+      console.log(whatsappUrl);
       onClose();
+      window.location.reload();
     } catch (err: any) {
       console.error('Submission error:', err);
       setErrorMsg(err.message || 'An error occurred. Please try again.');

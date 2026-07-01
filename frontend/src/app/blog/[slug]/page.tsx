@@ -3,17 +3,29 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import PremiumFooter from '@/components/PremiumFooter';
-import { ARTICLES_DATABASE } from '../data';
 import styles from '../blog-detail.module.css';
+import { Article } from '../data';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
+async function getArticle(slug: string): Promise<Article | null> {
+  try {
+    const res = await fetch(`http://localhost:5000/api/public/blogs/${slug}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.data as Article) || null;
+  } catch (err) {
+    console.error('Error fetching blog details:', err);
+    return null;
+  }
+}
+
 // Generate dynamic SEO metadata for each blog page using the slug
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = ARTICLES_DATABASE.find((item) => item.slug === slug);
+  const article = await getArticle(slug);
 
   if (article) {
     return {
@@ -41,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogDetailPage({ params }: Props) {
   const { slug } = await params;
-  const article = ARTICLES_DATABASE.find((item) => item.slug === slug);
+  const article = await getArticle(slug);
 
   if (!article) {
     return (

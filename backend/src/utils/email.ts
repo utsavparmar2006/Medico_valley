@@ -6,6 +6,7 @@ export interface EmailOptions {
   text: string;
   html?: string;
   replyTo?: string;
+  attachments?: any[];
 }
 
 export const sendEmail = async (options: EmailOptions) => {
@@ -53,6 +54,7 @@ export const sendEmail = async (options: EmailOptions) => {
       text: options.text,
       html: options.html,
       replyTo: options.replyTo,
+      attachments: options.attachments,
     });
     console.log(`📬 Email successfully sent to ${options.to}`);
   } catch (error) {

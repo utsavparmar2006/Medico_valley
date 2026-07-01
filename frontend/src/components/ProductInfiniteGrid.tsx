@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getBackendUrl } from '@/utils/api';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from '@/app/products/products.module.css';
@@ -25,11 +27,38 @@ export default function ProductInfiniteGrid({
   initialProducts,
   initialHasMore,
 }: Props) {
+  const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync state with props when Server Components refresh/revalidate
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
+  useEffect(() => {
+    setHasMore(initialHasMore);
+  }, [initialHasMore]);
+
+  // Automatically refresh/sync data from the server on window focus or at short intervals
+  useEffect(() => {
+    const handleFocus = () => {
+      router.refresh();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 15000); // Check for updates every 15 seconds
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, [router]);
 
   useEffect(() => {
     const loader = loaderRef.current;
@@ -44,7 +73,7 @@ export default function ProductInfiniteGrid({
 
         try {
           const res = await fetch(
-            `http://localhost:5000/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}`
+            getBackendUrl(`http://localhost:5000/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}`)
           );
           const result = await res.json();
 

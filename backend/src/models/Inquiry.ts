@@ -23,7 +23,7 @@ const InquirySchema: Schema = new Schema(
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
     productName: { type: String, required: true, trim: true },
     category: { type: String, required: true, trim: true },
-    quantity: { type: Number, required: true, default: 1, min: 1 },
+    quantity: { type: Number, required: true, default: 1, min: 0 },
     customerName: { type: String, required: true, trim: true },
     institution: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true },

@@ -1,0 +1,48 @@
+{
+  "categories": [
+    {
+      "id": "6a3ce0f71c9f9a4ca7c14624",
+      "name": "Anatomy Models",
+      "slug": "anatomy-models",
+      "totalProducts": 3,
+      "activeProducts": 3
+    },
+    {
+      "id": "6a3d002ba322ce83890245e5",
+      "name": "Pediatric & Infant Simulators",
+      "slug": "pediatric-infant-simulators",
+      "totalProducts": 0,
+      "activeProducts": 0
+    },
+    {
+      "id": "6a3d00f0c3fb586bf8e528ba",
+      "name": "Infant Care Training Models",
+      "slug": "infant-care-training-models",
+      "totalProducts": 0,
+      "activeProducts": 0
+    }
+  ],
+  "products": [
+    {
+      "id": "6a3ce25e1c9f9a4ca7c14675",
+      "name": "Human Head & Neck Muscular Anatomy Model",
+      "slug": "human-head-and-neck-muscular-anatomy-model",
+      "category": "6a3ce0f71c9f9a4ca7c14624",
+      "isActive": true
+    },
+    {
+      "id": "6a3cfde3e22fbe1f0439206d",
+      "name": "Anatomical Hand Muscle Model",
+      "slug": "anatomical-hand-muscle-model",
+      "category": "6a3ce0f71c9f9a4ca7c14624",
+      "isActive": true
+    },
+    {
+      "id": "6a3cffb0dd6bfc912051240b",
+      "name": "Life-Size Human Heart Model",
+      "slug": "life-size-human-heart-model",
+      "category": "6a3ce0f71c9f9a4ca7c14624",
+      "isActive": true
+    }
+  ]
+}

@@ -1,10 +1,22 @@
-import Image from 'next/image';
-import Link from 'next/link';
 import PremiumFooter from '@/components/PremiumFooter';
 import styles from './blog.module.css';
-import { ARTICLES_DATABASE } from './data';
+import BlogInfiniteGrid from '@/components/BlogInfiniteGrid';
 
-export default function BlogHubPage() {
+async function getArticles() {
+  try {
+    const res = await fetch('http://localhost:5000/api/public/blogs', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) {
+    console.error('Error fetching blogs:', err);
+    return [];
+  }
+}
+
+export default async function BlogHubPage() {
+  const articles = await getArticles();
+
   return (
     <div className={styles.blogWrapper}>
       {/* ── Hero Section ── */}
@@ -29,49 +41,7 @@ export default function BlogHubPage() {
       <div className={styles.blogContainer}>
         {/* Main Column: Centered Grid */}
         <main className={styles.gridSection}>
-          <div className={styles.blogGrid}>
-            {ARTICLES_DATABASE.map((article) => (
-              <Link
-                key={article.id}
-                href={`/blog/${article.slug}`}
-                className={styles.blogCard}
-                id={`article-card-${article.id}`}
-              >
-                {/* Absolute Background Image */}
-                <div className={styles.cardImageArea}>
-                  <Image
-                    src={article.imageUrl}
-                    alt={article.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 500px"
-                    className={styles.cardImage}
-                  />
-                </div>
-
-                {/* Dark Transparent Mask Overlay */}
-                <div className={styles.cardOverlay} />
-
-                {/* Foreground Content */}
-                <div className={styles.cardContent}>
-                  <div className={styles.cardTop}>
-                    <span className={styles.cardFormat}>Blog</span>
-                    
-                    {/* Text Swapping Area */}
-                    <div className={styles.textWrapper}>
-                      <h3 className={styles.cardTitle}>{article.title}</h3>
-                      <p className={styles.cardHoverText}>{article.excerpt}</p>
-                    </div>
-                  </div>
-
-                  {/* Bottom Row: Date / Continue Reading Swap */}
-                  <div className={styles.bottomRow}>
-                    <span className={styles.cardDate}>{article.date}</span>
-                    <span className={styles.continueReading}>Continue Reading</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <BlogInfiniteGrid allArticles={articles} pageSize={4} />
         </main>
       </div>
 

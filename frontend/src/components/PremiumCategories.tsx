@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getBackendUrl } from '@/utils/api';
 import Image from 'next/image';
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import styles from './PremiumCategories.module.css';
@@ -204,8 +205,8 @@ export default function PremiumCategories() {
     async function load() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch('http://localhost:5000/api/public/categories'),
-          fetch('http://localhost:5000/api/public/products'),
+          fetch(getBackendUrl('http://localhost:5000/api/public/categories')),
+          fetch(getBackendUrl('http://localhost:5000/api/public/products')),
         ]);
         if (!catRes.ok) return;
         const catData = await catRes.json();
@@ -226,6 +227,20 @@ export default function PremiumCategories() {
       }
     }
     load();
+
+    const handleFocus = () => {
+      load();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      load();
+    }, 15000); // Check for updates every 15 seconds
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   return (

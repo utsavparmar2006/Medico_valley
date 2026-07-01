@@ -8,6 +8,7 @@ import Category from '../models/Category';
 import Product from '../models/Product';
 import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
+import Blog from '../models/Blog';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
@@ -518,6 +519,109 @@ router.delete('/delta-difference/:id', authMiddleware, async (req: Authenticated
     return res.json({ success: true, message: 'Card deleted successfully' });
   } catch (error: any) {
     console.error('Delete delta difference card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN BLOG ENDPOINTS (PROTECTED)
+// ==========================================
+
+// Create Blog Article
+router.post('/blogs', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { title, format, subject, readTime, excerpt, imageUrl, content, highlights } = req.body;
+
+  if (!title || !subject || !readTime || !excerpt || !imageUrl || !content) {
+    return res.status(400).json({ message: 'Title, subject, readTime, excerpt, imageUrl, and content are required' });
+  }
+
+  try {
+    const slug = slugify(title, { lower: true, strict: true });
+    
+    // Check for duplicate slug
+    const existing = await Blog.findOne({ slug });
+    if (existing) {
+      return res.status(400).json({ message: 'A blog post with this title or slug already exists' });
+    }
+
+    const blog = await Blog.create({
+      title,
+      slug,
+      format: format || 'blog',
+      subject,
+      readTime,
+      excerpt,
+      imageUrl,
+      content: Array.isArray(content) ? content : [content],
+      highlights: Array.isArray(highlights) ? highlights : [],
+    });
+
+    return res.status(201).json({ success: true, data: blog });
+  } catch (error: any) {
+    console.error('Create blog error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update Blog Article
+router.put('/blogs/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { title, format, subject, readTime, excerpt, imageUrl, content, highlights } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid blog ID format' });
+  }
+
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog article not found' });
+    }
+
+    const updateFields: any = {};
+    if (title) {
+      updateFields.title = title;
+      updateFields.slug = slugify(title, { lower: true, strict: true });
+      // Verify slug uniqueness if it changed
+      if (updateFields.slug !== blog.slug) {
+        const existing = await Blog.findOne({ slug: updateFields.slug });
+        if (existing) {
+          return res.status(400).json({ message: 'A blog post with this title or slug already exists' });
+        }
+      }
+    }
+    if (format) updateFields.format = format;
+    if (subject) updateFields.subject = subject;
+    if (readTime) updateFields.readTime = readTime;
+    if (excerpt) updateFields.excerpt = excerpt;
+    if (imageUrl) updateFields.imageUrl = imageUrl;
+    if (content) updateFields.content = Array.isArray(content) ? content : [content];
+    if (highlights) updateFields.highlights = Array.isArray(highlights) ? highlights : [];
+
+    const updatedBlog = await Blog.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+    return res.json({ success: true, data: updatedBlog });
+  } catch (error: any) {
+    console.error('Update blog error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete Blog Article
+router.delete('/blogs/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid blog ID format' });
+  }
+
+  try {
+    const deleted = await Blog.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Blog article not found' });
+    }
+    return res.json({ success: true, message: 'Blog article deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete blog error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

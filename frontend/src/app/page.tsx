@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { getBackendUrl } from "@/utils/api";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
@@ -122,7 +123,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("http://localhost:5000/api/public/products");
+        const res = await fetch(getBackendUrl("http://localhost:5000/api/public/products"));
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
@@ -202,7 +203,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch("http://localhost:5000/api/public/categories");
+        const res = await fetch(getBackendUrl("http://localhost:5000/api/public/categories"));
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
@@ -216,6 +217,20 @@ export default function Home() {
       }
     }
     fetchCategories();
+
+    const handleFocus = () => {
+      fetchCategories();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      fetchCategories();
+    }, 15000); // Check for updates every 15 seconds
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const getCategoryIcon = (slug: string) => {
@@ -672,29 +687,22 @@ export default function Home() {
             {/* Ambient light sweep effect */}
             <div className={styles.glassCardLightSweep} />
 
-            <span ref={heroTaglineRef} className={styles.heroTagline} style={{ transform: "translateZ(30px)" }}>
-              <span className={styles.heroTaglineDot} />
-              Medical Simulation & Training
-            </span>
 
             {/* Word-by-word headline layout */}
             <h1 className={styles.heroTitle} style={{ transform: "translateZ(50px)" }}>
-              {"Precision Medical. Education.".split(" ").map((word, i) => {
-                const isHighlighted = i >= 2; // "Education."
-                return (
-                  <span
-                    key={i}
-                    className={`hero-word ${isHighlighted ? styles.heroHighlight : ""}`}
-                    style={{ display: "inline-block", marginRight: "0.25em" }}
-                  >
-                    {word}
-                  </span>
-                );
-              })}
+              {"MEDICAL EDUCATION SOLUTIONS".split(" ").map((word, i) => (
+                <span
+                  key={`hero-title-${i}`}
+                  className="hero-word"
+                  style={{ display: "inline-block", marginRight: "0.25em" }}
+                >
+                  {word}
+                </span>
+              ))}
             </h1>
 
             <p ref={heroSubtitleRef} className={styles.heroSubtitle} style={{ transform: "translateZ(40px)" }}>
-              High-fidelity simulators & anatomy models for clinical excellence.
+              Premium anatomy models, medical simulators, task trainers, VR learning systems, and laboratory solutions designed for modern medical education.
             </p>
 
             {/* Magnetic Button + secondary CTA */}
@@ -707,8 +715,9 @@ export default function Home() {
                 className={styles.ctaButton}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => catalogSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
               >
-                <span>Book Appointment</span>
+                <span>Request Quote</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -723,17 +732,11 @@ export default function Home() {
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </motion.button>
-              <button className={styles.secondaryCtaButton}>
-                Explore Solutions
-              </button>
+              <Link href="/products" className={styles.secondaryCtaButton}>
+                Explore Products
+              </Link>
             </div>
           </motion.div>
-
-          {/* Scroll Prompt */}
-          <div className={styles.heroScrollIndicator}>
-            <span>Scroll to explore</span>
-            <div className={styles.scrollLine} />
-          </div>
         </section>
 
         {/* Redesigned Product Categories Section */}

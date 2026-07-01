@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getBackendUrl } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './dashboard.module.css';
 
@@ -45,13 +46,26 @@ export default function AdminDashboard() {
 
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs'>('overview');
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryObj | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductObj | null>(null);
   const [detailReturnTab, setDetailReturnTab] = useState<'overview' | 'manage'>('overview');
+
+  const [blogsList, setBlogsList] = useState<any[]>([]);
+  const [showConfirmDeleteBlogModal, setShowConfirmDeleteBlogModal] = useState<string | null>(null);
+
+  // Blog Form States
+  const [blogTitle, setBlogTitle] = useState('');
+  const [blogSubject, setBlogSubject] = useState('');
+  const [blogReadTime, setBlogReadTime] = useState('');
+  const [blogExcerpt, setBlogExcerpt] = useState('');
+  const [blogImageUrl, setBlogImageUrl] = useState('');
+  const [blogContentText, setBlogContentText] = useState('');
+  const [blogHighlightsText, setBlogHighlightsText] = useState('');
+  const [editingBlog, setEditingBlog] = useState<any | null>(null);
 
   // Detail editing state
   const [editCategoryName, setEditCategoryName] = useState('');
@@ -69,7 +83,57 @@ export default function AdminDashboard() {
   const [manageView, setManageView] = useState<'categories' | 'products'>('products');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Custom Modal States
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<string | null>(null);
+  const [showAlertProductsModal, setShowAlertProductsModal] = useState<{ count: number } | null>(null);
+  const [showConfirmDeleteProductModal, setShowConfirmDeleteProductModal] = useState<string | null>(null);
+
   const [loadingData, setLoadingData] = useState(true);
+
+  // Pagination & Scrolling States
+  const [visibleProductsCount, setVisibleProductsCount] = useState(8);
+  const [visibleInquiriesCount, setVisibleInquiriesCount] = useState(10);
+
+  const productLoaderRef = useRef<HTMLDivElement | null>(null);
+  const inquiryLoaderRef = useRef<HTMLDivElement | null>(null);
+
+  // Reset pagination lists when filters or views change
+  useEffect(() => {
+    setVisibleProductsCount(8);
+    setVisibleInquiriesCount(10);
+  }, [searchQuery, selectedCategoryFilter, manageView, activeTab]);
+
+  useEffect(() => {
+    const loader = productLoaderRef.current;
+    if (!loader) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleProductsCount((prev) => prev + 8);
+        }
+      },
+      { rootMargin: '120px 0px' }
+    );
+    observer.observe(loader);
+    return () => observer.disconnect();
+  }, [productsList.length]);
+
+  useEffect(() => {
+    const loader = inquiryLoaderRef.current;
+    if (!loader) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleInquiriesCount((prev) => prev + 10);
+        }
+      },
+      { rootMargin: '120px 0px' }
+    );
+    observer.observe(loader);
+    return () => observer.disconnect();
+  }, [inquiriesList.length]);
 
   // File upload progress feedback
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -109,6 +173,7 @@ export default function AdminDashboard() {
 
   // Auth fetch wrapper with automatic silent token refresh interceptor
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const resolvedUrl = getBackendUrl(url);
     let token = localStorage.getItem('adminAccessToken');
     const headers = new Headers(options.headers || {});
 
@@ -117,7 +182,7 @@ export default function AdminDashboard() {
     }
     options.headers = headers;
 
-    let response = await fetch(url, options);
+    let response = await fetch(resolvedUrl, options);
 
     // If unauthorized, check if it was due to token expiration
     if (response.status === 401) {
@@ -129,7 +194,7 @@ export default function AdminDashboard() {
 
         try {
           // Send request to token refresh endpoint (automatically shares cookie)
-          const refreshRes = await fetch('http://localhost:5000/api/admin/refresh', {
+          const refreshRes = await fetch(getBackendUrl('http://localhost:5000/api/admin/refresh'), {
             method: 'POST',
             credentials: 'include',
           });
@@ -143,7 +208,7 @@ export default function AdminDashboard() {
             // Re-apply Authorization header and retry the original call
             headers.set('Authorization', `Bearer ${token}`);
             options.headers = headers;
-            response = await fetch(url, options);
+            response = await fetch(resolvedUrl, options);
           } else {
             // Refresh token has expired/revoked, force login
             console.warn('Session expired. Redirecting to login...');
@@ -173,18 +238,37 @@ export default function AdminDashboard() {
     loadDashboardData();
   }, []);
 
-  const loadDashboardData = async () => {
-    setLoadingData(true);
+  // Automatically refresh dashboard data in the background on window focus or at short intervals
+  useEffect(() => {
+    const handleFocus = () => {
+      loadDashboardData(true);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    const interval = setInterval(() => {
+      loadDashboardData(true);
+    }, 15000); // Check for updates every 15 seconds
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const loadDashboardData = async (isBackground: boolean = false) => {
+    if (!isBackground) {
+      setLoadingData(true);
+    }
     try {
       // Fetch Categories
-      const catRes = await fetch('http://localhost:5000/api/public/categories');
+      const catRes = await fetch(getBackendUrl('http://localhost:5000/api/public/categories'));
       const catData = await catRes.json();
       if (catRes.ok && catData.success) {
         setCategoriesList(catData.data);
       }
 
       // Fetch Products
-      const prodRes = await fetch('http://localhost:5000/api/public/products');
+      const prodRes = await fetch(getBackendUrl('http://localhost:5000/api/public/products'));
       const prodData = await prodRes.json();
       if (prodRes.ok && prodData.success) {
         setProductsList(prodData.data);
@@ -203,10 +287,19 @@ export default function AdminDashboard() {
       if (deltaRes.ok && deltaData.success) {
         setDeltaCardsList(deltaData.data);
       }
+
+      // Fetch Blogs
+      const blogRes = await fetch(getBackendUrl('http://localhost:5000/api/public/blogs'));
+      const blogData = await blogRes.json();
+      if (blogRes.ok && blogData.success) {
+        setBlogsList(blogData.data);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
-      setLoadingData(false);
+      if (!isBackground) {
+        setLoadingData(false);
+      }
     }
   };
 
@@ -243,6 +336,94 @@ export default function AdminDashboard() {
       setStatusMessage({ type: 'error', text: 'Network error occurred during file upload.' });
       return null;
     }
+  };
+
+  // Blog Form Submit (Create & Update)
+  const handleBlogFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!blogTitle || !blogSubject || !blogReadTime || !blogExcerpt || !blogImageUrl || !blogContentText) {
+      setStatusMessage({ type: 'error', text: 'All blog fields except takeaways are required.' });
+      return;
+    }
+
+    // Split paragraphs by double newline or single newline
+    const content = blogContentText
+      .split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+
+    // Split highlights/takeaways by line
+    const highlights = blogHighlightsText
+      .split('\n')
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
+
+    const isNew = editingBlog.isNew;
+    const url = isNew
+      ? 'http://localhost:5000/api/admin/blogs'
+      : `http://localhost:5000/api/admin/blogs/${editingBlog._id}`;
+    const method = isNew ? 'POST' : 'PUT';
+
+    startTransition(async () => {
+      try {
+        const response = await authFetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: blogTitle,
+            subject: blogSubject,
+            readTime: blogReadTime,
+            excerpt: blogExcerpt,
+            imageUrl: blogImageUrl,
+            content,
+            highlights,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStatusMessage({
+            type: 'success',
+            text: isNew ? 'Blog article published successfully!' : 'Blog article updated successfully!',
+          });
+          setEditingBlog(null);
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Blog operation failed.' });
+        }
+      } catch (err) {
+        setStatusMessage({ type: 'error', text: 'Could not connect to database.' });
+      }
+    });
+  };
+
+  // Confirm Delete Blog
+  const confirmDeleteBlog = async (id: string) => {
+    setStatusMessage(null);
+    setShowConfirmDeleteBlogModal(null);
+
+    startTransition(async () => {
+      try {
+        const response = await authFetch(`http://localhost:5000/api/admin/blogs/${id}`, {
+          method: 'DELETE',
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStatusMessage({ type: 'success', text: 'Blog article deleted successfully.' });
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Failed to delete blog.' });
+        }
+      } catch (err) {
+        setStatusMessage({ type: 'error', text: 'Could not delete blog article.' });
+      }
+    });
   };
 
   // Category Submit
@@ -422,10 +603,13 @@ export default function AdminDashboard() {
   };
 
   // Delete Handlers
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    setStatusMessage(null);
+  const handleDeleteProduct = (id: string) => {
+    setShowConfirmDeleteProductModal(id);
+  };
 
+  const confirmDeleteProduct = async (id: string) => {
+    setShowConfirmDeleteProductModal(null);
+    setStatusMessage(null);
     try {
       const response = await authFetch(`http://localhost:5000/api/admin/products/${id}`, {
         method: 'DELETE',
@@ -439,18 +623,46 @@ export default function AdminDashboard() {
           setSelectedProduct(null);
           setActiveTab(detailReturnTab);
         }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setStatusMessage({ type: 'error', text: data.message || 'Product deletion failed.' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       setStatusMessage({ type: 'error', text: 'Could not delete product.' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category? Note: Categories with active products cannot be deleted.')) return;
-    setStatusMessage(null);
+    try {
+      console.log('handleDeleteCategory called for id:', id);
+      console.log('productsList:', productsList);
 
+      // Check if there are active products under this category
+      const productsInCat = (productsList || []).filter(p => {
+        if (!p.category) return false;
+        if (typeof p.category === 'string') {
+          return p.category === id;
+        }
+        return p.category._id === id;
+      });
+
+      if (productsInCat.length > 0) {
+        setShowAlertProductsModal({ count: productsInCat.length });
+        return;
+      }
+
+      setShowConfirmDeleteModal(id);
+    } catch (err: any) {
+      console.error('Error in handleDeleteCategory:', err);
+      setStatusMessage({ type: 'error', text: 'Error preparing category deletion: ' + err.message });
+    }
+  };
+
+  const confirmDeleteCategory = async (id: string) => {
+    setShowConfirmDeleteModal(null);
+    setStatusMessage(null);
     try {
       const response = await authFetch(`http://localhost:5000/api/admin/categories/${id}`, {
         method: 'DELETE',
@@ -464,11 +676,15 @@ export default function AdminDashboard() {
           setSelectedCategory(null);
           setActiveTab(detailReturnTab);
         }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setStatusMessage({ type: 'error', text: data.message || 'Category deletion failed.' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: 'Could not delete category.' });
+    } catch (err: any) {
+      console.error('Error deleting category:', err);
+      setStatusMessage({ type: 'error', text: 'Could not delete category: ' + err.message });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -672,12 +888,23 @@ export default function AdminDashboard() {
           <h1>Catalog Management</h1>
           <p>Manage Medico Valley categories, products, and published assets.</p>
         </div>
-        <button onClick={handleLogout} className={styles.logoutBtn}>
-          <span>Log Out</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg>
-        </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button 
+            onClick={() => loadDashboardData()} 
+            className={styles.logoutBtn} 
+            style={{ background: 'rgba(10, 141, 147, 0.08)', color: '#0a8d93', borderColor: 'rgba(10, 141, 147, 0.2)', display: 'flex', alignItems: 'center' }}
+            title="Force refresh all catalog data from database"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', marginRight: '6px' }}>sync</span>
+            <span>Refresh Data</span>
+          </button>
+          <button onClick={handleLogout} className={styles.logoutBtn}>
+            <span>Log Out</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* Main Grid Layout */}
@@ -785,6 +1012,21 @@ export default function AdminDashboard() {
               )}
               <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>star</span>
               <span style={{ position: 'relative', zIndex: 2 }}>Delta Difference</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('blogs'); setStatusMessage(null); setEditingBlog(null); }}
+              className={`${styles.navBtn} ${activeTab === 'blogs' ? styles.navBtnActive : ''}`}
+              style={{ position: 'relative' }}
+            >
+              {activeTab === 'blogs' && (
+                <motion.div
+                  layoutId="sidebarActive"
+                  className={styles.navActiveBg}
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>article</span>
+              <span style={{ position: 'relative', zIndex: 2 }}>Blogs</span>
             </button>
           </nav>
         </aside>
@@ -1158,7 +1400,7 @@ export default function AdminDashboard() {
                   <span className={`material-symbols-outlined ${styles.searchIcon}`}>search</span>
                   <input
                     type="text"
-                    placeholder={manageView === 'products' ? "Search products by name, description, or category..." : "Search categories..."}
+                    placeholder={manageView === 'products' ? "Search products..." : "Search categories..."}
                     className={styles.searchInput}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -1334,37 +1576,45 @@ export default function AdminDashboard() {
                       });
 
                       return filteredProds.length > 0 ? (
-                        <motion.div layout className={styles.productOverviewGrid} key="prods-grid">
-                          <AnimatePresence mode="popLayout">
-                            {filteredProds.map((prod) => (
-                              <motion.button
-                                layout
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                                key={prod._id} 
-                                type="button"
-                                className={styles.productOverviewCard}
-                                onClick={() => openProductDetail(prod, 'manage')}
-                              >
-                                <div className={styles.productOverviewImage}>
-                                  {prod.mediaUrls.length > 0 && !prod.mediaUrls[0].endsWith('.mp4') ? (
-                                    <Image src={prod.mediaUrls[0]} alt={prod.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw" />
-                                  ) : (
-                                    <div className={styles.mediaFallback}>
-                                      <span className="material-symbols-outlined">{prod.mediaUrls[0]?.endsWith('.mp4') ? 'movie' : 'image'}</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className={styles.productOverviewName}>
-                                  <h3>{prod.name}</h3>
-                                  <span aria-hidden="true">-&gt;</span>
-                                </div>
-                              </motion.button>
-                            ))}
-                          </AnimatePresence>
-                        </motion.div>
+                        <>
+                          <motion.div layout className={styles.productOverviewGrid} key="prods-grid">
+                            <AnimatePresence mode="popLayout">
+                              {filteredProds.slice(0, visibleProductsCount).map((prod) => (
+                                <motion.button
+                                  layout
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                                  key={prod._id} 
+                                  type="button"
+                                  className={styles.productOverviewCard}
+                                  onClick={() => openProductDetail(prod, 'manage')}
+                                >
+                                  <div className={styles.productOverviewImage}>
+                                    {prod.mediaUrls.length > 0 && !prod.mediaUrls[0].endsWith('.mp4') ? (
+                                      <Image src={prod.mediaUrls[0]} alt={prod.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw" />
+                                    ) : (
+                                      <div className={styles.mediaFallback}>
+                                        <span className="material-symbols-outlined">{prod.mediaUrls[0]?.endsWith('.mp4') ? 'movie' : 'image'}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className={styles.productOverviewName}>
+                                    <h3>{prod.name}</h3>
+                                    <span aria-hidden="true">-&gt;</span>
+                                  </div>
+                                </motion.button>
+                              ))}
+                            </AnimatePresence>
+                          </motion.div>
+                          {filteredProds.length > visibleProductsCount && (
+                            <div ref={productLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.6)', gap: '8px' }}>
+                              <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                              <span>Loading more products...</span>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <motion.div 
                           initial={{ opacity: 0 }} 
@@ -1628,6 +1878,7 @@ export default function AdminDashboard() {
                 <div style={{ overflowX: 'auto', width: '100%', marginTop: '8px' }}>
                   <table style={{
                     width: '100%',
+                    minWidth: '1000px',
                     borderCollapse: 'collapse',
                     textAlign: 'left',
                     color: '#334155',
@@ -1646,7 +1897,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {inquiriesList.map((inq) => {
+                      {inquiriesList.slice(0, visibleInquiriesCount).map((inq) => {
                         const dateStr = new Date(inq.createdAt).toLocaleDateString('en-GB', {
                           day: '2-digit',
                           month: 'short',
@@ -1721,6 +1972,12 @@ export default function AdminDashboard() {
                       })}
                     </tbody>
                   </table>
+                  {inquiriesList.length > visibleInquiriesCount && (
+                    <div ref={inquiryLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.6)', gap: '8px' }}>
+                      <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      <span>Loading more inquiries...</span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
@@ -1856,6 +2113,7 @@ export default function AdminDashboard() {
                   <div style={{ overflowX: 'auto', width: '100%', marginTop: '8px' }}>
                     <table style={{
                       width: '100%',
+                      minWidth: '850px',
                       borderCollapse: 'collapse',
                       textAlign: 'left',
                       color: '#334155',
@@ -2060,8 +2318,576 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
+          {/* BLOGS TAB */}
+          {activeTab === 'blogs' && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={styles.formCard}
+              style={{ maxWidth: '1000px', width: '100%' }}
+            >
+              {!editingBlog ? (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Blog Articles</h2>
+                    <button
+                      type="button"
+                      className="ctaButton"
+                      style={{ background: 'var(--primary)', border: 'none', padding: '10px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                      onClick={() => {
+                        setEditingBlog({ isNew: true });
+                        setBlogTitle('');
+                        setBlogSubject('anatomy');
+                        setBlogReadTime('5 min read');
+                        setBlogExcerpt('');
+                        setBlogImageUrl('');
+                        setBlogContentText('');
+                        setBlogHighlightsText('');
+                        setStatusMessage(null);
+                      }}
+                    >
+                      + Add Blog Post
+                    </button>
+                  </div>
+
+                  {blogsList.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748B' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--primary)', marginBottom: '8px' }}>article</span>
+                      <p>No blog articles found. Click "+ Add Blog Post" to publish one.</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#334155', fontSize: '0.9rem' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#475569', fontSize: '0.85rem', textAlign: 'left' }}>
+                            <th style={{ padding: '12px 8px' }}>Cover</th>
+                            <th style={{ padding: '12px 8px' }}>Title</th>
+                            <th style={{ padding: '12px 8px' }}>Subject</th>
+                            <th style={{ padding: '12px 8px' }}>Read Time</th>
+                            <th style={{ padding: '12px 8px' }}>Publish Date</th>
+                            <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {blogsList.map((blog) => (
+                            <tr
+                              key={blog._id}
+                              style={{ borderBottom: '1px solid #e2e8f0', fontSize: '0.9rem', transition: 'background 0.2s' }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                              <td style={{ padding: '12px 8px' }}>
+                                <img src={blog.imageUrl} alt={blog.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                              </td>
+                              <td style={{ padding: '12px 8px', fontWeight: 600, color: '#0f172a' }}>{blog.title}</td>
+                              <td style={{ padding: '12px 8px' }}>
+                                <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', background: 'rgba(10, 141, 147, 0.08)', color: '#0A8D93', textTransform: 'capitalize' }}>
+                                  {blog.subject.replace('-', ' ')}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 8px', color: '#475569' }}>{blog.readTime}</td>
+                              <td style={{ padding: '12px 8px', color: '#475569' }}>{new Date(blog.createdAt).toLocaleDateString()}</td>
+                              <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingBlog(blog);
+                                      setBlogTitle(blog.title);
+                                      setBlogSubject(blog.subject);
+                                      setBlogReadTime(blog.readTime);
+                                      setBlogExcerpt(blog.excerpt);
+                                      setBlogImageUrl(blog.imageUrl);
+                                      setBlogContentText(blog.content.join('\n\n'));
+                                      setBlogHighlightsText(blog.highlights.join('\n'));
+                                      setStatusMessage(null);
+                                    }}
+                                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(10, 141, 147, 0.08)', border: '1px solid rgba(10, 141, 147, 0.2)', color: '#0A8D93', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowConfirmDeleteBlogModal(blog._id)}
+                                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <form onSubmit={handleBlogFormSubmit}>
+                  <h2 className={styles.sectionTitle}>{editingBlog.isNew ? 'New Blog Article' : 'Edit Blog Article'}</h2>
+
+                  <div className={styles.grid}>
+                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                      <label className={styles.label} htmlFor="blog-title">Article Title</label>
+                      <input
+                        id="blog-title"
+                        type="text"
+                        placeholder="e.g. Navigating Advanced Anatomy Classrooms"
+                        className={styles.input}
+                        value={blogTitle}
+                        onChange={(e) => setBlogTitle(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} htmlFor="blog-subject">Subject/Category</label>
+                      <input
+                        id="blog-subject"
+                        type="text"
+                        placeholder="e.g. Anatomy, Simulation, etc."
+                        className={styles.input}
+                        value={blogSubject}
+                        onChange={(e) => setBlogSubject(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} htmlFor="blog-readtime">Read Time</label>
+                      <input
+                        id="blog-readtime"
+                        type="text"
+                        placeholder="e.g. 5 min read"
+                        className={styles.input}
+                        value={blogReadTime}
+                        onChange={(e) => setBlogReadTime(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                      <label className={styles.label} htmlFor="blog-excerpt">Excerpt / Short Description</label>
+                      <input
+                        id="blog-excerpt"
+                        type="text"
+                        placeholder="A short summary of the blog post to show on listing cards"
+                        className={styles.input}
+                        value={blogExcerpt}
+                        onChange={(e) => setBlogExcerpt(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                      <label className={styles.label}>Cover Image</label>
+                      <label className={styles.uploadBox}>
+                        <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                        </svg>
+                        <span className={styles.uploadText}>Click to upload Cover Image</span>
+                        <span className={styles.uploadSubtext}>Supports JPG, PNG (Max 5MB)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className={styles.fileInput}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = await handleFileUpload(file);
+                              if (url) setBlogImageUrl(url);
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {blogImageUrl && (
+                        <div className={styles.previewList}>
+                          <div className={styles.previewItem}>
+                            <img src={blogImageUrl} alt="Blog Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <button type="button" className={styles.removePreviewBtn} onClick={() => setBlogImageUrl('')}>✕</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                      <label className={styles.label} htmlFor="blog-highlights">Key Takeaways (Highlights - One per line)</label>
+                      <textarea
+                        id="blog-highlights"
+                        placeholder="Highlight point 1&#10;Highlight point 2&#10;Highlight point 3"
+                        className={styles.input}
+                        style={{ minHeight: '100px' }}
+                        value={blogHighlightsText}
+                        onChange={(e) => setBlogHighlightsText(e.target.value)}
+                      />
+                    </div>
+
+                    <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                      <label className={styles.label} htmlFor="blog-content">Article Content (One paragraph per line or double newline)</label>
+                      <textarea
+                        id="blog-content"
+                        placeholder="Write your article paragraphs here. Start a new paragraph by hitting enter twice."
+                        className={styles.input}
+                        style={{ minHeight: '250px' }}
+                        value={blogContentText}
+                        onChange={(e) => setBlogContentText(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                    <button
+                      type="submit"
+                      disabled={isPending || uploadingFile}
+                      className="ctaButton"
+                      style={{ width: '200px', background: 'var(--primary)', border: 'none', padding: '14px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      {editingBlog.isNew ? 'Publish Article' : 'Save Changes'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingBlog(null)}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#94A3B8', padding: '14px', borderRadius: '8px', width: '120px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          )}
+
         </main>
       </div>
+
+      {/* Custom Modal for deletion blocked (has active products) */}
+      <AnimatePresence>
+        {showAlertProductsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#ef4444', marginBottom: '16px' }}>warning</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#fca5a5', fontFamily: 'var(--font-sans)' }}>Deletion Blocked</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '24px', fontFamily: 'var(--font-sans)' }}>
+                Cannot delete this category because it contains <strong>{showAlertProductsModal.count}</strong> active product(s).
+                Please delete or reassign all products under this category first.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAlertProductsModal(null)}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#fca5a5',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  width: '100%',
+                  fontFamily: 'var(--font-sans)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#fca5a5'; }}
+              >
+                Got it
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Modal for confirm deletion (empty category) */}
+      <AnimatePresence>
+        {showConfirmDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(15, 111, 255, 0.2)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 111, 255, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this category? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteCategory(showConfirmDeleteModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Modal for confirm product deletion */}
+      <AnimatePresence>
+        {showConfirmDeleteProductModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(15, 111, 255, 0.2)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 111, 255, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this product? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteProductModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteProduct(showConfirmDeleteProductModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Modal for confirm blog deletion */}
+      <AnimatePresence>
+        {showConfirmDeleteBlogModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(15, 111, 255, 0.2)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 111, 255, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this blog article? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteBlogModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteBlog(showConfirmDeleteBlogModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

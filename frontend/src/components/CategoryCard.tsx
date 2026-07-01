@@ -58,7 +58,7 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
         justifyContent: 'center',
         background: 'transparent',
       }}>
-        {cat.productImage && !imgError ? (
+        {(cat.imageUrl || cat.productImage) && !imgError ? (
           <>
             <div style={{
               position: 'absolute',
@@ -70,7 +70,7 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
               transition: 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)',
             }}>
               <Image
-                src={cat.productImage}
+                src={cat.imageUrl || cat.productImage}
                 alt={cat.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
@@ -114,7 +114,12 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
 
       {/* ── Liquid Glass overlay band at bottom ── */}
       <div style={{
-        padding: '24px 28px',
+        height: '135px',
+        padding: '20px 24px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         background: hovered
           ? 'linear-gradient(135deg, rgba(10, 141, 147, 0.92) 0%, rgba(8, 109, 113, 0.8) 100%)'
           : 'linear-gradient(135deg, rgba(10, 141, 147, 0.78) 0%, rgba(8, 109, 113, 0.55) 100%)',
@@ -130,12 +135,17 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
       }}>
         {/* Category name — large bold white */}
         <h2 style={{
-          fontSize: '1.75rem',
+          fontSize: '1.45rem',
           fontWeight: 800,
           color: '#ffffff',
           lineHeight: 1.15,
-          margin: '0 0 14px',
+          margin: 0,
           letterSpacing: '-0.02em',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}>
           {cat.name}
         </h2>

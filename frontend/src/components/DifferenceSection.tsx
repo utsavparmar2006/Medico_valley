@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
+import { getBackendUrl } from '@/utils/api';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -136,25 +137,41 @@ export default function DifferenceSection() {
     };
   }, [emblaApi, isMobile]);
 
-  useEffect(() => {
-    async function fetchCards() {
-      try {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const res = await fetch(`${apiBase}/public/delta-difference`);
-        if (!res.ok) return;
-        const result = await res.json();
-        if (result.success && Array.isArray(result.data)) {
-          // Sort explicitly by displayOrder ASC to guarantee card rendering order consistency
-          const sorted = [...result.data].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-          if (sorted.length === 5) {
-            setCards(sorted);
-          }
+  const fetchCards = async () => {
+    try {
+      const apiBase = getBackendUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
+      const res = await fetch(`${apiBase}/public/delta-difference`);
+      if (!res.ok) return;
+      const result = await res.json();
+      if (result.success && Array.isArray(result.data)) {
+        // Sort explicitly by displayOrder ASC to guarantee card rendering order consistency
+        const sorted = [...result.data].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+        if (sorted.length === 5) {
+          setCards(sorted);
         }
-      } catch (err) {
-        console.error('Failed to fetch delta difference cards:', err);
       }
+    } catch (err) {
+      console.error('Failed to fetch delta difference cards:', err);
     }
+  };
+
+  // Fetch initial data on mount
+  useEffect(() => {
     fetchCards();
+  }, []);
+
+  // Automatically refresh delta difference cards from the server on window focus or at short intervals
+  useEffect(() => {
+    window.addEventListener('focus', fetchCards);
+
+    const interval = setInterval(() => {
+      fetchCards();
+    }, 15000); // Check for updates every 15 seconds
+
+    return () => {
+      window.removeEventListener('focus', fetchCards);
+      clearInterval(interval);
+    };
   }, []);
 
   useGSAP(

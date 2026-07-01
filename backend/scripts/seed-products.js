@@ -275,7 +275,7 @@ async function seedData() {
         description: 'Lightweight training torso for CPR. Features audio-visual feedback indicators for compression rate and depth, compatible with AED trainers.',
         category: trainerId,
         mediaUrls: [
-          '/task trainer/nn7Qd8zjbmuVfyHihPYWPc-yxbFhaQYBGUvedETS6jrXYlYLvEYk03YD3dE02hdIA5iNWzoKDSXM7XFszX5I24AwVQ4YmMXoYRu6OeuF4b5acqFe3j7DWfbQxUbe-pCDGW0mv4gLb99dHyPIZ4Absd6_abCiEMNq2qb9eZwwLuQ.jpg',
+          '/task trainer/cpr_torso.jpg',
         ],
         catalogUrl: 'http://localhost:5000/uploads/cpr-torso-catalog.pdf',
         isActive: true,
@@ -286,7 +286,7 @@ async function seedData() {
         description: 'Anatomical lumbar model featuring needle resistance, loss-of-pressure feeling, and CSF feedback for lumbar punctures.',
         category: trainerId,
         mediaUrls: [
-          '/task trainer/qry-5TDtv7jpi4SZDyiY4Pw-YwWqcjdMEN0lSSJ1Xr2I_VZ-ILzLZYohmywQq8IQbewVKc434yBn0UQkiEDADTb1T3mCcx-9ZGhKHEShlno3_7l3_UGegqErBP2dLgRZLTtNBrn5VLZb4H2_e05LlOf0LvaD1ZCNmMAsIKMPOUI.jpg',
+          '/task trainer/spinal_trainer.jpg',
         ],
         catalogUrl: 'http://localhost:5000/uploads/lumbar-trainer-catalog.pdf',
         isActive: true,

@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 async function getProductDetail(productSlug: string) {
   try {
     const res = await fetch(`http://127.0.0.1:5000/api/public/products/${productSlug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -105,7 +105,7 @@ async function getRelatedProducts(categorySlug: string, productSlug: string): Pr
   try {
     const res = await fetch(
       `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=8`,
-      { next: { revalidate: 60 } }
+      { cache: 'no-store' }
     );
 
     if (!res.ok) return [];

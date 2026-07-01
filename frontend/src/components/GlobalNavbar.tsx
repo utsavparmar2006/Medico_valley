@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { getBackendUrl } from '@/utils/api';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { ARTICLES_DATABASE } from '@/app/blog/data';
@@ -50,7 +51,7 @@ export default function GlobalNavbar() {
   // Fetch products on demand when search is opened
   useEffect(() => {
     if (isSearchOpen && products.length === 0) {
-      fetch('http://127.0.0.1:5000/api/public/products')
+      fetch(getBackendUrl('http://127.0.0.1:5000/api/public/products'))
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -132,12 +133,11 @@ export default function GlobalNavbar() {
       <header className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`}>
 
         <Link href="/" className={styles.logoContainer} style={{ display: 'flex', alignItems: 'center' }}>
-          <Image
+          <img
             src="/logo-medico-transparent.png"
             alt="MedicoValley Logo"
             width={180}
             height={56}
-            priority
             style={{
               height: '56px',
               width: 'auto',

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import PremiumFooter from '@/components/PremiumFooter';
+import { getBackendUrl } from '@/utils/api';
 import styles from './contact.module.css';
 
 export default function ContactUs() {
@@ -29,7 +30,7 @@ export default function ContactUs() {
 
     try {
       // 1. Submit Inquiry to MongoDB Database via existing public route
-      const res = await fetch('http://127.0.0.1:5000/api/public/inquiries', {
+      const res = await fetch(getBackendUrl('http://127.0.0.1:5000/api/public/inquiries'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ export default function ContactUs() {
           email,
           phone,
           city,
-          quantity: 1,
+          quantity: 0,
           message: `Subject: ${subject}\n\nMessage: ${message}`,
         }),
       });
@@ -63,6 +64,11 @@ export default function ContactUs() {
         setCity('');
         setSubject('');
         setMessage('');
+
+        // Reload page after a delay so they see the success message
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         throw new Error(data.message || 'Failed to submit contact request.');
       }

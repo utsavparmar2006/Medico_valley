@@ -11,7 +11,7 @@ export default function InstitutionTrustSection() {
     { src: "/task%20trainer/airway_trainer.png", top: "34%", left: "68%", w: 200, h: 200, rotate: "-3deg" },
     { src: "/task%20trainer/suture_board.png", top: "68%", left: "48%", w: 170, h: 170, rotate: "2deg" },
     { src: "/products/medical%20simulators/pediatric_simulator.png", top: "68%", left: "66%", w: 200, h: 200, rotate: "-1deg" },
-    { src: "/task%20trainer/iv_arm.png", top: "68%", left: "82%", w: 180, h: 180, rotate: "4deg" },
+    { src: "/task%20trainer/cpr_torso_white_bg.png", top: "68%", left: "82%", w: 180, h: 180, rotate: "4deg" },
     { src: "/Human Anatomy Torso model.png", top: "6%", left: "86%", w: 160, h: 190, rotate: "-2deg" },
     { src: "/products/medical%20simulators/infant_simulator.png", top: "36%", left: "86%", w: 180, h: 180, rotate: "2deg" }
   ];
