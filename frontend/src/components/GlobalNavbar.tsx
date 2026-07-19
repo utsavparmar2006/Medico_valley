@@ -132,62 +132,65 @@ export default function GlobalNavbar() {
     <>
       <header className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`}>
 
-        <Link href="/" className={styles.logoContainer} style={{ display: 'flex', alignItems: 'center' }}>
+        <Link href="/" className={styles.logoContainer} aria-label="MedicoValley Home">
+          {/* Cropped icon-only PNG — clean teal lotus symbol */}
           <img
-            src="/logo-medico-transparent.png"
-            alt="MedicoValley Logo"
-            width={180}
-            height={56}
-            style={{
-              height: '56px',
-              width: 'auto',
-              objectFit: 'contain',
-            }}
+            src="/logo-icon-only.png"
+            alt="MedicoValley icon"
+            className={styles.logoIconWrap}
           />
+          {/* Brand text */}
+          <div className={styles.logoBrandText}>
+            <span className={styles.logoBrandName}>MedicoValley</span>
+            <span className={styles.logoBrandTagline}>Empowering Healthcare Innovations</span>
+          </div>
         </Link>
 
-        {/* Desktop nav links */}
-        <nav className={styles.navLinks} aria-label="Main navigation">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === '/'
-                ? pathname === '/'
-                : pathname.startsWith(item.href);
+        {/* Right side: nav tabs + search grouped together */}
+        <div className={styles.navRight}>
+          {/* Desktop nav links */}
+          <nav className={styles.navLinks} aria-label="Main navigation">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === '/'
+                  ? pathname === '/'
+                  : pathname.startsWith(item.href);
 
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={isActive ? styles.navLinkActive : styles.navLink}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={isActive ? styles.navLinkActive : styles.navLink}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className={styles.navActions}>
-          <button 
-            className={`${styles.iconBtn} material-symbols-outlined`} 
-            aria-label="Search"
-            onClick={() => {
-              if (products.length === 0) setLoading(true);
-              setIsSearchOpen(true);
-            }}
-          >
-            search
-          </button>
+          <div className={styles.navActions}>
+            <button 
+              className={`${styles.iconBtn} material-symbols-outlined`} 
+              aria-label="Search"
+              onClick={() => {
+                if (products.length === 0) setLoading(true);
+                setIsSearchOpen(true);
+              }}
+            >
+              search
+            </button>
 
-          {/* Hamburger - mobile only */}
-          <button
-            className={styles.hamburgerBtn}
-            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setIsMobileMenuOpen((v) => !v)}
-          >
-            <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar1Open : ''}`} />
-            <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar2Open : ''}`} />
-            <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar3Open : ''}`} />
-          </button>
+            {/* Hamburger - mobile only */}
+            <button
+              className={styles.hamburgerBtn}
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              onClick={() => setIsMobileMenuOpen((v) => !v)}
+            >
+              <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar1Open : ''}`} />
+              <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar2Open : ''}`} />
+              <span className={`${styles.hamburgerBar} ${isMobileMenuOpen ? styles.bar3Open : ''}`} />
+            </button>
+          </div>
         </div>
       </header>
 

@@ -1,14 +1,61 @@
-/* Design System & Base Reset */
+/* ============================================================
+   @font-face Declarations — Matching medicovalley.in fonts
+   ============================================================ */
+
+/* Controller W01 Three — Used for large hero/display headings (H1, H2) */
+@font-face {
+  font-family: 'Controller';
+  src: url('/font/Controller-W01-Three.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Futura BK BT Book — Used for section titles, subheadings, and nav brand */
+@font-face {
+  font-family: 'Futura';
+  src: url('/font/futura_bk_bt_book-1.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Regular — Used for body text, paragraphs, labels, UI elements */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/font/roboto-kfo5cnqeu92fr1mu53zec9_vu3r1gihoszmkbnka.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Medium — Used for buttons, nav links, emphasis text */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/font/roboto-kfo7cnqeu92fr1me7ksn66agldtyluama3yuba.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   Design System & CSS Custom Properties
+   ============================================================ */
 :root {
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Manrope', system-ui, sans-serif;
+  /* Font stacks matching medicovalley.in exactly */
+  /* Controller — large hero/display headings (H1, H2) */
+  --font-display: 'Controller', 'Futura', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Futura — subheadings (H3, H4) AND all body/paragraph/subtitle text */
+  --font-sans: 'Futura', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  /* Roboto medium — buttons, nav links, labels that need slightly more weight */
+  --font-ui: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Premium Teal & Cyan Color Palette (Inspired by Medico Valley) */
   --primary: #0A8D93;
   --primary-hover: #086d71;
   --primary-light: #49D3E7;
-  
+
   --deep-obsidian: #111827;
   --surface-gray: #F9FAFB;
   --sterile-white: #FFFFFF;
@@ -24,7 +71,7 @@
   --color-bg: #FFFFFF;
   --color-text: #4A5568;
 
-  --app-bg: #eaeaea;
+  --app-bg: #ffffff;
 
   /* Card/Panel variables */
   --card-bg: rgba(255, 255, 255, 0.03);
@@ -32,26 +79,38 @@
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ============================================================
+   Base Reset
+   ============================================================ */
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
 }
 
+/* ============================================================
+   Root Typography — Roboto as default body font
+   (Matches medicovalley.in body text rendering)
+   ============================================================ */
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-sans);
+  font-size: 1rem;
   color: var(--on-background);
   background-color: var(--app-bg);
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  letter-spacing: normal;
 }
 
-/* Scrollbar customization matching the brand color */
+/* ============================================================
+   Scrollbar — Brand Themed
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -93,22 +152,59 @@ a {
   border: 1px solid var(--card-border);
 }
 
-/* Global Premium Typography System */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
+/* ============================================================
+   Global Typography System — Matching medicovalley.in
+   ============================================================ */
+
+/* H1, H2 — Controller display font (hero sections, page titles) */
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: normal;
   color: var(--on-background);
 }
 
-body {
-  font-family: var(--font-sans), sans-serif;
+/* H3, H4, H5, H6 — Futura for all subheadings (same as body font) */
+h3, h4, h5, h6 {
+  font-family: var(--font-sans);
   font-weight: 400;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
+  letter-spacing: normal;
+  color: var(--on-background);
 }
 
-/* Lenis smooth scroll helper styles */
+/* Body text — Futura (matches reference site paragraph/subtitle style) */
+body, p, li, td, th, label {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.6;
+}
+
+/* Buttons — Website text font (Futura) */
+button, input[type="submit"], input[type="button"] {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+/* Form inputs — Futura regular */
+input, textarea, select {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+/* Navigation links — Roboto medium */
+nav a, nav button {
+  font-family: var(--font-ui);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Lenis Smooth Scroll Helper Styles
+   ============================================================ */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -129,4 +225,3 @@ html.lenis body {
 .lenis-scrolling iframe {
   pointer-events: none;
 }
-

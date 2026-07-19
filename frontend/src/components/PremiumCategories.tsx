@@ -228,19 +228,6 @@ export default function PremiumCategories() {
     }
     load();
 
-    const handleFocus = () => {
-      load();
-    };
-    window.addEventListener('focus', handleFocus);
-
-    const interval = setInterval(() => {
-      load();
-    }, 15000); // Check for updates every 15 seconds
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
-    };
   }, []);
 
   return (

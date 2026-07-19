@@ -150,7 +150,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(180deg)' }}>
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
-          Back to {product.category?.name} List
+          <span>Back to {product.category?.name} List</span>
         </Link>
 
         <div className={styles.detailGrid}>

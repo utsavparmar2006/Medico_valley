@@ -27,7 +27,7 @@ const InquirySchema: Schema = new Schema(
     customerName: { type: String, required: true, trim: true },
     institution: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, trim: true },
+    phone: { type: String, required: false, trim: true },
     city: { type: String, required: true, trim: true },
     message: { type: String, trim: true },
     status: {

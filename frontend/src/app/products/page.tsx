@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import CategoryInfiniteGrid from '@/components/CategoryInfiniteGrid';
+import styles from './products.module.css';
 
 interface Category {
   _id: string;
@@ -60,51 +61,30 @@ export default async function ProductsPage() {
   }));
 
   return (
-    <div style={{ background: '#f5f5f5', minHeight: '100vh', fontFamily: "'Inter', sans-serif", paddingTop: '80px' }}>
+    <div className={styles.productsMainPage}>
 
       {/* Header */}
-      <header className="productsDirectoryHeader" style={{
-        width: '100%',
-        padding: '28px 48px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'transparent',
-      }}>
-        <Link href="/" className="productsHomeLink" style={{
-          fontWeight: 800,
-          fontSize: '1rem',
-          color: '#0F172A',
-          textDecoration: 'none',
-          letterSpacing: '-0.01em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891B2" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Home
-        </Link>
+      <header className={styles.categoryHeader}>
+        <div className={styles.categoryHeaderInner}>
+          <Link href="/" className={styles.categoryBackLink} aria-label="Back to home page">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span>Home</span>
+          </Link>
 
-        {/* Category nav tabs */}
-        <nav className="productsCategoryNav" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-          {allCategories.map((cat) => (
-            <Link
-              key={cat._id}
-              href={`/products/${cat.slug}`}
-              style={{
-                fontSize: '0.85rem',
-                color: '#64748B',
-                fontWeight: 500,
-                textDecoration: 'none',
-                transition: 'color 0.2s',
-              }}
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </nav>
+          {/* Category nav tabs */}
+          <nav className={styles.categoryTabs} aria-label="Product categories">
+            {allCategories.map((cat) => (
+              <Link
+                key={cat._id}
+                href={`/products/${cat.slug}`}
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </header>
 
       {/* Cards Grid with Infinite Scroll */}

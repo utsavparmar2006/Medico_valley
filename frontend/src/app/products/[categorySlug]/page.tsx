@@ -153,58 +153,48 @@ export default async function CategoryProductsPage({ params }: Props) {
           <div className={styles.categoryHeroOverlay} />
         </div>
 
-        {/* Liquid Glass Panel */}
-        <div className={styles.glassPanelCard}>
-          {/* Subtle top shine line */}
-          <div className={styles.glassPanelShine} />
-          
-          <div className={styles.glassPanelContent}>
-            {/* Breadcrumb: Home / Products / [Category Name] */}
-            <div className={styles.glassBreadcrumb}>
-              <Link href="/">Home</Link>
-              <span className={styles.breadcrumbSeparator}>/</span>
-              <Link href="/products">Products</Link>
-              <span className={styles.breadcrumbSeparator}>/</span>
-              <span className={styles.breadcrumbCurrent}>{category.name}</span>
-            </div>
-
-            {/* Category Title: Last word in teal, small accent underline below */}
-            <h1 className={styles.glassTitle}>
-              {(() => {
-                const words = category.name.split(' ');
-                if (words.length <= 1) {
-                  return <span className={styles.tealAccentText}>{category.name}</span>;
-                }
-                const lastWord = words.pop();
-                const remainingText = words.join(' ');
-                return (
-                  <>
-                    {remainingText}{' '}
-                    <span className={styles.tealAccentText}>{lastWord}</span>
-                  </>
-                );
-              })()}
-            </h1>
-            <div className={styles.titleUnderline} />
+        <div className={styles.categoryHeroContent}>
+          {/* Breadcrumb: Home / Products / [Category Name] */}
+          <div className={styles.categoryBreadcrumb}>
+            <Link href="/">Home</Link>
+            <span className={styles.breadcrumbSeparator}>/</span>
+            <Link href="/products">Products</Link>
+            <span className={styles.breadcrumbSeparator}>/</span>
+            <span className={styles.breadcrumbCurrent}>{category.name}</span>
           </div>
+
+          {/* Category Title: Last word in teal, small accent underline below */}
+          <h1 className={styles.categoryHeroTitle}>
+            {category.name}
+          </h1>
+          <div className={styles.categoryHeroTitleRule} />
+
+          {/* Category Description */}
+          {category.description && (
+            <p className={styles.categoryHeroSubtitle}>
+              {category.description}
+            </p>
+          )}
         </div>
       </section>
 
-      {products.length > 0 ? (
-        <ProductInfiniteGrid
-          categorySlug={categorySlug}
-          initialProducts={products}
-          initialHasMore={Boolean(result.pagination?.hasMore)}
-        />
-      ) : (
-        <div className={styles.emptyState}>
-          <h3>No Products Added Yet</h3>
-          <p>There are currently no products listed under this category. Please check back later or contact support.</p>
-          <Link href="/products" className="btn btn-secondary" style={{ marginTop: '24px' }}>
-            Back to Directory
-          </Link>
-        </div>
-      )}
+      <div className={styles.categoryContentWrapper}>
+        {products.length > 0 ? (
+          <ProductInfiniteGrid
+            categorySlug={categorySlug}
+            initialProducts={products}
+            initialHasMore={Boolean(result.pagination?.hasMore)}
+          />
+        ) : (
+          <div className={styles.emptyState}>
+            <h3>No Products Added Yet</h3>
+            <p>There are currently no products listed under this category. Please check back later or contact support.</p>
+            <Link href="/products" className="btn btn-secondary" style={{ marginTop: '24px' }}>
+              Back to Directory
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

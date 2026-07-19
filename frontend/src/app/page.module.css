@@ -121,11 +121,12 @@
   background-color: var(--color-dark-navy);
   height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Allow bottom card to overlap downwards */
   display: flex;
   align-items: center;
   padding: 0 8%;
   perspective: 1200px;
+  z-index: 5; /* Ensure the overflowing card paints on top of the next section */
 }
 
 .heroVideo {
@@ -173,19 +174,25 @@
 }
 
 .heroGlassPanel {
-  position: relative;
+  position: absolute;
+  bottom: -210px; /* Shifted even further down to maximize video visibility */
+  left: 0;
+  right: 0;
+  margin: 0 auto; /* Centered horizontally */
   z-index: 10;
-  max-width: 520px;
+  width: 90%;
+  max-width: 760px; /* Wider card to fit centered content cleanly */
   background: rgba(11, 31, 58, 0.35);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 44px;
-  border-radius: 24px;
-  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 36px 48px;
+  border-radius: 24px; /* Fully rounded card floating on the section boundary */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: center; /* Center-align inner flex items */
   gap: 20px;
 }
 
@@ -226,6 +233,7 @@
 
   .heroGlassPanel {
     position: relative;
+    bottom: auto !important; /* Clear negative bottom offset on mobile layouts */
     width: 100%;
     max-width: 100%;
     padding: 32px 24px;
@@ -305,6 +313,7 @@
   line-height: 1.15;
   color: var(--sterile-white);
   letter-spacing: -0.03em;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
@@ -315,7 +324,7 @@
 }
 
 .heroHighlight {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--color-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -326,20 +335,21 @@
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.6;
   max-width: 100%;
+  text-align: center;
 }
 
 /* Primary CTA Button styles with breathing glow */
 @keyframes breathingGlow {
   0% {
-    box-shadow: 0 0 10px rgba(15, 111, 255, 0.3);
+    box-shadow: 0 0 10px rgba(10, 141, 147, 0.3);
   }
 
   50% {
-    box-shadow: 0 0 25px rgba(15, 111, 255, 0.6);
+    box-shadow: 0 0 25px rgba(10, 141, 147, 0.6);
   }
 
   100% {
-    box-shadow: 0 0 10px rgba(15, 111, 255, 0.3);
+    box-shadow: 0 0 10px rgba(10, 141, 147, 0.3);
   }
 }
 
@@ -348,6 +358,7 @@
   gap: 1.5rem;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: center; /* Center the buttons horizontally */
 }
 
 @media (max-width: 480px) {
@@ -366,7 +377,7 @@
 
 .ctaButton {
   position: relative;
-  background: var(--color-primary);
+  background: var(--primary);
   color: var(--sterile-white);
   border: none;
   padding: 12px 28px;
@@ -374,9 +385,9 @@
   font-size: 0.9rem;
   border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(15, 111, 255, 0.4);
+  box-shadow: 0 8px 20px rgba(10, 141, 147, 0.4);
   animation: breathingGlow 3s infinite ease-in-out;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
   z-index: 10;
   display: inline-flex;
   align-items: center;
@@ -386,8 +397,8 @@
 
 .ctaButton:hover {
   animation: none;
-  /* override when hover overrides */
-  box-shadow: 0 12px 30px rgba(15, 111, 255, 0.7);
+  background: var(--primary-hover); /* Match brand hover style */
+  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.7);
 }
 
 .secondaryCtaButton {
@@ -505,255 +516,231 @@
 }
 
 /* 4. Interactive Product Catalog Styles */
-.premiumCatalogSection {
-  padding: 120px 48px;
-  background: #eaeaea;
+/* 4. Scroll Pinned Swipe Categories Section */
+.premiumCatalogSectionSwipe {
   position: relative;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
+  background-color: #ffffff; /* Matches navbar */
+  z-index: 1; /* Sits below the hero section stacking context */
+  margin-top: 210px; /* Offset to accommodate the hero glass panel that extends -210px below hero section */
 }
 
-@media (max-width: 768px) {
-  .premiumCatalogSection {
-    padding: 60px 16px;
-  }
+.categorySwipeContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-.premiumCatalogContainer {
-  max-width: 1400px;
-  margin: 0 auto;
+.categorySwipeSlide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  overflow: hidden;
+  padding-top: 76px; /* Offset for fixed navbar only */
+  padding-bottom: 64px; /* Space for the progress indicator */
+  box-sizing: border-box;
+  will-change: transform, opacity; /* GPU acceleration for zoom/fade */
 }
 
-.sectionHeaderCatalog {
+/* Active slide title animation on arrival */
+.categorySwipeSlideActive .swipeSlideTitle {
+  animation: slideTitleFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideTitleFadeIn {
+  from { transform: scale(0.95) translateY(10px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);   opacity: 1;   }
+}
+
+/* --- Drum Wheel Progress Indicator --- */
+.drumProgressBar {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 96px;
-  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  z-index: 20;
 }
 
-.catalogLabel {
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  flex-shrink: 0;
+.drumDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(10, 141, 147, 0.22);
+  border: 1.5px solid rgba(10, 141, 147, 0.3);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.headerLine {
-  height: 1.5px;
-  background-color: rgba(10, 141, 147, 0.3);
-  flex-grow: 1;
+.drumDotActive {
+  width: 28px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(10, 141, 147, 0.4);
 }
 
-.premiumCatalogLayout {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-@media (min-width: 992px) {
-  .premiumCatalogLayout {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 60px;
-  }
-}
-
-.catalogColumnLink {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.catalogColumn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 60px 20px;
-  min-height: 480px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  overflow: hidden;
-  cursor: pointer;
-  z-index: 1;
-}
-
-.catalogColumnSkeleton {
-  padding: 60px 20px;
-  min-height: 480px;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px dashed rgba(0, 0, 0, 0.05);
-}
-
-.columnHoverBg {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-  z-index: -1;
-}
-
-.columnBgImage {
-  object-fit: cover;
-  transform: scale(1.05);
-  transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.catalogColumn:hover .columnBgImage {
-  transform: scale(1);
-}
-
-.columnBgOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.75) 100%);
-  z-index: 1;
-}
-
-.catalogColumn:hover .columnHoverBg {
-  opacity: 1;
-}
-
-.categoryTitleRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  margin-bottom: 32px;
-}
-
-.catalogTitle {
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-size: 2.15rem;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #7a7a7a !important;
-  transition: color 0.4s ease;
-  max-width: 85%;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-@media (max-width: 768px) {
-  .catalogTitle {
-    font-size: 1.75rem;
-  }
-  .catalogColumn {
-    min-height: 300px;
-    padding: 40px 20px;
-  }
-}
-
-.plusSign {
-  font-size: 2.5rem;
-  font-weight: 400;
-  color: var(--primary) !important;
-  transition: color 0.4s ease, transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  line-height: 0.8;
-  display: inline-block;
-  user-select: none;
-}
-
-.bottomRow {
-  position: relative;
-  width: 100%;
-  margin-top: auto;
-  min-height: 110px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.catalogDescription {
+.drumCounter {
   font-family: var(--font-sans), sans-serif;
-  font-size: 0.98rem;
-  line-height: 1.8;
-  color: #6b7280 !important;
-  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: translateY(0);
-  margin: 0;
-  opacity: 1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.08em;
+  margin-left: 8px;
+  opacity: 0.8;
 }
 
-.exploreCategoryText {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+
+
+.swipeSlideLeft {
+  flex: 1;
+  max-width: 50%;
+  padding-left: 10%;
+  padding-right: 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 10;
+}
+
+.swipeSlideTitle {
   font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #ffffff !important;
-  opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  pointer-events: none;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+  font-weight: 700;
+  color: var(--secondary-text); /* Matches navbar inactive links slate-blue color */
+  margin-bottom: 16px; /* Reduced margin to accommodate description block */
+  line-height: 1.1;
+  text-transform: capitalize;
+  letter-spacing: normal;
 }
 
-/* Hover typography styles */
-.catalogColumn:hover .catalogTitle {
-  color: #ffffff !important;
+.swipeSlideDescription {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--secondary-text);
+  margin-bottom: 32px;
+  max-width: 520px;
+  opacity: 0.9;
 }
 
-.catalogColumn:hover .plusSign {
-  color: #ffffff !important;
-  transform: rotate(90deg);
+.swipeSlideBtn {
+  display: inline-block;
+  padding: 14px 42px;
+  border: 1px solid var(--secondary-text); /* Matches navbar inactive links border outline */
+  background: transparent;
+  color: var(--secondary-text);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: center;
+  cursor: pointer;
 }
 
-.catalogColumn:hover .catalogDescription {
-  opacity: 0 !important;
-  transform: translateY(-15px);
-  pointer-events: none;
+.swipeSlideBtn:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
 }
 
-.catalogColumn:hover .exploreCategoryText {
-  opacity: 1 !important;
-  transform: translateY(0);
-  pointer-events: auto;
+.swipeSlideRight {
+  flex: 1.8; /* Increased space from 1.6 to 1.8 for a significantly larger category image representation */
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 40px 40px 20px; /* Safe bounds to prevent cut-offs */
+  box-sizing: border-box;
 }
 
-/* ── Mobile: always show image & hover-state text (no hover needed) ── */
-@media (max-width: 768px) {
-  /* Image always fully visible */
-  .columnHoverBg {
-    opacity: 1 !important;
-  }
+.swipeImageWrap {
+  position: relative;
+  width: 100%;
+  height: 92%; /* Increased height bounds from 85% to 92% to enlarge image size while keeping safe boundaries */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  /* Image at normal scale (no zoom effect) */
-  .columnBgImage {
-    transform: scale(1) !important;
-  }
+.swipeImage {
+  object-fit: contain !important;
+  max-height: 100% !important; /* Scale naturally to parent boundaries without vertical clipping */
+  max-width: 100% !important;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.06));
+  transform: scale(1.25); /* Scale up by 25% to maximize representation and fill transparent space */
+  transform-origin: center center;
+}
 
-  /* Title always white */
-  .catalogTitle {
-    color: #ffffff !important;
-  }
+.swipeImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.15;
+}
 
-  /* Plus sign always white */
-  .plusSign {
-    color: #ffffff !important;
+/* Mobile responsive styles */
+@media (max-width: 1023px) {
+  .premiumCatalogSectionSwipe {
+    height: auto;
+    overflow: visible;
   }
-
-  /* Description always hidden */
-  .catalogDescription {
-    opacity: 0 !important;
-    pointer-events: none;
+  
+  .categorySwipeContainer {
+    display: flex;
+    flex-direction: column;
+    height: auto;
   }
-
-  /* 'Explore' text always shown */
-  .exploreCategoryText {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    pointer-events: auto;
+  
+  .categorySwipeSlide {
+    position: relative !important;
+    transform: none !important;
+    height: auto;
+    flex-direction: column-reverse;
+    padding: 60px 24px;
+    border-bottom: 1px solid #cbd5e1;
+  }
+  
+  .swipeSlideLeft {
+    max-width: 100%;
+    padding: 0;
+    align-items: center;
+    text-align: center;
+    margin-top: 32px;
+  }
+  
+  .swipeSlideTitle {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+  
+  .swipeSlideRight {
+    max-width: 100%;
+    width: 100%;
+    height: 320px;
+    padding: 0;
+  }
+  
+  .swipeImageWrap {
+    height: 100%;
   }
 }
 
@@ -2008,30 +1995,68 @@
   height: 100vh;
   background: var(--app-bg);
   overflow: hidden;
-  padding-top: 80px;
+  padding-top: 96px;
   /* Offset for navigation bar */
 }
 
 .stickyHeader {
   position: absolute;
-  top: 35vh;
+  top: 50%;
   left: 0;
   width: 100%;
+  transform: translateY(-50%);
   text-align: center;
   z-index: 1;
 }
 
-.differenceBgTitle {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 12vw, 10rem);
-  font-weight: 800;
-  line-height: 1;
-  -webkit-text-stroke: 1.5px rgba(10, 141, 147, 0.65);
-  color: rgba(10, 141, 147, 0.05);
-  margin: 0;
-  letter-spacing: -0.04em;
+.differenceBgLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   pointer-events: none;
+}
+
+.differenceBgLogo img {
+  height: clamp(250px, 45vh, 480px);
+  width: auto;
+  opacity: 0.055; /* Subtle and professional watermark */
+  object-fit: contain;
+}
+
+.differenceHeader {
+  position: absolute;
+  top: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 3;
+  width: 100%;
+  pointer-events: none;
+}
+
+.differenceLabel {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(10, 141, 147, 0.06);
+  border: 1px solid rgba(10, 141, 147, 0.15);
+  border-radius: 100px;
+  padding: 6px 18px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.differenceTitle {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 700;
+  color: #0b1f3a;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .cardsContainer {
@@ -2207,13 +2232,8 @@
     margin-bottom: 12px;
   }
 
-  .differenceBgTitle {
-    font-size: clamp(1.8rem, 7vw, 3rem);
-    color: #0B1F3A;
-    -webkit-text-stroke: none;
-    text-align: center;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
+  .differenceHeader {
+    display: none;
   }
 
   .cardsContainer {
@@ -2416,3 +2436,432 @@
     opacity: 0.8;
   }
 }
+
+/* 9. Premium Horizontal Marquee Clients Showcase Section (No Scroll Pinning) */
+.clientSection {
+  position: relative;
+  width: 100%;
+  padding: 100px 48px;
+  background-color: #ffffff; /* Matches navbar bg */
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.clientContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.clientHeader {
+  text-align: center;
+  max-width: 850px;
+  margin: 0 auto 10px auto;
+}
+
+.clientTitle {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2rem, 3.8vw, 2.8rem);
+  font-weight: 700;
+  color: var(--secondary-text); /* Matches navbar link text color */
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+}
+
+.clientDesc {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+.clientSliderContainer {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 20px 0;
+}
+
+.clientSlider {
+  display: flex;
+  width: max-content;
+  gap: 32px;
+  animation: marqueeMove 32s linear infinite; /* Smooth slow infinite loop */
+  will-change: transform;
+}
+
+/* Pause the whole track marquee when hovering so users can read testimonials comfortably */
+.clientSlider:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* Perfect seamless transition due to duplicated list */
+}
+
+.logoCard {
+  flex: 0 0 380px; /* Precise fixed card width in marquee */
+  width: 380px;
+  height: 260px;
+  background: transparent; /* Transparent background */
+  border: none;
+  border-radius: 20px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoCard:hover {
+  transform: scale(1.03); /* Pop card slightly on hover */
+}
+
+.logoFront {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.clientLogoImage {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain; /* Prevent cropping or stretching */
+}
+
+.logoCard:hover .logoFront {
+  opacity: 0.08;
+  transform: scale(0.95);
+}
+
+/* Premium testimonial overlay directly inside the logo card */
+.logoBackOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(10, 141, 147, 0.97) 0%, rgba(6, 92, 96, 0.98) 100%); /* Clean brand teal gradient */
+  backdrop-filter: blur(8px);
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 20px;
+}
+
+.logoCard:hover .logoBackOverlay {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cardQuoteMark {
+  font-size: 3rem;
+  color: #e0f2fe; /* Light cyan highlight on teal background */
+  opacity: 0.5;
+  line-height: 1;
+  font-family: serif;
+  margin-bottom: -10px;
+}
+
+.cardTestimonial {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #ffffff; /* Crisp white for optimal contrast */
+  font-style: italic;
+  margin-bottom: 12px;
+  font-weight: 300;
+}
+
+.cardClientAuthor {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #e2e8f0; /* Soft slate/silver for secondary styling */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 991px) {
+  .clientSection {
+    padding: 80px 24px;
+  }
+  
+  .logoCard {
+    flex: 0 0 300px;
+    width: 300px;
+    height: 220px;
+  }
+  
+  .logoFront {
+    padding: 20px;
+  }
+  
+  .logoBackOverlay {
+    padding: 16px;
+  }
+  
+  .cardTestimonial {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .logoCard {
+    flex: 0 0 100%; /* 1 card on mobile */
+  }
+}
+
+/* ============================================================
+   10. Colleges & Institutions Hub Section (ValueProp Replacement)
+   ============================================================ */
+.collegesSection {
+  position: relative;
+  width: 100%;
+  padding: 120px 48px;
+  background-color: #ffffff; /* Matches navbar bg */
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.collegesContainer {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.collegesHeader {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.collegesLabel {
+  color: var(--primary);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.collegesTitle {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: var(--secondary-text); /* Matches navbar link text color */
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.collegesDesc {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0;
+}
+
+.collegesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  width: 100%;
+}
+
+.collegeCard {
+  background: #ffffff;
+  border: 1px solid rgba(11, 31, 58, 0.08);
+  border-radius: 28px;
+  height: 480px; /* Uniform height */
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collegeCard:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 30px 60px rgba(10, 141, 147, 0.15);
+}
+
+.cardImageContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #e2e8f0;
+}
+
+.cardSectorImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.cardSectorImageHover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collegeCard:hover .cardSectorImage {
+  transform: scale(1.08);
+}
+
+.collegeCard:hover .cardSectorImageHover {
+  opacity: 1;
+}
+
+/* Absolute content overlay covering the card */
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.05) 40%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  transition: background 0.4s ease;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.collegeCard:hover .cardOverlay {
+  background: rgba(0, 0, 0, 0.6); /* Darker on hover for readability */
+}
+
+/* Top group: Title + Explore Now Button */
+.cardTopContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.cardTitleLarge {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.7rem; /* Reduced to prevent text clipping */
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  margin: 0;
+  white-space: pre-line; /* Supports line breaks */
+}
+
+.exploreNowBtn {
+  background: var(--primary); /* Clinical teal button matching theme */
+  color: #ffffff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(10, 141, 147, 0.35);
+  cursor: pointer;
+  
+  /* Hidden by default, animates in on hover */
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.collegeCard:hover .exploreNowBtn {
+  opacity: 1;
+  transform: translateY(0);
+  background: #0d9ea5; /* Slightly brighter teal on hover */
+  box-shadow: 0 6px 18px rgba(10, 141, 147, 0.5);
+}
+
+/* Bottom group: Hover description */
+.cardDescFade {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.collegeCard:hover .cardDescFade {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 1200px) {
+  .collegesSection {
+    padding: 100px 32px;
+    margin: 0;
+  }
+  .collegesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .collegesSection {
+    padding: 80px 20px;
+  }
+  .collegesContainer {
+    gap: 40px;
+  }
+  .collegesGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .collegeCard {
+    padding: 28px 20px;
+  }
+}
+
+

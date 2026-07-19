@@ -9,6 +9,7 @@ import Product from '../models/Product';
 import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import Blog from '../models/Blog';
+import Client from '../models/Client';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
@@ -622,6 +623,96 @@ router.delete('/blogs/:id', authMiddleware, async (req: AuthenticatedRequest, re
     return res.json({ success: true, message: 'Blog article deleted successfully' });
   } catch (error: any) {
     console.error('Delete blog error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN CLIENTS CRUD ENDPOINTS (PROTECTED)
+// ==========================================
+
+// Get all clients (protected)
+router.get('/clients', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const clients = await Client.find({}).sort({ displayOrder: 1 });
+    return res.json({ success: true, data: clients });
+  } catch (error: any) {
+    console.error('Get admin clients error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a new client (protected)
+router.post('/clients', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { name, location, testimonial, type, logoUrl, displayOrder } = req.body;
+
+  if (!name || !testimonial || !logoUrl) {
+    return res.status(400).json({ message: 'Client name, message/testimonial, and logoUrl are required' });
+  }
+
+  try {
+    const newClient = await Client.create({
+      name,
+      location: location || '',
+      testimonial,
+      type: type || '',
+      logoUrl,
+      displayOrder: displayOrder !== undefined ? Number(displayOrder) : 0
+    });
+    return res.status(201).json({ success: true, data: newClient });
+  } catch (error: any) {
+    console.error('Create client error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update an existing client (protected)
+router.put('/clients/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, location, testimonial, type, logoUrl, displayOrder } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid client ID format' });
+  }
+
+  try {
+    const client = await Client.findById(id);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    const updateFields: any = {};
+    if (name !== undefined) updateFields.name = name;
+    if (location !== undefined) updateFields.location = location;
+    if (testimonial !== undefined) updateFields.testimonial = testimonial;
+    if (type !== undefined) updateFields.type = type;
+    if (logoUrl !== undefined) updateFields.logoUrl = logoUrl;
+    if (displayOrder !== undefined) updateFields.displayOrder = Number(displayOrder);
+
+    const updatedClient = await Client.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+    return res.json({ success: true, data: updatedClient });
+  } catch (error: any) {
+    console.error('Update client error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a client (protected)
+router.delete('/clients/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid client ID format' });
+  }
+
+  try {
+    const deleted = await Client.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+    return res.json({ success: true, message: 'Client deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete client error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

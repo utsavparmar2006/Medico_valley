@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import { getBackendUrl } from "@/utils/api";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,11 +14,10 @@ import Lenis from "lenis";
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-// Lazy-load heavy sections using dynamic imports to optimize homepage bundle size and initial load time
-const DifferenceSection = dynamic(() => import("@/components/DifferenceSection"), { ssr: false });
-const ValuePropSection = dynamic(() => import("@/components/ValuePropSection"), { ssr: false });
-const InstitutionTrustSection = dynamic(() => import("@/components/InstitutionTrustSection"), { ssr: false });
-const PremiumFooter = dynamic(() => import("@/components/PremiumFooter"), { ssr: false });
+import DifferenceSection from "@/components/DifferenceSection";
+import ValuePropSection from "@/components/ValuePropSection";
+import InstitutionTrustSection from "@/components/InstitutionTrustSection";
+import PremiumFooter from "@/components/PremiumFooter";
 
 interface Category {
   _id: string;
@@ -65,6 +63,7 @@ export default function Home() {
   const [isHovered, setIsHovered] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
   // Redesigned Catalog States & Refs
   const [products, setProducts] = useState<Product[]>([]);
@@ -81,6 +80,18 @@ export default function Home() {
   const heroCtaWrapperRef = useRef<HTMLDivElement>(null);
   const catalogHeaderRef = useRef<HTMLDivElement>(null);
 
+  useLayoutEffect(() => {
+    ScrollTrigger.clearScrollMemory("manual");
+    window.scrollTo(0, 0);
+
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill(true));
+      ScrollTrigger.clearScrollMemory("manual");
+      document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped", "lenis-scrolling");
+      document.body.classList.remove("lenis", "lenis-smooth", "lenis-stopped", "lenis-scrolling");
+    };
+  }, []);
+
   // Initialize Lenis smooth scrolling globally
   useEffect(() => {
     const lenis = new Lenis({
@@ -95,6 +106,7 @@ export default function Home() {
 
     // Update ScrollTrigger on scroll
     lenis.on("scroll", ScrollTrigger.update);
+    lenis.scrollTo(0, { immediate: true });
 
     // Sync GSAP ticker with Lenis
     const updateTicker = (time: number) => {
@@ -104,18 +116,28 @@ export default function Home() {
     gsap.ticker.lagSmoothing(0);
 
     return () => {
-      lenis.destroy();
       gsap.ticker.remove(updateTicker);
+      lenis.off("scroll", ScrollTrigger.update);
+      lenis.destroy();
     };
   }, []);
 
   // Refresh ScrollTrigger layout once products and categories load to avoid blank gaps
   useEffect(() => {
     if (!categoriesLoading && !productsLoading) {
-      const timer = setTimeout(() => {
+      const refresh = () => {
+        ScrollTrigger.sort();
         ScrollTrigger.refresh();
-      }, 500);
-      return () => clearTimeout(timer);
+      };
+      const firstTimer = setTimeout(refresh, 100);
+      const secondTimer = setTimeout(refresh, 700);
+      window.addEventListener("load", refresh);
+
+      return () => {
+        clearTimeout(firstTimer);
+        clearTimeout(secondTimer);
+        window.removeEventListener("load", refresh);
+      };
     }
   }, [categoriesLoading, productsLoading]);
 
@@ -218,18 +240,30 @@ export default function Home() {
     }
     fetchCategories();
 
-    const handleFocus = () => {
-      fetchCategories();
-    };
-    window.addEventListener('focus', handleFocus);
+  }, []);
 
-    const interval = setInterval(() => {
-      fetchCategories();
-    }, 15000); // Check for updates every 15 seconds
+  // Recalibrate GSAP ScrollTrigger offsets as the page layout/height settles
+  useEffect(() => {
+    const refresh = () => {
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+    };
+
+    // Staggered timers to catch delayed height changes (like images loading or API data rendering)
+    const timers = [
+      setTimeout(refresh, 200),
+      setTimeout(refresh, 500),
+      setTimeout(refresh, 1000),
+      setTimeout(refresh, 2000),
+    ];
+
+    window.addEventListener("load", refresh);
+    window.addEventListener("resize", refresh);
 
     return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
+      timers.forEach(clearTimeout);
+      window.removeEventListener("load", refresh);
+      window.removeEventListener("resize", refresh);
     };
   }, []);
 
@@ -487,71 +521,90 @@ export default function Home() {
     { scope: containerRef }
   );
 
-  // ScrollTriggers that depend on categories and products being loaded
+  // ScrollTriggers that depend on categories loading — Fade + Scale Zoom (Apple style)
   useGSAP(
     () => {
-      if (categoriesLoading || productsLoading) return;
+      if (categoriesLoading) return;
 
       const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      if (!isReduced) {
-        // Simulation Portfolios Header Reveal
-        if (catalogHeaderRef.current && catalogSectionRef.current) {
-          gsap.fromTo(
-            catalogHeaderRef.current,
-            { opacity: 0, y: 40 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 1.1,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: catalogSectionRef.current,
-                start: "top 85%",
-                toggleActions: "play none none reverse",
-              },
-            }
-          );
-        }
+      if (!isReduced && catalogSectionRef.current) {
+        const slides = Array.from(
+          catalogSectionRef.current.querySelectorAll(`.${styles.categorySwipeSlide}`)
+        ) as HTMLElement[];
+        const isDesktop = window.innerWidth >= 768;
 
-        // Staggered reveal for Catalog Columns (Simulation Portfolios cards)
-        if (catalogSectionRef.current) {
-          const targets = catalogSectionRef.current.querySelectorAll(`.${styles.catalogColumn}`);
-          if (targets.length > 0) {
-            gsap.fromTo(
-              targets,
-              { opacity: 0, y: 60, scale: 0.96 },
-              {
+        if (isDesktop && slides.length > 1) {
+
+          // Initial state: first slide fully visible, rest hidden and slightly scaled down
+          slides.forEach((slide, idx) => {
+            if (idx === 0) {
+              gsap.set(slide, {
                 opacity: 1,
-                y: 0,
                 scale: 1,
-                stagger: 0.15,
-                duration: 1.2,
-                ease: "power3.out",
-                scrollTrigger: {
-                  trigger: catalogSectionRef.current,
-                  start: "top 70%",
-                  toggleActions: "play none none reverse",
+                zIndex: slides.length,
+              });
+            } else {
+              gsap.set(slide, {
+                opacity: 0,
+                scale: 0.94,
+                zIndex: slides.length - idx,
+              });
+            }
+          });
+
+          // Build timeline — each step fades one slide out and the next one in
+          const fadeTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: catalogSectionRef.current,
+              start: "top top",
+              end: `+=${(slides.length - 1) * 100}%`,
+              scrub: 1.0,
+              pin: true,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+              onUpdate: (self) => {
+                const newIdx = Math.round(self.progress * (slides.length - 1));
+                setActiveSlideIndex(newIdx);
+              },
+            },
+          });
+
+          slides.forEach((slide, idx) => {
+            if (idx === 0) return;
+            const prevSlide = slides[idx - 1];
+
+            fadeTl
+              // Outgoing: fade out + subtle zoom out (feels like it recedes)
+              .to(
+                prevSlide,
+                {
+                  opacity: 0,
+                  scale: 1.06,
+                  duration: 1,
+                  ease: "power2.inOut",
                 },
-              }
-            );
-          }
-        }
-      } else {
-        // Fallback for prefers-reduced-motion
-        if (catalogHeaderRef.current) {
-          gsap.set(catalogHeaderRef.current, { opacity: 1, y: 0, x: 0, scale: 1 });
-        }
-        if (catalogSectionRef.current) {
-          const targets = catalogSectionRef.current.querySelectorAll(`.${styles.catalogColumn}`);
-          if (targets.length > 0) {
-            gsap.set(targets, { opacity: 1, y: 0, scale: 1 });
-          }
+                `step${idx}`
+              )
+              // Incoming: fade in + zoom from slightly small to full (feels like it arrives)
+              .fromTo(
+                slide,
+                { opacity: 0, scale: 0.94 },
+                {
+                  opacity: 1,
+                  scale: 1,
+                  duration: 1,
+                  ease: "power2.inOut",
+                },
+                `step${idx}`
+              );
+          });
         }
       }
     },
-    { scope: containerRef, dependencies: [categoriesLoading, productsLoading] }
+    { scope: containerRef, dependencies: [categoriesLoading] }
   );
+
 
   return (
     <div ref={containerRef} className={styles.pageWrapper}>
@@ -739,75 +792,82 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* Redesigned Product Categories Section */}
+        {/* Category Section — 3D Drum Wheel Carousel */}
         <section
           ref={catalogSectionRef}
-          className={styles.premiumCatalogSection}
-          onMouseMove={handleCatalogMouseMove}
-          onMouseLeave={handleCatalogMouseLeave}
+          className={styles.premiumCatalogSectionSwipe}
         >
-          <div className={styles.premiumCatalogContainer}>
-            <div ref={catalogHeaderRef} className={styles.sectionHeaderCatalog}>
-              <span className={styles.catalogLabel}>PRODUCT CATEGORY</span>
-              <div className={styles.headerLine} />
-            </div>
-
-            <div className={styles.premiumCatalogLayout}>
-              {categoriesLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className={styles.catalogColumnSkeleton}>
-                    <div style={{ height: '36px', width: '80%', background: 'rgba(0,0,0,0.05)', marginBottom: '24px', borderRadius: '4px', animation: 'pulse 1.5s infinite' }} />
-                    <div style={{ height: '80px', width: '100%', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
-                  </div>
-                ))
-              ) : categories.length > 0 ? (
-                categories.map((cat) => {
-                  const isHovered = hoveredCategory === cat.slug;
-                  return (
-                    <Link href={`/products/${cat.slug}`} key={cat._id} className={styles.catalogColumnLink}>
-                      <div
-                        className={`${styles.catalogColumn} ${isHovered ? styles.catalogColumnActive : ""}`}
-                        data-slug={cat.slug}
-                        onMouseEnter={() => setHoveredCategory(cat.slug)}
-                      >
-                        {/* Hover Background Image & Overlay */}
-                        <div className={styles.columnHoverBg}>
-                          <Image
-                            src={cat.imageUrl}
-                            alt={cat.name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className={styles.columnBgImage}
-                          />
-                          <div className={styles.columnBgOverlay} />
-                        </div>
-
-                        {/* Title & Plus Row */}
-                        <div className={styles.categoryTitleRow}>
-                          <h3 className={styles.catalogTitle}>{cat.name}</h3>
-                          <span className={styles.plusSign}>+</span>
-                        </div>
-
-                        {/* Bottom Row - Text Swap */}
-                        <div className={styles.bottomRow}>
-                          <p className={styles.catalogDescription}>
-                            {CATEGORY_DESCRIPTIONS[cat.slug] || cat.description}
-                          </p>
-                          <span className={styles.exploreCategoryText}>
-                            Explore Category &rarr;
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })
-              ) : (
-                <div style={{ textAlign: "center", width: "100%", color: "var(--secondary-text)", padding: "40px" }}>
-                  No categories available at the moment.
+          {/* preserve-3d needed so GSAP rotateX renders in real 3D */}
+          <div className={styles.categorySwipeContainer} style={{ transformStyle: 'preserve-3d' }}>
+            {categoriesLoading ? (
+              <div className={styles.categorySwipeSlide}>
+                <div className={styles.swipeSlideLeft}>
+                  <div style={{ height: '48px', width: '250px', background: 'rgba(0,0,0,0.06)', marginBottom: '24px', borderRadius: '4px', animation: 'pulse 1.5s infinite' }} />
+                  <div style={{ height: '48px', width: '180px', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', animation: 'pulse 1.5s infinite' }} />
                 </div>
-              )}
-            </div>
+                <div className={styles.swipeSlideRight}>
+                  <div style={{ height: '80%', width: '80%', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', animation: 'pulse 1.5s infinite' }} />
+                </div>
+              </div>
+            ) : categories.length > 0 ? (
+              categories.map((cat, index) => (
+                <div
+                  key={cat._id}
+                  className={`${styles.categorySwipeSlide} ${index === activeSlideIndex ? styles.categorySwipeSlideActive : ''}`}
+                  style={{ transformStyle: 'preserve-3d' }}
+                >
+                  <div className={styles.swipeSlideLeft}>
+                    <h2 className={styles.swipeSlideTitle}>{cat.name}</h2>
+                    <p className={styles.swipeSlideDescription}>
+                      {CATEGORY_DESCRIPTIONS[cat.slug] || cat.description}
+                    </p>
+                    <Link href={`/products/${cat.slug}`} className={styles.swipeSlideBtn}>
+                      Explore Now
+                    </Link>
+                  </div>
+                  <div className={styles.swipeSlideRight}>
+                    {cat.imageUrl ? (
+                      <div className={styles.swipeImageWrap}>
+                        <Image
+                          src={cat.imageUrl}
+                          alt={cat.name}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          className={styles.swipeImage}
+                          priority={index === 0}
+                        />
+                      </div>
+                    ) : (
+                      <div className={styles.swipeImagePlaceholder}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '120px', color: 'rgba(10, 141, 147, 0.15)' }}>
+                          {getCategoryIcon(cat.slug)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ textAlign: "center", width: "100%", color: "var(--secondary-text)", padding: "100px 0" }}>
+                No categories available at the moment.
+              </div>
+            )}
           </div>
+
+          {/* Drum Wheel Progress Indicator */}
+          {!categoriesLoading && categories.length > 1 && (
+            <div className={styles.drumProgressBar}>
+              {categories.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`${styles.drumDot} ${idx === activeSlideIndex ? styles.drumDotActive : ''}`}
+                />
+              ))}
+              <span className={styles.drumCounter}>
+                {String(activeSlideIndex + 1).padStart(2, '0')} / {String(categories.length).padStart(2, '0')}
+              </span>
+            </div>
+          )}
         </section>
 
         {/* Heavy content sections loaded dynamically on client-side to improve loading speeds */}

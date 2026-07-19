@@ -9,6 +9,7 @@ import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import { sendEmail } from '../utils/email';
 import Blog from '../models/Blog';
+import Client from '../models/Client';
 
 const router = express.Router();
 
@@ -304,7 +305,6 @@ router.post('/inquiries', async (req, res) => {
     !customerName ||
     !institution ||
     !email ||
-    !phone ||
     !city
   ) {
     return res.status(400).json({ message: 'All required quotation fields must be filled' });
@@ -318,7 +318,7 @@ router.post('/inquiries', async (req, res) => {
       customerName,
       institution,
       email,
-      phone,
+      phone: phone || '',
       city,
       quantity: category === 'General Inquiry' ? 0 : (Number(quantity) || 1),
       message,
@@ -423,7 +423,7 @@ www.medicovalley.com`;
 
     const safeCustomerName = sanitizeHTML(customerName);
     const safeEmail = sanitizeHTML(email);
-    const safePhone = sanitizeHTML(phone);
+    const safePhone = sanitizeHTML(phone) || 'Not provided (Email only)';
     const safeCity = sanitizeHTML(city);
     const safeInstitution = sanitizeHTML(institution);
     const safeProductName = sanitizeHTML(productName);
@@ -1175,6 +1175,173 @@ router.get('/blogs/:slug', async (req, res) => {
     return res.json({ success: true, data: blog });
   } catch (error: any) {
     console.error('Fetch blog detail error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// PUBLIC CLIENTS ENDPOINTS
+// ==========================================
+router.get('/clients', async (req, res) => {
+  try {
+    let clients = await Client.find({}).sort({ displayOrder: 1 });
+    
+    if (clients.length === 0) {
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const hostUrl = `${req.protocol}://${req.get('host')}`;
+
+      const defaultData = [
+        {
+          name: "Bharati Vidyapeeth Deemed University",
+          location: "Pune, Maharashtra",
+          type: "Educational Institute / University",
+          testimonial: "Medico Valley's advanced simulation technology has significantly enhanced our training capabilities with the latest simulation models.",
+          displayOrder: 1,
+          fileName: "client_bv.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="bvGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0b1f3a" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 10)">
+    <path d="M 40 0 C 65 0, 80 15, 80 50 C 80 85, 40 100, 40 100 C 40 100, 0 85, 0 50 C 0 15, 15 0, 40 0 Z" fill="url(#bvGrad)" />
+    <path d="M 20 40 Q 40 15 60 40 Q 50 60 40 50 Q 30 60 20 40 Z" fill="#d97706" />
+    <circle cx="40" cy="45" r="12" fill="none" stroke="#ffffff" stroke-width="2.5" />
+    <path d="M 35 45 H 45 M 40 40 V 50" stroke="#ffffff" stroke-width="2" />
+  </g>
+  <text x="105" y="42" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="19" font-weight="800" fill="#0b1f3a" letter-spacing="0.5">BHARATI VIDYAPEETH</text>
+  <text x="105" y="65" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="700" fill="#d97706" letter-spacing="3">DEEMED UNIVERSITY</text>
+  <text x="105" y="85" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="500" fill="#64748b">Pune Educational Institute/University</text>
+</svg>`
+        },
+        {
+          name: "KD Hospital",
+          location: "Ahmedabad, Gujarat",
+          type: "Super Speciality Hospital",
+          testimonial: "The high-fidelity simulators provided by Medico Valley offer our clinicians a highly realistic training environment, drastically improving procedural outcomes.",
+          displayOrder: 2,
+          fileName: "client_kd.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="kdGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 15)">
+    <path d="M 60 10 A 35 35 0 0 0 15 45 A 35 35 0 0 0 60 80 C 45 70, 45 20, 60 10 Z" fill="url(#kdGrad)" />
+    <path d="M 40 25 H 55 V 10 H 70 V 25 H 85 V 40 H 70 V 55 H 55 V 40 H 40 Z" fill="#dc2626" opacity="0.9" />
+  </g>
+  <text x="110" y="52" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="38" font-weight="900" fill="#374151" letter-spacing="-1">KD Hospital</text>
+  <text x="110" y="78" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#ea580c" letter-spacing="2">કુસુમ ધીરજલાલ હોસ્પિટલ</text>
+</svg>`
+        },
+        {
+          name: "Pramukhswami Medical College",
+          location: "Karamsad, Gujarat",
+          type: "Medical College & Research",
+          testimonial: "Their customer support and high-fidelity anatomical models are second to none. Our students have gained incredible clinical confidence.",
+          displayOrder: 3,
+          fileName: "client_pmc.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <g transform="translate(20, 15)">
+    <circle cx="45" cy="45" r="42" fill="none" stroke="#0f52ba" stroke-width="2" />
+    <path d="M 45 3 L 45 87 M 3 45 L 87 45 M 15 15 L 75 75 M 15 75 L 75 15" stroke="#0f52ba" stroke-width="1.5" />
+    <path d="M 45 10 L 45 80 M 10 45 L 80 45 M 20 20 L 70 70 M 20 70 L 70 20" stroke="#0f52ba" stroke-width="3" opacity="0.6" />
+    <circle cx="45" cy="45" r="28" fill="#ffffff" stroke="#0f52ba" stroke-width="2.5" />
+    <path d="M 36 36 H 45 V 54 H 54 M 45 45 H 54 V 36 M 36 54 H 45" stroke="#0f52ba" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+  <text x="125" y="44" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="21" font-weight="800" fill="#0f52ba" letter-spacing="0.2">PRAMUKHSWAMI</text>
+  <text x="125" y="68" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#0b1f3a" letter-spacing="0.5">MEDICAL COLLEGE</text>
+  <text x="125" y="86" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#64748b" letter-spacing="1.2">Affiliated to Bhaikaka University</text>
+</svg>`
+        },
+        {
+          name: "All India Institute of Medical Sciences",
+          location: "AIIMS, New Delhi",
+          type: "Apex Public Medical Institute",
+          testimonial: "Top-tier simulators and excellent service. Medico Valley is our trusted partner in setting up state-of-the-art simulation labs.",
+          displayOrder: 4,
+          fileName: "client_aiims.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <g transform="translate(15, 10)">
+    <circle cx="45" cy="50" r="42" fill="#1e3a8a" />
+    <path d="M 25 50 L 45 75 L 65 50 Z" fill="#ffffff" />
+    <path d="M 45 22 V 75" stroke="#ffffff" stroke-width="4" />
+    <path d="M 30 38 H 60" stroke="#ffffff" stroke-width="4" />
+    <path d="M 12 50 C 12 75, 45 87, 45 87 C 45 87, 78 75, 78 50" fill="none" stroke="#eab308" stroke-width="3" />
+  </g>
+  <text x="120" y="48" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="900" fill="#1e3a8a" letter-spacing="-0.5">A.I.I.M.S.</text>
+  <text x="120" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="1.5">NEW DELHI, INDIA</text>
+  <text x="120" y="92" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="500" fill="#94a3b8">Premier Apex Medical Institute</text>
+</svg>`
+        },
+        {
+          name: "Armed Forces Medical College",
+          location: "AFMC, Pune",
+          type: "Defense Medical Training Institute",
+          testimonial: "Empowering our defense healthcare teams with premium training models. The fidelity and build quality are outstanding.",
+          displayOrder: 5,
+          fileName: "client_afmc.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <g transform="translate(20, 12)">
+    <path d="M 5 0 H 75 V 45 C 75 75, 40 92, 40 92 C 40 92, 5 75, 5 45 Z" fill="#7f1d1d" stroke="#d97706" stroke-width="2.5" />
+    <path d="M 15 15 L 65 65" stroke="#d97706" stroke-width="6" />
+    <path d="M 65 15 L 15 65" stroke="#d97706" stroke-width="6" />
+    <circle cx="40" cy="40" r="10" fill="#ffffff" stroke="#d97706" stroke-width="2" />
+  </g>
+  <text x="120" y="48" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="900" fill="#7f1d1d" letter-spacing="-0.5">A.F.M.C.</text>
+  <text x="120" y="72" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="700" fill="#d97706" letter-spacing="2.5">ARMED FORCES MEDICAL COLLEGE</text>
+  <text x="120" y="90" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#64748b">Pune, Maharashtra</text>
+</svg>`
+        },
+        {
+          name: "Apollo Hospitals Group",
+          location: "Chennai, Tamil Nadu",
+          type: "Leading Healthcare Network",
+          testimonial: "Empowering our nurses and clinical students with standard clinical simulators. The educational impact is highly quantifiable.",
+          displayOrder: 6,
+          fileName: "client_apollo.svg",
+          svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <g transform="translate(20, 15)">
+    <circle cx="40" cy="40" r="36" fill="none" stroke="#851c2d" stroke-width="2.5" />
+    <path d="M 40 15 C 25 30, 25 50, 40 65 C 55 50, 55 30, 40 15 Z" fill="#851c2d" />
+    <path d="M 28 40 H 52 M 40 28 V 52" stroke="#ffffff" stroke-width="3" />
+  </g>
+  <text x="115" y="48" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="32" font-weight="800" fill="#0b1f3a" letter-spacing="-0.5">Apollo</text>
+  <text x="115" y="74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#851c2d" letter-spacing="4.5">TOUCHING LIVES • HOSPITALS</text>
+</svg>`
+        }
+      ];
+
+      const seedPromises = defaultData.map(async (d) => {
+        const filePath = path.join(uploadsDir, d.fileName);
+        if (!fs.existsSync(filePath)) {
+          fs.writeFileSync(filePath, d.svgContent, 'utf-8');
+        }
+        return Client.create({
+          name: d.name,
+          location: d.location,
+          type: d.type,
+          testimonial: d.testimonial,
+          displayOrder: d.displayOrder,
+          logoUrl: `${hostUrl}/uploads/${d.fileName}`
+        });
+      });
+
+      await Promise.all(seedPromises);
+      clients = await Client.find({}).sort({ displayOrder: 1 });
+    }
+
+    return res.json({ success: true, data: clients });
+  } catch (error: any) {
+    console.error('Fetch clients error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

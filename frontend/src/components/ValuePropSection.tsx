@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,208 +10,156 @@ import styles from '@/app/page.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const hotspots = [
-  {
-    id: "brain",
-    title: "Cerebrum & Sagittal Cut",
-    desc: "Explorable sagittal division showcasing the cerebral cortex, cerebellum, and brainstem.",
-    top: "12%",
-    left: "50%",
-  },
-  {
-    id: "heart",
-    title: "2-Part Dissectible Heart",
-    desc: "Removable anterior heart wall reveals ventricles, atria, and major valves with high-fidelity coloring.",
-    top: "46%",
-    left: "52%",
-  },
-  {
-    id: "lungs",
-    title: "Detachable Lung Lobes",
-    desc: "Explorable lung halves showing bronchial tree, pulmonary vessels, and alveolar structure.",
-    top: "42%",
-    left: "40%",
-  },
-];
+interface CollegeSector {
+  id: string;
+  title: string; // Supports line breaks
+  desc: string;
+  defaultImg: string;
+  hoverImg: string;
+}
 
 export default function ValuePropSection() {
-  const valuePropSectionRef = useRef<HTMLDivElement>(null);
-  const torsoScrollRef = useRef<HTMLDivElement>(null);
-  const torsoParallaxRef = useRef<HTMLDivElement>(null);
-  const torsoFloatRef = useRef<HTMLDivElement>(null);
-  const radialGlowRef = useRef<HTMLDivElement>(null);
-  const valuePropContentRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const sectors: CollegeSector[] = [
+    {
+      id: 'medical',
+      title: 'Anatomy\nLab',
+      desc: 'Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.',
+      defaultImg: '/labs/anatomy_default.png',
+      hoverImg: '/labs/anatomy_hover.png',
+    },
+    {
+      id: 'homeopathy',
+      title: 'Homeopathy\nLab',
+      desc: 'Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.',
+      defaultImg: '/labs/homeopathy_default.png',
+      hoverImg: '/labs/homeopathy_hover.png',
+    },
+    {
+      id: 'nursing',
+      title: 'Nursing\nSkills Lab',
+      desc: 'Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.',
+      defaultImg: '/labs/nursing_default.png',
+      hoverImg: '/labs/nursing_hover.png',
+    },
+    {
+      id: 'ayurvedic',
+      title: 'Ayurvedic\nLab',
+      desc: 'Traditional anatomical representations, core model structures, and specialized teaching frameworks.',
+      defaultImg: '/labs/ayurvedic_default.png',
+      hoverImg: '/labs/ayurvedic_hover.png',
+    },
+  ];
 
   useGSAP(
     () => {
-      if (!valuePropSectionRef.current || !torsoScrollRef.current) return;
+      // Check if user prefers reduced motion
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isReduced) return;
 
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      if (!isReduced) {
-        // Fade-in + scale reveal when section enters viewport
-        gsap.fromTo(
-          torsoScrollRef.current,
-          { opacity: 0, scale: 0.92 },
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 1.1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: valuePropSectionRef.current,
-              start: "top 75%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
-
-        // Optimized radial glow scroll pulse using GSAP ScrollTrigger
-        if (radialGlowRef.current) {
-          gsap.fromTo(
-            radialGlowRef.current,
-            { opacity: 0, scale: 0.9 },
-            {
-              opacity: 1,
-              scale: 1.1,
-              ease: "sine.inOut",
-              scrollTrigger: {
-                trigger: valuePropSectionRef.current,
-                start: "top 80%",
-                end: "bottom 20%",
-                scrub: true,
-              }
-            }
-          );
+      // Animate Section Header
+      gsap.fromTo(
+        `.${styles.collegesHeader}`,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: `.${styles.collegesHeader}`,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
         }
+      );
 
-        // Text reveal animation
-        if (valuePropContentRef.current) {
-          gsap.fromTo(
-            valuePropContentRef.current,
-            { opacity: 0, y: 40 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 1,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: valuePropSectionRef.current,
-                start: "top 80%",
-                toggleActions: "play none none none"
-              }
-            }
-          );
+      // Animate the 4 cards in a staggered fade-up layout when entering viewport
+      gsap.fromTo(
+        `.${styles.collegeCard}`,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          stagger: 0.15, // Smooth staggered transition between cards
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: gridRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
         }
-      } else {
-        // If reduced motion, show immediately
-        gsap.set(torsoScrollRef.current, { opacity: 1, scale: 1 });
-      }
+      );
     },
-    { scope: valuePropSectionRef }
+    { scope: sectionRef }
   );
 
+  const handleCardClick = () => {
+    // Navigate to products catalog page
+    router.push('/products');
+  };
+
   return (
-    <section ref={valuePropSectionRef} className={styles.valuePropSection}>
-      {/* Floating Medical Background Symbols */}
-      <svg className={`${styles.bgSymbol} ${styles.symbolDna}`} width="60" height="160" viewBox="0 0 60 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 10C25 40 35 60 50 90C45 110 25 130 10 150" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M50 10C35 40 25 60 10 90C15 110 35 130 50 150" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <line x1="20" y1="30" x2="40" y2="30" stroke="currentColor" strokeWidth="1.5" />
-        <line x1="26" y1="50" x2="34" y2="50" stroke="currentColor" strokeWidth="1.5" />
-        <line x1="26" y1="110" x2="34" y2="110" stroke="currentColor" strokeWidth="1.5" />
-        <line x1="20" y1="130" x2="40" y2="130" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
-
-      <svg className={`${styles.bgSymbol} ${styles.symbolEcg}`} width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 30H40L45 15L52 45L58 5L64 35L67 30H110" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-
-      <svg className={`${styles.bgSymbol} ${styles.symbolCross}`} width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M30 10H50V30H70V50H50V70H30V50H10V30H30V10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      </svg>
-
-      <div className={styles.valuePropGrid}>
-        <div ref={valuePropContentRef} className={styles.contentWrapper}>
-          <div className={styles.propHeader}>
-            <span className={styles.propLabel}>
-              Unmatched <span className={styles.gradientText}>Precision</span>
-            </span>
-            <h2 className={styles.propTitle}>
-              Bringing Real-World <span className={styles.gradientText}>Anatomy</span> to the Lab.
-            </h2>
-          </div>
-          <p className={styles.propDesc}>
-            All our products are developed by globally renowned suppliers. We
-            are exclusive distributors for industry-leading brands, ensuring the
-            highest fidelity training tools available in India.
+    <section ref={sectionRef} className={styles.collegesSection}>
+      <div className={styles.collegesContainer}>
+        {/* Section Header */}
+        <div className={styles.collegesHeader}>
+          <span className={styles.collegesLabel}>Our Sectors</span>
+          <h2 className={styles.collegesTitle}>
+            Equipping Medical &amp; Allied Institutions
+          </h2>
+          <p className={styles.collegesDesc}>
+            We provide a comprehensive range of international-standard anatomical models, simulators, 
+            and task trainers designed specifically for medical colleges, homeopathy institutes, nursing, and ayurvedic academies.
           </p>
-          <div className={styles.featuresList}>
-            <div className={styles.featureItem}>
-              <span className={`${styles.checkIcon} material-symbols-outlined`}>check_circle</span>
-              <span className={styles.featureText}>Unbreakable Materials</span>
-            </div>
-            <div className={styles.featureItem}>
-              <span className={`${styles.checkIcon} material-symbols-outlined`}>check_circle</span>
-              <span className={styles.featureText}>
-                Modular <span className={styles.gradientText}>Learning</span>
-              </span>
-            </div>
-          </div>
         </div>
 
-        <div className={styles.torsoImageContainer}>
-          <div ref={radialGlowRef} className={styles.radialGlow}></div>
+        {/* Colleges Grid — 4 items rendered side by side with entrance animation */}
+        <div ref={gridRef} className={styles.collegesGrid}>
+          {sectors.map((sector) => (
+            <div
+              key={sector.id}
+              className={styles.collegeCard}
+              onClick={handleCardClick}
+            >
+              {/* Card Background Image (Default / Hover states swap) */}
+              <div className={styles.cardImageContainer}>
+                <Image
+                  src={sector.defaultImg}
+                  alt={sector.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  className={styles.cardSectorImage}
+                  priority
+                />
+                <Image
+                  src={sector.hoverImg}
+                  alt={`${sector.title} Hover`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  className={`${styles.cardSectorImage} ${styles.cardSectorImageHover}`}
+                />
+              </div>
 
-          {/* Glassmorphic Statistics Cards */}
-          <div className={styles.statsContainer}>
-            <div className={styles.statsCard}>
-              <span className={styles.statsValue}>50+</span>
-              <span className={styles.statsLabel}>Anatomy Models</span>
-            </div>
-            <div className={styles.statsCard}>
-              <span className={styles.statsValue}>100+</span>
-              <span className={styles.statsLabel}>Institutions</span>
-            </div>
-            <div className={styles.statsCard}>
-              <span className={styles.statsValue}>15+</span>
-              <span className={styles.statsLabel}>Years of Experience</span>
-            </div>
-          </div>
-
-          <div ref={torsoScrollRef} className={styles.torsoScrollWrapper}>
-            <div ref={torsoParallaxRef} className={styles.torsoParallaxWrapper}>
-              <div ref={torsoFloatRef} className={styles.torsoFloatWrapper} style={{ position: "relative" }}>
-                {/* Image zoom wrapper — overflow hidden clips zoom correctly */}
-                <div className={styles.torsoImageZoom}>
-                  <Image
-                    src="/Human Anatomy Torso model.png"
-                    alt="Human Anatomy Torso Model"
-                    width={880}
-                    height={1060}
-                    loading="lazy"
-                    className={styles.torsoImage}
-                  />
+              {/* Card Overlay Content */}
+              <div className={styles.cardOverlay}>
+                {/* Top Content: Large Bold Title & Teal Explore Now Button */}
+                <div className={styles.cardTopContent}>
+                  <h3 className={styles.cardTitleLarge}>{sector.title}</h3>
+                  <button className={styles.exploreNowBtn} type="button">
+                    Explore Now
+                  </button>
                 </div>
 
-                {/* Interactive Anatomy Hotspots — outside zoom clip so tooltips show fully */}
-                {hotspots.map((spot) => (
-                  <div
-                    key={spot.id}
-                    className={styles.hotspot}
-                    style={{ top: spot.top, left: spot.left }}
-                  >
-                    <div className={styles.hotspotDot}></div>
-                    <div className={styles.hotspotPulse}></div>
-                    <div className={styles.hotspotTooltip}>
-                      <h4 className={styles.tooltipTitle}>{spot.title}</h4>
-                      <p className={styles.tooltipDesc}>{spot.desc}</p>
-                    </div>
-                  </div>
-                ))}
+                {/* Bottom Content: Short Description appears on hover */}
+                <p className={styles.cardDescFade}>{sector.desc}</p>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

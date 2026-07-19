@@ -43,22 +43,7 @@ export default function CategoryInfiniteGrid({
     setHasMore(initialHasMore);
   }, [initialHasMore]);
 
-  // Automatically refresh/sync data from the server on window focus or at short intervals
-  useEffect(() => {
-    const handleFocus = () => {
-      router.refresh();
-    };
-    window.addEventListener('focus', handleFocus);
 
-    const interval = setInterval(() => {
-      router.refresh();
-    }, 15000); // Check for updates every 15 seconds
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
-    };
-  }, [router]);
 
   useEffect(() => {
     const loader = loaderRef.current;

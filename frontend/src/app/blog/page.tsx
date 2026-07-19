@@ -25,14 +25,11 @@ export default async function BlogHubPage() {
         <div className={styles.heroWatermark} />
         
         <div className={styles.heroContent}>
-          <span className={styles.heroPill}>Clinical Education &amp; Insights</span>
           <h1 className={styles.title}>
-            Medico Valley's{' '}
-            <span className={styles.titleAccent}>Anatomy Blog</span>
+            Simulation Resources &amp; Insights
           </h1>
-          <div className={styles.titleRule} />
           <p className={styles.subtitle}>
-            Real-life application of A&P learning, clinical simulation resource updates, analysis & more
+            Stay updated with the latest in healthcare. Our blog features expert insights, breakthrough stories, and essential resources to keep you in the know.
           </p>
         </div>
       </section>

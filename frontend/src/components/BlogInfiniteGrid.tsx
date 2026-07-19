@@ -36,22 +36,7 @@ export default function BlogInfiniteGrid({ allArticles, pageSize }: Props) {
     setPage(1);
   }, [allArticles, pageSize]);
 
-  // Automatically refresh/sync blog data from the server on window focus or at short intervals
-  useEffect(() => {
-    const handleFocus = () => {
-      router.refresh();
-    };
-    window.addEventListener('focus', handleFocus);
 
-    const interval = setInterval(() => {
-      router.refresh();
-    }, 15000); // Check for updates every 15 seconds
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
-    };
-  }, [router]);
 
   const hasMore = articles.length < allArticles.length;
 
@@ -94,37 +79,31 @@ export default function BlogInfiniteGrid({ allArticles, pageSize }: Props) {
               className={styles.blogCard}
               id={`article-card-${articleId}`}
             >
-              {/* Absolute Background Image */}
-              <div className={styles.cardImageArea}>
-                <Image
-                  src={article.imageUrl}
-                  alt={article.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, 500px"
-                  className={styles.cardImage}
-                />
+              {/* Normal State Layout */}
+              <div className={styles.cardNormalState}>
+                <div className={styles.cardImageArea}>
+                  <Image
+                    src={article.imageUrl}
+                    alt={article.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 500px"
+                    className={styles.cardImage}
+                  />
+                </div>
+                <div className={styles.cardContentArea}>
+                  <h3 className={styles.cardNormalTitle}>
+                    {article.title}
+                    <span className={styles.arrowSymbol}> &gt;</span>
+                  </h3>
+                </div>
               </div>
 
-              {/* Dark Transparent Mask Overlay */}
-              <div className={styles.cardOverlay} />
-
-              {/* Foreground Content */}
-              <div className={styles.cardContent}>
-                <div className={styles.cardTop}>
-                  <span className={styles.cardFormat}>Blog</span>
-                  
-                  {/* Text Swapping Area */}
-                  <div className={styles.textWrapper}>
-                    <h3 className={styles.cardTitle}>{article.title}</h3>
-                    <p className={styles.cardHoverText}>{article.excerpt}</p>
-                  </div>
-                </div>
-
-                {/* Bottom Row: Date / Continue Reading Swap */}
-                <div className={styles.bottomRow}>
-                  <span className={styles.cardDate}>{articleDate}</span>
-                  <span className={styles.continueReading}>Continue Reading</span>
-                </div>
+              {/* Hover State Layout */}
+              <div className={styles.cardHoverState}>
+                <span className={styles.hoverFormat}>BLOG</span>
+                <h3 className={styles.hoverTitle}>{article.title}</h3>
+                <p className={styles.hoverExcerpt}>{article.excerpt}</p>
+                <div className={styles.readMoreBtn}>Read More</div>
               </div>
             </Link>
           );

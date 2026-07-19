@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <g transform="translate(20, 15)">
+    <circle cx="45" cy="45" r="42" fill="none" stroke="#0f52ba" stroke-width="2" />
+    <path d="M 45 3 L 45 87 M 3 45 L 87 45 M 15 15 L 75 75 M 15 75 L 75 15" stroke="#0f52ba" stroke-width="1.5" />
+    <path d="M 45 10 L 45 80 M 10 45 L 80 45 M 20 20 L 70 70 M 20 70 L 70 20" stroke="#0f52ba" stroke-width="3" opacity="0.6" />
+    <circle cx="45" cy="45" r="28" fill="#ffffff" stroke="#0f52ba" stroke-width="2.5" />
+    <path d="M 36 36 H 45 V 54 H 54 M 45 45 H 54 V 36 M 36 54 H 45" stroke="#0f52ba" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+  <text x="125" y="44" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="21" font-weight="800" fill="#0f52ba" letter-spacing="0.2">PRAMUKHSWAMI</text>
+  <text x="125" y="68" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#0b1f3a" letter-spacing="0.5">MEDICAL COLLEGE</text>
+  <text x="125" y="86" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#64748b" letter-spacing="1.2">Affiliated to Bhaikaka University</text>
+</svg>

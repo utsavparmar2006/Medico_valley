@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="kdGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 15)">
+    <path d="M 60 10 A 35 35 0 0 0 15 45 A 35 35 0 0 0 60 80 C 45 70, 45 20, 60 10 Z" fill="url(#kdGrad)" />
+    <path d="M 40 25 H 55 V 10 H 70 V 25 H 85 V 40 H 70 V 55 H 55 V 40 H 40 Z" fill="#dc2626" opacity="0.9" />
+  </g>
+  <text x="110" y="52" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="38" font-weight="900" fill="#374151" letter-spacing="-1">KD Hospital</text>
+  <text x="110" y="78" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#ea580c" letter-spacing="2">કુસુમ ધીરજલાલ હોસ્પિટલ</text>
+</svg>

@@ -30,6 +30,8 @@ export default function RequestQuoteModal({
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedInquiryId, setSubmittedInquiryId] = useState('');
 
   if (!isOpen) return null;
 
@@ -37,7 +39,7 @@ export default function RequestQuoteModal({
     e.preventDefault();
     setErrorMsg('');
 
-    if (!fullName || !institution || !email || !phone || !city) {
+    if (!fullName || !institution || !email || !city) {
       setErrorMsg('Please fill in all required fields (*)');
       return;
     }
@@ -60,7 +62,7 @@ export default function RequestQuoteModal({
           customerName: fullName,
           institution,
           email,
-          phone,
+          phone: phone || '',
           city,
           quantity,
           message,
@@ -76,42 +78,55 @@ export default function RequestQuoteModal({
       const inquiry = result.data;
       const inquiryId = inquiry.inquiryId;
 
-      // 2. Formulate WhatsApp Message Template
-      const submissionDate = inquiry && inquiry.createdAt ? new Date(inquiry.createdAt) : new Date();
-      const dateStr = submissionDate.toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
-      const timeStr = submissionDate.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
+      // If a phone number is provided, formulate WhatsApp redirect
+      const hasPhone = phone && phone.trim();
 
-      const formattedPhone = phone.trim().startsWith('+')
-        ? phone.trim()
-        : (phone.trim().startsWith('91') && phone.trim().length > 10
-          ? `+${phone.trim()}`
-          : `+91 ${phone.trim()}`);
+      // Reset form input states immediately
+      setFullName('');
+      setInstitution('');
+      setEmail('');
+      setPhone('');
+      setCity('');
+      setQuantity(1);
+      setMessage('');
 
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes('localhost'))
-        ? process.env.NEXT_PUBLIC_SITE_URL
-        : 'https://medicovalley.com';
-      const absoluteProductUrl = `${siteUrl.replace(/\/$/, '')}${window.location.pathname}`;
+      if (hasPhone) {
+        // 2. Formulate WhatsApp Message Template
+        const submissionDate = inquiry && inquiry.createdAt ? new Date(inquiry.createdAt) : new Date();
+        const dateStr = submissionDate.toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+        const timeStr = submissionDate.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
 
-      const emojiMail = '📩';
-      const emojiHospital = '🏥';
-      const emojiId = '🆔';
-      const emojiCalendar = '📅';
-      const emojiUser = '👤';
-      const emojiBox = '📦';
-      const emojiLink = '🔗';
-      const emojiMemo = '📝';
-      const separator = '----------------------------------------';
-      const emDash = '-';
+        const formattedPhone = phone.trim().startsWith('+')
+          ? phone.trim()
+          : (phone.trim().startsWith('91') && phone.trim().length > 10
+            ? `+${phone.trim()}`
+            : `+91 ${phone.trim()}`);
 
-      const whatsappText = `${emojiMail} *NEW QUOTATION REQUEST*
+        const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes('localhost'))
+          ? process.env.NEXT_PUBLIC_SITE_URL
+          : 'https://medicovalley.com';
+        const absoluteProductUrl = `${siteUrl.replace(/\/$/, '')}${window.location.pathname}`;
+
+        const emojiMail = '📩';
+        const emojiHospital = '🏥';
+        const emojiId = '🆔';
+        const emojiCalendar = '📅';
+        const emojiUser = '👤';
+        const emojiBox = '📦';
+        const emojiLink = '🔗';
+        const emojiMemo = '📝';
+        const separator = '----------------------------------------';
+        const emDash = '-';
+
+        const whatsappText = `${emojiMail} *NEW QUOTATION REQUEST*
 
 ${emojiHospital} *Medico Valley*
 
@@ -163,28 +178,22 @@ Thank you.
 
 ${emDash} Medico Valley Website`;
 
-      // Log the generated WhatsApp message before encoding to verify emojis
-      console.log('Generated WhatsApp message:\n', whatsappText);
+        console.log('Generated WhatsApp message:\n', whatsappText);
 
-      // 3. Trigger WhatsApp Redirect
-      const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
-      const encodedText = encodeURIComponent(whatsappText);
-      const whatsappUrl = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${encodedText}`;
+        // 3. Trigger WhatsApp Redirect
+        const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
+        const encodedText = encodeURIComponent(whatsappText);
+        const whatsappUrl = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${encodedText}`;
 
-      // Reset form states
-      setFullName('');
-      setInstitution('');
-      setEmail('');
-      setPhone('');
-      setCity('');
-      setQuantity(1);
-      setMessage('');
-
-      // Open WhatsApp in a new tab
-      window.open(whatsappUrl, '_blank');
-      console.log(whatsappUrl);
-      onClose();
-      window.location.reload();
+        // Open WhatsApp in a new tab
+        window.open(whatsappUrl, '_blank');
+        onClose();
+        window.location.reload();
+      } else {
+        // If email only, show inline success template
+        setSubmittedInquiryId(inquiryId);
+        setIsSubmitted(true);
+      }
     } catch (err: any) {
       console.error('Submission error:', err);
       setErrorMsg(err.message || 'An error occurred. Please try again.');
@@ -269,178 +278,316 @@ ${emDash} Medico Valley Website`;
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} style={{ padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {errorMsg && (
-            <div style={{
-              background: '#fee2e2',
-              border: '1px solid #fca5a5',
-              color: '#b91c1c',
-              padding: '10px 16px',
-              borderRadius: '10px',
-              fontSize: '0.85rem',
-              fontWeight: 500,
-              fontFamily: 'inherit',
-            }}>
-              {errorMsg}
-            </div>
-          )}
-
-          {/* Grid fields */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-fullName">Full Name *</label>
-              <input
-                id="quote-fullName"
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                style={inputStyle}
-                placeholder="Rahul Patel"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-institution">Institution / Company *</label>
-              <input
-                id="quote-institution"
-                type="text"
-                required
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-                style={inputStyle}
-                placeholder="ABC Medical College"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-email">Email *</label>
-              <input
-                id="quote-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={inputStyle}
-                placeholder="rahul@gmail.com"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-phone">Phone Number *</label>
-              <input
-                id="quote-phone"
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                style={inputStyle}
-                placeholder="9876543210"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-city">City *</label>
-              <input
-                id="quote-city"
-                type="text"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                style={inputStyle}
-                placeholder="Ahmedabad"
-              />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-quantity">Quantity *</label>
-              <input
-                id="quote-quantity"
-                type="number"
-                min={1}
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                style={inputStyle}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b', fontFamily: 'inherit' }} htmlFor="quote-message">Message (Optional)</label>
-            <textarea
-              id="quote-message"
-              rows={3}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              style={textareaStyle}
-              placeholder="Please send quotation, brochure and delivery timeline."
-            />
-          </div>
-
-          {/* Action Buttons */}
+        {isSubmitted ? (
           <div style={{
+            padding: '40px 32px 48px',
+            textAlign: 'center',
             display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '12px',
-            marginTop: '12px',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '20px',
           }}>
+            {/* Checked icon circle with bounce/pulse styling */}
+            <div style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              background: '#e6f7f4',
+              color: '#0a8d93',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2.2rem',
+              boxShadow: '0 10px 25px rgba(10, 141, 147, 0.15)',
+              marginBottom: '8px',
+              fontWeight: 'bold',
+            }}>
+              ✓
+            </div>
+            
+            <div>
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: '0 0 8px' }}>
+                Quotation Request Submitted!
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0, lineHeight: 1.6 }}>
+                Thank you! Your quotation request has been successfully registered. We have sent a confirmation email containing the product details to your inbox.
+              </p>
+            </div>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px dashed #cbd5e1',
+              borderRadius: '12px',
+              padding: '12px 24px',
+              fontSize: '0.9rem',
+              color: '#475569',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>Inquiry ID:</span>
+              <span style={{ color: '#0f172a', fontFamily: 'monospace', fontSize: '0.95rem' }}>{submittedInquiryId}</span>
+            </div>
+
             <button
-              type="button"
-              onClick={onClose}
-              style={{
-                background: '#f1f5f9',
-                border: '1px solid #e2e8f0',
-                color: '#475569',
-                padding: '12px 24px',
-                borderRadius: '12px',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'inherit',
+              onClick={() => {
+                onClose();
+                window.location.reload();
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
-              onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
               style={{
                 background: 'linear-gradient(135deg, #0a8d93, #0b6f78)',
                 border: 'none',
                 color: '#ffffff',
-                padding: '12px 28px',
+                padding: '12px 32px',
                 borderRadius: '12px',
                 fontWeight: 700,
                 fontSize: '0.9rem',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                cursor: 'pointer',
                 boxShadow: '0 8px 20px rgba(10, 141, 147, 0.25)',
                 transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontFamily: 'inherit',
+                marginTop: '12px'
               }}
-              onMouseEnter={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(10, 141, 147, 0.35)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(10, 141, 147, 0.25)';
-                }
-              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
             >
-              {isSubmitting ? 'Submitting...' : 'Request Quote'}
+              Done
             </button>
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {errorMsg && (
+              <div style={{
+                background: '#fee2e2',
+                border: '1px solid #fca5a5',
+                color: '#b91c1c',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: 500,
+                fontFamily: 'inherit',
+              }}>
+                {errorMsg}
+              </div>
+            )}
+
+            {/* Inline CSS style for flat, borderless, underline inputs */}
+            <style>{`
+              .modal-label {
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                color: var(--secondary-text) !important;
+                font-family: var(--font-sans), sans-serif !important;
+                margin-bottom: 2px !important;
+              }
+              .modal-input, .modal-textarea {
+                background: transparent !important;
+                border: none !important;
+                border-bottom: 1.5px solid var(--secondary-text) !important;
+                border-radius: 0 !important;
+                padding: 10px 0 !important;
+                color: var(--secondary-text) !important;
+                font-size: 0.95rem !important;
+                font-family: var(--font-sans), sans-serif !important;
+                outline: none !important;
+                transition: border-color 0.25s ease !important;
+                width: 100% !important;
+              }
+              .modal-textarea {
+                resize: vertical !important;
+                height: 100px !important;
+              }
+              .modal-input::placeholder, .modal-textarea::placeholder {
+                color: #b8c5d6 !important;
+                opacity: 1 !important;
+              }
+              .modal-input:focus, .modal-textarea:focus {
+                border-bottom-color: var(--primary) !important;
+              }
+            `}</style>
+
+            {/* Grid fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-fullName">Full Name *</label>
+                <input
+                  id="quote-fullName"
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="modal-input"
+                  placeholder="Rahul Patel"
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-institution">Institution / Company *</label>
+                <input
+                  id="quote-institution"
+                  type="text"
+                  required
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  className="modal-input"
+                  placeholder="ABC Medical College"
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-email">Email *</label>
+                <input
+                  id="quote-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="modal-input"
+                  placeholder="rahul@gmail.com"
+                />
+                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
+                  For quotations and official communications.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-phone">Phone Number (Optional)</label>
+                <input
+                  id="quote-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="modal-input"
+                  placeholder="9876543210"
+                />
+                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
+                  Enter number to get updates via WhatsApp.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-city">City *</label>
+                <input
+                  id="quote-city"
+                  type="text"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="modal-input"
+                  placeholder="Ahmedabad"
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label className="modal-label" htmlFor="quote-quantity">Quantity *</label>
+                <input
+                  id="quote-quantity"
+                  type="number"
+                  min={1}
+                  required
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="modal-input"
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label className="modal-label" htmlFor="quote-message">Message (Optional)</label>
+              <textarea
+                id="quote-message"
+                rows={3}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="modal-textarea"
+                placeholder="Please send quotation, brochure and delivery timeline."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px',
+              marginTop: '12px',
+            }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  background: '#f1f5f9',
+                  border: '1px solid #e2e8f0',
+                  color: '#475569',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  background: phone.trim()
+                    ? 'linear-gradient(135deg, #128c7e, #075e54)'
+                    : 'linear-gradient(135deg, #0a8d93, #0b6f78)',
+                  border: 'none',
+                  color: '#ffffff',
+                  padding: '12px 28px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  boxShadow: phone.trim()
+                    ? '0 8px 20px rgba(18, 140, 126, 0.25)'
+                    : '0 8px 20px rgba(10, 141, 147, 0.25)',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting) {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = phone.trim()
+                      ? '0 12px 24px rgba(18, 140, 126, 0.35)'
+                      : '0 12px 24px rgba(10, 141, 147, 0.35)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSubmitting) {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = phone.trim()
+                      ? '0 8px 20px rgba(18, 140, 126, 0.25)'
+                      : '0 8px 20px rgba(10, 141, 147, 0.25)';
+                  }
+                }}
+              >
+                {isSubmitting ? (
+                  'Submitting...'
+                ) : phone.trim() ? (
+                  <>
+                    <span style={{ fontSize: '1.1rem' }}>💬</span>
+                    <span>Request via WhatsApp</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ fontSize: '1.1rem' }}>📩</span>
+                    <span>Request via Email</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </motion.div>
     </div>
   );

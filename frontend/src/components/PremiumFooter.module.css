@@ -112,9 +112,9 @@
   align-items: center;
   gap: 10px;
   font-size: 1.25rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
 }
 
 .brandLogoIcon {

@@ -63,10 +63,11 @@
 }
 
 .headerTitle {
+  font-family: var(--font-display);
   font-size: clamp(1.9rem, 3.8vw, 2.8rem);
-  font-weight: 800;
+  font-weight: 700;
   color: #0F172A;
-  letter-spacing: -0.03em;
+  letter-spacing: normal;
   margin: 0 0 14px;
   line-height: 1.12;
 }
@@ -79,7 +80,8 @@
 }
 
 .headerSub {
-  font-size: 0.97rem;
+  font-family: var(--font-sans);
+  font-size: 1rem;
   color: #64748B;
   max-width: 500px;
   margin: 0 auto;
@@ -265,10 +267,11 @@
 
 /* ─── CATEGORY NAME ─── */
 .name {
+  font-family: var(--font-sans);
   font-size: 1.12rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #0F172A;
-  letter-spacing: -0.02em;
+  letter-spacing: normal;
   line-height: 1.2;
   margin: 0 0 5px;
   transition: color 0.2s;
@@ -314,6 +317,7 @@
 }
 
 .ctaLabel {
+  font-family: var(--font-sans);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 2.5px;
@@ -366,7 +370,8 @@
   padding: 14px 34px;
   border: 2px solid #0891B2;
   border-radius: 100px;
-  font-size: 0.87rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
   font-weight: 700;
   color: #0891B2;
   text-decoration: none;

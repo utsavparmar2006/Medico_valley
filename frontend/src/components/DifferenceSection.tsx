@@ -5,7 +5,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { getBackendUrl } from '@/utils/api';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
 import styles from '@/app/page.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -52,12 +51,17 @@ const FALLBACK_CAPABILITIES: DeltaDifferenceCard[] = [
   }
 ];
 
+// Helper: final resting rotations for each card index
+const CARD_ROTATIONS = [-5, 4, -3, 3, -1];
+
 export default function DifferenceSection() {
   const differenceSectionRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<HTMLDivElement[]>([]);
   const differenceBgTitleRef = useRef<HTMLHeadingElement>(null);
   const [cards, setCards] = useState<DeltaDifferenceCard[]>(FALLBACK_CAPABILITIES);
   const [isMobile, setIsMobile] = useState(false);
+  // Track whether the API fetch has completed so GSAP only runs once with final data
+  const [dataReady, setDataReady] = useState(false);
 
   // Initialize Embla Carousel for mobile swiping
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -67,7 +71,7 @@ export default function DifferenceSection() {
   // Detect mobile viewport size on client mount and resize
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -137,112 +141,109 @@ export default function DifferenceSection() {
     };
   }, [emblaApi, isMobile]);
 
-  const fetchCards = async () => {
-    try {
-      const apiBase = getBackendUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
-      const res = await fetch(`${apiBase}/public/delta-difference`);
-      if (!res.ok) return;
-      const result = await res.json();
-      if (result.success && Array.isArray(result.data)) {
-        // Sort explicitly by displayOrder ASC to guarantee card rendering order consistency
-        const sorted = [...result.data].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-        if (sorted.length === 5) {
-          setCards(sorted);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch delta difference cards:', err);
-    }
-  };
-
-  // Fetch initial data on mount
+  // Fetch initial data on mount — set dataReady once complete (success or failure)
   useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const apiBase = getBackendUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
+        const res = await fetch(`${apiBase}/public/delta-difference`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && Array.isArray(result.data)) {
+            // Sort explicitly by displayOrder ASC to guarantee card rendering order consistency
+            const sorted = [...result.data].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            if (sorted.length === 5) {
+              setCards(sorted);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch delta difference cards:', err);
+      } finally {
+        // Signal that the fetch phase is done regardless of outcome.
+        // GSAP will only initialize after this flag is set.
+        setDataReady(true);
+      }
+    };
+
     fetchCards();
   }, []);
 
-  // Automatically refresh delta difference cards from the server on window focus or at short intervals
   useEffect(() => {
-    window.addEventListener('focus', fetchCards);
+    // ── Guard 1: Mobile uses Embla carousel — desktop refs are not mounted ──
+    if (isMobile) return;
 
-    const interval = setInterval(() => {
-      fetchCards();
-    }, 15000); // Check for updates every 15 seconds
+    // ── Guard 2: Wait for API fetch to complete before setting up GSAP ──
+    if (!dataReady) return;
 
-    return () => {
-      window.removeEventListener('focus', fetchCards);
-      clearInterval(interval);
-    };
-  }, []);
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cardsElements = cardRefs.current.filter(Boolean) as HTMLElement[];
+    const bgTitle = differenceBgTitleRef.current;
 
-  useGSAP(
-    () => {
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      if (!isReduced) {
-        const isDesktop = window.innerWidth >= 1024;
-
-        if (isDesktop && differenceSectionRef.current && differenceBgTitleRef.current) {
-          const diffTl = gsap.timeline({
-            scrollTrigger: {
-              trigger: differenceSectionRef.current,
-              start: "top top",
-              end: "+=2000px",
-              scrub: 1,
-              pin: true,
-              invalidateOnRefresh: true,
-            }
-          });
-
-          // Animate background title scaling
-          diffTl.fromTo(
-            differenceBgTitleRef.current,
-            { scale: 0.9, opacity: 1 },
-            { scale: 1.05, opacity: 1, ease: "power1.inOut" },
-            0
-          );
-
-          // Staggered paths for the capability cards
-          cardRefs.current.forEach((card, idx) => {
-            if (!card) return;
-            const rotation = idx === 0 ? -5 : idx === 1 ? 4 : idx === 2 ? -3 : idx === 3 ? 3 : -1;
-            const xVal = idx === 0 || idx === 2 ? -300 : idx === 1 || idx === 3 ? 300 : 0;
-            const yVal = idx === 4 ? 500 : idx === 2 || idx === 3 ? 400 : 300;
-            const rotateStart = idx === 0 || idx === 2 ? 15 : idx === 1 || idx === 3 ? -15 : 8;
-
-            diffTl.fromTo(
-              card,
-              { x: xVal, y: yVal, rotation: rotateStart, opacity: 0, scale: 0.85 },
-              { x: 0, y: 0, rotation: rotation, opacity: 1, scale: 1, ease: "power2.out" },
-              idx * 0.12
-            );
-          });
-
-          // Smooth fade-out of cards and title at the end of scroll
-          diffTl.to(
-            [...cardRefs.current.filter(Boolean), differenceBgTitleRef.current],
-            {
-              opacity: 0,
-              y: -60,
-              stagger: 0.05,
-              ease: "power1.in",
-            },
-            0.82
-          );
-        }
-      } else {
-        // Fallback for reduced motion
-        gsap.set(cardRefs.current.filter(Boolean), { opacity: 1, x: 0, y: 0, rotation: 0 });
+    // ── Reduced-motion or invalid dimensions fallback: make everything immediately visible ──
+    if (isReduced || window.innerWidth < 1024 || cardsElements.length !== 5 || !differenceSectionRef.current || !bgTitle) {
+      if (cardsElements.length > 0) {
+        gsap.set(cardsElements, { opacity: 1, x: 0, y: 0, rotation: (idx) => CARD_ROTATIONS[idx] || 0, scale: 1, clearProps: 'all' });
       }
-    },
-    { scope: differenceSectionRef } // timeline created ONLY ONCE on mount, dependencies excluded to prevent animation destruction
-  );
+      if (bgTitle) {
+        gsap.set(bgTitle, { opacity: 1, scale: 1, clearProps: 'all' });
+      }
+      return;
+    }
+
+    // ── Create a single GSAP context for proper scoping and cleanup ──
+    const ctx = gsap.context(() => {
+      // Create one GSAP timeline with scroll scrubbing
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: differenceSectionRef.current,
+          start: 'top 85%',
+          end: 'bottom 30%',
+          scrub: 1.2, // Links the animation progress directly to scrollbar with smooth lag
+          invalidateOnRefresh: true,
+          refreshPriority: -1,
+        }
+      });
+
+      // Animate the background watermark title
+      tl.fromTo(
+        bgTitle,
+        { scale: 0.95, opacity: 0 },
+        { scale: 1, opacity: 1, ease: 'power2.out', duration: 0.4 },
+        0
+      );
+
+      cardsElements.forEach((card, idx) => {
+        const rotation = CARD_ROTATIONS[idx];
+        const xVal = idx === 0 || idx === 2 ? -180 : idx === 1 || idx === 3 ? 180 : 0;
+        const yVal = idx === 4 ? 120 : 90;
+        const rotateStart = idx === 0 || idx === 2 ? 10 : idx === 1 || idx === 3 ? -10 : 5;
+
+        tl.fromTo(
+          card,
+          { x: xVal, y: yVal, rotation: rotateStart, opacity: 0, scale: 0.9 },
+          { x: 0, y: 0, rotation: rotation, opacity: 1, scale: 1, ease: 'power3.out', duration: 0.5 },
+          idx * 0.08 + 0.1 // staggered start times
+        );
+      });
+
+      // Force GSAP to sort all triggers by their position in the DOM and recalculate their bounds
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+    }, differenceSectionRef);
+
+    // Cleanup only with ctx.revert()
+    return () => {
+      ctx.revert();
+    };
+  }, [isMobile, dataReady]);
 
   // Early return for Mobile Carousel view
   if (isMobile) {
     return (
       <section ref={differenceSectionRef} className={styles.mobileDifferenceSection}>
         <div className={styles.mobileHeader}>
-          <span className={styles.mobileSectionLabel}>THE DELTA DIFFERENCE</span>
+          <span className={styles.mobileSectionLabel}>WHY CHOOSE US</span>
           <h2 className={styles.mobileDifferenceTitle}>
             The Medico Valley Difference
           </h2>
@@ -288,10 +289,11 @@ export default function DifferenceSection() {
 
   return (
     <section ref={differenceSectionRef} className={styles.differenceSection}>
+      {/* Background logo watermark centered, scaling and fading on scroll */}
       <div className={styles.stickyHeader}>
-        <h2 ref={differenceBgTitleRef} className={styles.differenceBgTitle}>
-          The Medico Valley Difference
-        </h2>
+        <div ref={differenceBgTitleRef} className={styles.differenceBgLogo}>
+          <img src="/logo-medico-transparent.png" alt="Medico Valley Logo Watermark" />
+        </div>
       </div>
 
       <div className={styles.cardsContainer}>
@@ -319,5 +321,3 @@ export default function DifferenceSection() {
     </section>
   );
 }
-
-

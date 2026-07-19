@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { getBackendUrl } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './dashboard.module.css';
 
@@ -46,7 +45,7 @@ export default function AdminDashboard() {
 
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients'>('overview');
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
@@ -56,6 +55,18 @@ export default function AdminDashboard() {
 
   const [blogsList, setBlogsList] = useState<any[]>([]);
   const [showConfirmDeleteBlogModal, setShowConfirmDeleteBlogModal] = useState<string | null>(null);
+
+  // Client Management States
+  const [clientsList, setClientsList] = useState<any[]>([]);
+  const [clientName, setClientName] = useState('');
+  const [clientLocation, setClientLocation] = useState('');
+  const [clientTestimonial, setClientTestimonial] = useState('');
+  const [clientType, setClientType] = useState('');
+  const [clientLogoUrl, setClientLogoUrl] = useState('');
+  const [clientDisplayOrder, setClientDisplayOrder] = useState<number>(0);
+  const [editingClient, setEditingClient] = useState<any | null>(null);
+  const [isCreatingClient, setIsCreatingClient] = useState(false);
+  const [showConfirmDeleteClientModal, setShowConfirmDeleteClientModal] = useState<string | null>(null);
 
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
@@ -89,6 +100,7 @@ export default function AdminDashboard() {
   const [showConfirmDeleteProductModal, setShowConfirmDeleteProductModal] = useState<string | null>(null);
 
   const [loadingData, setLoadingData] = useState(true);
+
 
   // Pagination & Scrolling States
   const [visibleProductsCount, setVisibleProductsCount] = useState(8);
@@ -173,7 +185,6 @@ export default function AdminDashboard() {
 
   // Auth fetch wrapper with automatic silent token refresh interceptor
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const resolvedUrl = getBackendUrl(url);
     let token = localStorage.getItem('adminAccessToken');
     const headers = new Headers(options.headers || {});
 
@@ -182,7 +193,7 @@ export default function AdminDashboard() {
     }
     options.headers = headers;
 
-    let response = await fetch(resolvedUrl, options);
+    let response = await fetch(url, options);
 
     // If unauthorized, check if it was due to token expiration
     if (response.status === 401) {
@@ -194,7 +205,7 @@ export default function AdminDashboard() {
 
         try {
           // Send request to token refresh endpoint (automatically shares cookie)
-          const refreshRes = await fetch(getBackendUrl('http://localhost:5000/api/admin/refresh'), {
+          const refreshRes = await fetch('http://localhost:5000/api/admin/refresh', {
             method: 'POST',
             credentials: 'include',
           });
@@ -208,7 +219,7 @@ export default function AdminDashboard() {
             // Re-apply Authorization header and retry the original call
             headers.set('Authorization', `Bearer ${token}`);
             options.headers = headers;
-            response = await fetch(resolvedUrl, options);
+            response = await fetch(url, options);
           } else {
             // Refresh token has expired/revoked, force login
             console.warn('Session expired. Redirecting to login...');
@@ -261,14 +272,14 @@ export default function AdminDashboard() {
     }
     try {
       // Fetch Categories
-      const catRes = await fetch(getBackendUrl('http://localhost:5000/api/public/categories'));
+      const catRes = await fetch('http://localhost:5000/api/public/categories');
       const catData = await catRes.json();
       if (catRes.ok && catData.success) {
         setCategoriesList(catData.data);
       }
 
       // Fetch Products
-      const prodRes = await fetch(getBackendUrl('http://localhost:5000/api/public/products'));
+      const prodRes = await fetch('http://localhost:5000/api/public/products');
       const prodData = await prodRes.json();
       if (prodRes.ok && prodData.success) {
         setProductsList(prodData.data);
@@ -289,10 +300,23 @@ export default function AdminDashboard() {
       }
 
       // Fetch Blogs
-      const blogRes = await fetch(getBackendUrl('http://localhost:5000/api/public/blogs'));
+      const blogRes = await fetch('http://localhost:5000/api/public/blogs');
       const blogData = await blogRes.json();
       if (blogRes.ok && blogData.success) {
         setBlogsList(blogData.data);
+      }
+
+      // Fetch Clients
+      const clientRes = await fetch(`http://localhost:5000/api/public/clients?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      const clientData = await clientRes.json();
+      if (clientRes.ok && clientData.success) {
+        setClientsList(clientData.data);
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -863,6 +887,106 @@ export default function AdminDashboard() {
     setStatusMessage(null);
   };
 
+  // Client CRUD Handlers
+  const resetClientForm = () => {
+    setClientName('');
+    setClientLocation('');
+    setClientTestimonial('');
+    setClientType('');
+    setClientLogoUrl('');
+    setClientDisplayOrder(0);
+    setEditingClient(null);
+    setIsCreatingClient(false);
+  };
+
+  const openClientEdit = (client: any) => {
+    setEditingClient(client);
+    setIsCreatingClient(false);
+    setClientName(client.name);
+    setClientLocation(client.location);
+    setClientTestimonial(client.testimonial);
+    setClientType(client.type);
+    setClientLogoUrl(client.logoUrl);
+    setClientDisplayOrder(client.displayOrder || 0);
+    setStatusMessage(null);
+    setActiveTab('clients');
+  };
+
+  const handleClientSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!clientName || !clientLocation || !clientTestimonial || !clientType || !clientLogoUrl) {
+      setStatusMessage({ type: 'error', text: 'All fields including Logo Image are required.' });
+      return;
+    }
+
+    const payload = {
+      name: clientName,
+      location: clientLocation,
+      testimonial: clientTestimonial,
+      type: clientType,
+      logoUrl: clientLogoUrl,
+      displayOrder: Number(clientDisplayOrder || 0)
+    };
+
+    startTransition(async () => {
+      try {
+        const url = editingClient 
+          ? `http://localhost:5000/api/admin/clients/${editingClient._id}`
+          : 'http://localhost:5000/api/admin/clients';
+        const method = editingClient ? 'PUT' : 'POST';
+
+        const response = await authFetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStatusMessage({ 
+            type: 'success', 
+            text: editingClient ? 'Client updated successfully!' : 'Client added successfully!' 
+          });
+          resetClientForm();
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Action failed.' });
+        }
+      } catch (err) {
+        setStatusMessage({ type: 'error', text: 'Could not connect to database.' });
+      }
+    });
+  };
+
+  const confirmDeleteClient = async (id: string) => {
+    setShowConfirmDeleteClientModal(null);
+    setStatusMessage(null);
+
+    try {
+      const response = await authFetch(`http://localhost:5000/api/admin/clients/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStatusMessage({ type: 'success', text: 'Client deleted successfully!' });
+        await loadDashboardData();
+        if (editingClient?._id === id) {
+          resetClientForm();
+        }
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Deletion failed.' });
+      }
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: 'Could not delete client.' });
+    }
+  };
+
   if (!adminUser) {
     return <div className={styles.wrapper}>Loading session...</div>;
   }
@@ -889,9 +1013,9 @@ export default function AdminDashboard() {
           <p>Manage Medico Valley categories, products, and published assets.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button 
-            onClick={() => loadDashboardData()} 
-            className={styles.logoutBtn} 
+          <button
+            onClick={() => loadDashboardData()}
+            className={styles.logoutBtn}
             style={{ background: 'rgba(10, 141, 147, 0.08)', color: '#0a8d93', borderColor: 'rgba(10, 141, 147, 0.2)', display: 'flex', alignItems: 'center' }}
             title="Force refresh all catalog data from database"
           >
@@ -1027,6 +1151,21 @@ export default function AdminDashboard() {
               )}
               <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>article</span>
               <span style={{ position: 'relative', zIndex: 2 }}>Blogs</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('clients'); setStatusMessage(null); resetClientForm(); }}
+              className={`${styles.navBtn} ${activeTab === 'clients' ? styles.navBtnActive : ''}`}
+              style={{ position: 'relative' }}
+            >
+              {activeTab === 'clients' && (
+                <motion.div
+                  layoutId="sidebarActive"
+                  className={styles.navActiveBg}
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>group</span>
+              <span style={{ position: 'relative', zIndex: 2 }}>Top Clients</span>
             </button>
           </nav>
         </aside>
@@ -1391,7 +1530,7 @@ export default function AdminDashboard() {
                 <h2 className={styles.listSectionTitle}>
                   <span className="material-symbols-outlined">manage_search</span>
                   <span>Manage Catalog Listings</span>
-              </h2>
+                </h2>
               </div>
 
               {/* Search and Filters Bar */}
@@ -1515,7 +1654,7 @@ export default function AdminDashboard() {
                   {manageView === 'categories' ? (
                     // Filtered Categories
                     (() => {
-                      const filteredCats = categoriesList.filter(cat => 
+                      const filteredCats = categoriesList.filter(cat =>
                         cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         cat.description.toLowerCase().includes(searchQuery.toLowerCase())
                       );
@@ -1530,7 +1669,7 @@ export default function AdminDashboard() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                                key={cat._id} 
+                                key={cat._id}
                                 type="button"
                                 className={styles.categoryOverviewCard}
                                 onClick={() => openCategoryDetail(cat, 'manage')}
@@ -1547,10 +1686,10 @@ export default function AdminDashboard() {
                           </AnimatePresence>
                         </motion.div>
                       ) : (
-                        <motion.div 
-                          initial={{ opacity: 0 }} 
-                          animate={{ opacity: 1 }} 
-                          exit={{ opacity: 0 }} 
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
                           className={styles.emptyState}
                           key="cats-empty"
                         >
@@ -1563,13 +1702,13 @@ export default function AdminDashboard() {
                     // Filtered Products
                     (() => {
                       const filteredProds = productsList.filter(prod => {
-                        const matchesSearch = 
+                        const matchesSearch =
                           prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           prod.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (prod.category?.name && prod.category.name.toLowerCase().includes(searchQuery.toLowerCase()));
-                        
-                        const matchesCategory = 
-                          !selectedCategoryFilter || 
+
+                        const matchesCategory =
+                          !selectedCategoryFilter ||
                           prod.category?._id === selectedCategoryFilter;
 
                         return matchesSearch && matchesCategory;
@@ -1586,7 +1725,7 @@ export default function AdminDashboard() {
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.9 }}
                                   transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                                  key={prod._id} 
+                                  key={prod._id}
                                   type="button"
                                   className={styles.productOverviewCard}
                                   onClick={() => openProductDetail(prod, 'manage')}
@@ -1616,10 +1755,10 @@ export default function AdminDashboard() {
                           )}
                         </>
                       ) : (
-                        <motion.div 
-                          initial={{ opacity: 0 }} 
-                          animate={{ opacity: 1 }} 
-                          exit={{ opacity: 0 }} 
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
                           className={styles.emptyState}
                           key="prods-empty"
                         >
@@ -1914,8 +2053,8 @@ export default function AdminDashboard() {
                             fontSize: '0.9rem',
                             transition: 'background 0.2s',
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                           >
                             <td style={{ padding: '16px', fontWeight: 'bold', color: '#0A8D93' }}>{inq.inquiryId}</td>
                             <td style={{ padding: '16px', color: '#475569', fontSize: '0.8rem' }}>
@@ -1940,19 +2079,18 @@ export default function AdminDashboard() {
                                 onChange={(e) => handleUpdateInquiryStatus(inq._id, e.target.value)}
                                 style={{
                                   background: inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' :
-                                              inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
-                                              inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
-                                              'rgba(239, 68, 68, 0.15)',
+                                    inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
+                                      inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
+                                        'rgba(239, 68, 68, 0.15)',
                                   color: inq.status === 'Completed' ? '#10b981' :
-                                         inq.status === 'Quoted' ? '#3b82f6' :
-                                         inq.status === 'Contacted' ? '#f59e0b' :
-                                         '#ef4444',
-                                  border: `1px solid ${
-                                    inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
-                                    inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
-                                    inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
-                                    'rgba(239, 68, 68, 0.3)'
-                                  }`,
+                                    inq.status === 'Quoted' ? '#3b82f6' :
+                                      inq.status === 'Contacted' ? '#f59e0b' :
+                                        '#ef4444',
+                                  border: `1px solid ${inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
+                                      inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
+                                        inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
+                                          'rgba(239, 68, 68, 0.3)'
+                                    }`,
                                   padding: '6px 12px',
                                   borderRadius: '8px',
                                   fontSize: '0.82rem',
@@ -2133,8 +2271,8 @@ export default function AdminDashboard() {
                         {deltaCardsList.length > 0 ? (
                           deltaCardsList.map((card) => (
                             <tr key={card._id} style={{ borderBottom: '1px solid #e2e8f0', fontSize: '0.9rem', transition: 'background 0.2s' }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                               <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#0A8D93' }}>{card.displayOrder}</td>
                               <td style={{ padding: '12px 16px' }}>
@@ -2211,7 +2349,7 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </div>
- 
+
                   {deltaCardsList.length < 5 ? (
                     <form onSubmit={handleDeltaSubmit} className={styles.formCard} style={{ marginTop: '16px' }}>
                       <h3 className={styles.sectionTitle}>Add New Delta Difference Card</h3>
@@ -2559,6 +2697,197 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
+          {activeTab === 'clients' && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className={styles.dashboardListSection}
+            >
+              <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h2 className={styles.listSectionTitle}>
+                    <span className="material-symbols-outlined">group</span>
+                    <span>Top Clients Management</span>
+                  </h2>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '4px' }}>
+                    Configure the clients that appear in the endless scrolling homepage logo ticker.
+                  </p>
+                </div>
+                {!isCreatingClient && !editingClient && (
+                  <button
+                    type="button"
+                    onClick={() => { resetClientForm(); setIsCreatingClient(true); }}
+                    className="ctaButton"
+                    style={{ background: 'var(--primary)', border: 'none', padding: '12px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
+                    <span className="material-symbols-outlined">add</span>
+                    Add Client Logo
+                  </button>
+                )}
+              </div>
+
+              {/* Edit / Create Form */}
+              {(isCreatingClient || editingClient) ? (
+                <form onSubmit={handleClientSubmit} style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: 'var(--primary-light)', fontWeight: 'bold', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px' }}>
+                    {editingClient ? `Edit Client: ${editingClient.name}` : 'Create New Client Logo'}
+                  </h3>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} htmlFor="client-name">Client Name</label>
+                    <input
+                      id="client-name"
+                      className={styles.input}
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="e.g. Bharati Vidyapeeth University"
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} htmlFor="client-testimonial">Message (Hover Testimonial)</label>
+                    <textarea
+                      id="client-testimonial"
+                      className={styles.input}
+                      rows={4}
+                      value={clientTestimonial}
+                      onChange={(e) => setClientTestimonial(e.target.value)}
+                      placeholder="e.g. Medico Valley's advanced simulators have significantly enhanced our clinical training programs..."
+                      required
+                    />
+                  </div>
+
+                  {/* Logo Image Upload */}
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Client Logo Image</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '8px' }}>
+                      {clientLogoUrl ? (
+                        <div style={{ width: '120px', height: '60px', position: 'relative', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+                          <img
+                            src={clientLogoUrl}
+                            alt="Logo preview"
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ width: '120px', height: '60px', background: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#4b5563' }}>image</span>
+                        </div>
+                      )}
+                      
+                      <label className={styles.detailUploadButton} style={{ margin: 0, padding: '10px 16px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>
+                        Upload Logo File
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className={styles.fileInput}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = await handleFileUpload(file);
+                              if (url) setClientLogoUrl(url);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                    <button
+                      type="submit"
+                      disabled={isPending || uploadingFile}
+                      className="ctaButton"
+                      style={{ width: '160px', background: 'var(--primary)', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      {isPending ? 'Saving...' : 'Save Client'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetClientForm}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#94A3B8', padding: '12px', borderRadius: '8px', width: '100px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* Client Grid List */
+                <div>
+                  {clientsList.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                      {clientsList.map((client) => (
+                        <div
+                          key={client._id}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid rgba(255, 255, 255, 0.06)',
+                            borderRadius: '12px',
+                            padding: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            gap: '16px',
+                            position: 'relative'
+                          }}
+                        >
+                          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                            <div style={{ width: '80px', height: '50px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}>
+                              <img
+                                src={client.logoUrl}
+                                alt={client.name}
+                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                              />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#e2e8f0', margin: 0 }}>
+                                {client.name}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div style={{ background: 'rgba(255, 255, 255, 0.02)', borderLeft: '2px solid var(--primary)', padding: '8px 12px', borderRadius: '4px' }}>
+                            <p style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
+                              "{client.testimonial}"
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '12px' }}>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                type="button"
+                                onClick={() => openClientEdit(client)}
+                                style={{ background: 'rgba(15, 111, 255, 0.1)', border: '1px solid rgba(15, 111, 255, 0.2)', color: '#60a5fa', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmDeleteClientModal(client._id)}
+                                style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fca5a5', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyState} style={{ padding: '60px 0' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#4b5563', marginBottom: '12px' }}>group</span>
+                      <p style={{ color: '#94a3b8' }}>No clients found in the database. Add your first client logo to populate the home page.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )}
+
         </main>
       </div>
 
@@ -2888,6 +3217,94 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Custom Modal for confirm client deletion */}
+      <AnimatePresence>
+        {showConfirmDeleteClientModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(15, 111, 255, 0.2)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 111, 255, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to remove this client? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteClientModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteClient(showConfirmDeleteClientModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
