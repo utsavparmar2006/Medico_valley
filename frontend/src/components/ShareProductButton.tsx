@@ -25,7 +25,20 @@ export default function ShareProductButton({ productName }: Props) {
     } else {
       // Fallback: Copy Product Link to Clipboard
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(window.location.href);
+        } else {
+          // Fallback for non-HTTPS (plain HTTP IP address) contexts
+          const textArea = document.createElement('textarea');
+          textArea.value = window.location.href;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
