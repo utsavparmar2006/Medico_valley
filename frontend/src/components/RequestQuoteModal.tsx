@@ -249,46 +249,17 @@ ${emDash} Medico Valley Website`;
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 1000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      background: 'rgba(15, 23, 42, 0.45)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-    }}>
+    <div className="modal-overlay">
       {/* Modal Card with light theme premium glass design */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        style={{
-          width: '100%',
-          maxWidth: '580px',
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
-          borderRadius: '24px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1)',
-          overflow: 'hidden',
-          color: '#1e293b',
-          fontFamily: 'var(--font-sans), sans-serif',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
+        className="modal-card"
       >
         {/* Header */}
-        <div style={{
-          padding: '24px 32px 18px',
-          borderBottom: '1px solid #f1f5f9',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+        <div className="modal-header">
           <div>
             <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: '#0f172a', fontFamily: 'inherit' }}>Request Quotation</h2>
             <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0', fontFamily: 'inherit' }}>{productName}</p>
@@ -401,7 +372,7 @@ ${emDash} Medico Valley Website`;
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={{ padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} className="modal-form">
             {errorMsg && (
               <div style={{
                 background: '#fee2e2',
@@ -417,8 +388,71 @@ ${emDash} Medico Valley Website`;
               </div>
             )}
 
-            {/* Inline CSS style for flat, borderless, underline inputs */}
+            {/* Inline CSS style for flat, borderless, underline inputs and responsive grid */}
             <style>{`
+              .modal-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: rgba(15, 23, 42, 0.45);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+              }
+              .modal-card {
+                width: 100%;
+                max-width: 580px;
+                max-height: 90vh;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 24px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+                overflow-y: auto;
+                color: #1e293b;
+                font-family: var(--font-sans), sans-serif;
+                display: flex;
+                flex-direction: column;
+              }
+              .modal-header {
+                padding: 20px 24px 16px;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: sticky;
+                top: 0;
+                background: #ffffff;
+                z-index: 5;
+              }
+              .modal-form {
+                padding: 20px 24px 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              }
+              .modal-form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+              }
+              .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                margin-top: 8px;
+              }
+              .modal-btn {
+                padding: 12px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-family: inherit;
+              }
               .modal-label {
                 font-size: 0.85rem !important;
                 font-weight: 600 !important;
@@ -431,7 +465,7 @@ ${emDash} Medico Valley Website`;
                 border: none !important;
                 border-bottom: 1.5px solid var(--secondary-text) !important;
                 border-radius: 0 !important;
-                padding: 10px 0 !important;
+                padding: 8px 0 !important;
                 color: var(--secondary-text) !important;
                 font-size: 0.95rem !important;
                 font-family: var(--font-sans), sans-serif !important;
@@ -441,7 +475,7 @@ ${emDash} Medico Valley Website`;
               }
               .modal-textarea {
                 resize: vertical !important;
-                height: 100px !important;
+                height: 80px !important;
               }
               .modal-input::placeholder, .modal-textarea::placeholder {
                 color: #b8c5d6 !important;
@@ -450,10 +484,41 @@ ${emDash} Medico Valley Website`;
               .modal-input:focus, .modal-textarea:focus {
                 border-bottom-color: var(--primary) !important;
               }
+
+              @media (max-width: 640px) {
+                .modal-overlay {
+                  padding: 12px;
+                }
+                .modal-card {
+                  max-height: 94vh;
+                  border-radius: 20px;
+                }
+                .modal-header {
+                  padding: 16px 18px 12px;
+                }
+                .modal-form {
+                  padding: 16px 18px 20px;
+                  gap: 14px;
+                }
+                .modal-form-grid {
+                  grid-template-columns: 1fr !important;
+                  gap: 14px !important;
+                }
+                .modal-actions {
+                  flex-direction: column-reverse;
+                  gap: 10px;
+                  margin-top: 12px;
+                }
+                .modal-actions button {
+                  width: 100% !important;
+                  justify-content: center !important;
+                  padding: 13px 20px !important;
+                }
+              }
             `}</style>
 
             {/* Grid fields */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="modal-form-grid">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="modal-label" htmlFor="quote-fullName">Full Name</label>
                 <input
@@ -569,26 +634,15 @@ ${emDash} Medico Valley Website`;
             </div>
 
             {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '12px',
-              marginTop: '12px',
-            }}>
+            <div className="modal-actions">
               <button
                 type="button"
                 onClick={onClose}
+                className="modal-btn"
                 style={{
                   background: '#f1f5f9',
                   border: '1px solid #e2e8f0',
                   color: '#475569',
-                  padding: '12px 24px',
-                  borderRadius: '12px',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}
@@ -598,25 +652,20 @@ ${emDash} Medico Valley Website`;
               <button
                 type="submit"
                 disabled={isSubmitting}
+                className="modal-btn"
                 style={{
                   background: phone.trim()
                     ? 'linear-gradient(135deg, #128c7e, #075e54)'
                     : 'linear-gradient(135deg, #0a8d93, #0b6f78)',
                   border: 'none',
                   color: '#ffffff',
-                  padding: '12px 28px',
-                  borderRadius: '12px',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
                   cursor: isSubmitting ? 'not-allowed' : 'pointer',
                   boxShadow: phone.trim()
                     ? '0 8px 20px rgba(18, 140, 126, 0.25)'
                     : '0 8px 20px rgba(10, 141, 147, 0.25)',
-                  transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  fontFamily: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSubmitting) {
