@@ -1,7 +1,11 @@
 import express, { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { S3Client } from '@aws-sdk/client-s3';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config(); // Load env variables before S3Client reads them
 import slugify from 'slugify';
 import Admin from '../models/Admin';
 import Category from '../models/Category';
@@ -10,25 +14,35 @@ import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import Blog from '../models/Blog';
 import Client from '../models/Client';
+import Sector from '../models/Sector';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
 const router = express.Router();
 
-// 1. Configure Multer for local storage upload
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, 'uploads/');
+// 1. Configure AWS S3 Client
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
+  region: process.env.AWS_REGION || 'ap-south-1',
 });
 
+// 2. Configure Multer to upload directly to S3
 const upload = multer({
-  storage,
-  limits: { fileSize: 100 * 1024 * 1024 }, // limit to 100MB for video assets
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME || '',
+    metadata: (_req: Express.Request, file: Express.Multer.File, cb: (error: any, metadata: any) => void) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (_req: Express.Request, file: Express.Multer.File, cb: (error: any, key: string) => void) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, `uploads/${uniqueSuffix}${path.extname(file.originalname)}`);
+    },
+  }),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit for videos
 });
 
 // Helper to check if string is a valid MongoDB ObjectId
@@ -157,13 +171,13 @@ router.post('/upload', authMiddleware, upload.single('file'), (req: Authenticate
     return res.status(400).json({ message: 'No file uploaded' });
   }
 
-  // Generate public file url pointing to local backend static server
-  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  // S3 URL is returned by multer-s3 as file.location
+  const fileUrl = (req.file as any).location;
 
   return res.json({
     success: true,
     url: fileUrl,
-    filename: req.file.filename,
+    filename: req.file.originalname,
     mimetype: req.file.mimetype,
   });
 });
@@ -201,7 +215,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
 
 // Create Product
 router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, categoryId, mediaUrls, catalogUrl } = req.body;
+  const { name, description, categoryId, mediaUrls, catalogUrl, keyFeatures } = req.body;
 
   if (!name || !description || !categoryId || !mediaUrls || !Array.isArray(mediaUrls)) {
     return res.status(400).json({ message: 'Name, description, categoryId, and mediaUrls (array) are required' });
@@ -233,6 +247,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
       category: categoryId,
       mediaUrls,
       catalogUrl,
+      keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
       isActive: true,
     });
 
@@ -283,7 +298,7 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
 // Update Product
 router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, categoryId, mediaUrls, catalogUrl } = req.body;
+  const { name, description, categoryId, mediaUrls, catalogUrl, keyFeatures } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Product ID format' });
@@ -323,6 +338,7 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
         category: categoryId,
         mediaUrls,
         catalogUrl: catalogUrl || undefined,
+        keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
       },
       { new: true, runValidators: true }
     ).populate('category', 'name slug');
@@ -710,9 +726,158 @@ router.delete('/clients/:id', authMiddleware, async (req: AuthenticatedRequest, 
     if (!deleted) {
       return res.status(404).json({ message: 'Client not found' });
     }
-    return res.json({ success: true, message: 'Client deleted successfully' });
   } catch (error: any) {
     console.error('Delete client error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN SECTORS / LABS CRUD ENDPOINTS (PROTECTED)
+// ==========================================
+
+const DEFAULT_ADMIN_SECTORS = [
+  {
+    title: 'Anatomy Lab',
+    desc: 'Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.',
+    defaultImg: '/labs/anatomy_default.png',
+    hoverImg: '/labs/anatomy_hover.png',
+    linkUrl: '/products',
+    displayOrder: 1,
+  },
+  {
+    title: 'Homeopathy Lab',
+    desc: 'Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.',
+    defaultImg: '/labs/homeopathy_default.png',
+    hoverImg: '/labs/homeopathy_hover.png',
+    linkUrl: '/products',
+    displayOrder: 2,
+  },
+  {
+    title: 'Nursing Skills Lab',
+    desc: 'Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.',
+    defaultImg: '/labs/nursing_default.png',
+    hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/products',
+    displayOrder: 3,
+  },
+  {
+    title: 'Ayurvedic Lab',
+    desc: 'Traditional anatomical representations, core model structures, and specialized teaching frameworks.',
+    defaultImg: '/labs/ayurvedic_default.png',
+    hoverImg: '/labs/ayurvedic_hover.png',
+    linkUrl: '/products',
+    displayOrder: 4,
+  },
+];
+
+// Get all sectors
+router.get('/sectors', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    let sectors = await Sector.find({}).sort({ displayOrder: 1 });
+    if (sectors.length === 0) {
+      await Sector.insertMany(DEFAULT_ADMIN_SECTORS);
+      sectors = await Sector.find({}).sort({ displayOrder: 1 });
+    }
+    return res.json({ success: true, data: sectors });
+  } catch (error: any) {
+    console.error('Get admin sectors error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a new sector
+router.post('/sectors', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { title, desc, defaultImg, hoverImg, linkUrl, displayOrder } = req.body;
+
+  if (!title || !desc || !defaultImg) {
+    return res.status(400).json({ message: 'Title, short description, and default image URL are required' });
+  }
+
+  if (title.length > 40) {
+    return res.status(400).json({ message: 'Title cannot exceed 40 characters' });
+  }
+
+  if (desc.length > 180) {
+    return res.status(400).json({ message: 'Short description cannot exceed 180 characters' });
+  }
+
+  try {
+    const count = await Sector.countDocuments();
+    if (count >= 4) {
+      return res.status(400).json({ message: 'Maximum limit of 4 sector cards reached. Edit or delete an existing card to add a new one.' });
+    }
+    const newSector = await Sector.create({
+      title: title.trim(),
+      desc: desc.trim(),
+      defaultImg,
+      hoverImg: hoverImg || '',
+      linkUrl: linkUrl || '/products',
+      displayOrder: Number(displayOrder) || 0,
+    });
+
+    return res.status(201).json({ success: true, data: newSector });
+  } catch (error: any) {
+    console.error('Create sector error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update a sector
+router.put('/sectors/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { title, desc, defaultImg, hoverImg, linkUrl, displayOrder } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid sector ID format' });
+  }
+
+  try {
+    const sector = await Sector.findById(id);
+    if (!sector) {
+      return res.status(404).json({ message: 'Sector not found' });
+    }
+
+    if (title && title.length > 40) {
+      return res.status(400).json({ message: 'Title cannot exceed 40 characters' });
+    }
+
+    if (desc && desc.length > 180) {
+      return res.status(400).json({ message: 'Short description cannot exceed 180 characters' });
+    }
+
+    const updateFields: any = {};
+    if (title !== undefined) updateFields.title = title.trim();
+    if (desc !== undefined) updateFields.desc = desc.trim();
+    if (defaultImg !== undefined) updateFields.defaultImg = defaultImg;
+    if (hoverImg !== undefined) updateFields.hoverImg = hoverImg;
+    if (linkUrl !== undefined) updateFields.linkUrl = linkUrl;
+    if (displayOrder !== undefined) updateFields.displayOrder = Number(displayOrder);
+
+    const updatedSector = await Sector.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+    return res.json({ success: true, data: updatedSector });
+  } catch (error: any) {
+    console.error('Update sector error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a sector
+router.delete('/sectors/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid sector ID format' });
+  }
+
+  try {
+    const deleted = await Sector.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Sector not found' });
+    }
+    return res.json({ success: true, message: 'Sector deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete sector error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

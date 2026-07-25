@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getBackendUrl } from '@/utils/api';
 import styles from '@/app/page.module.css';
 
 interface Client {
@@ -18,16 +19,18 @@ export default function InstitutionTrustSection() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/public/clients?t=${Date.now()}`, {
+      const response = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/clients?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setClients(data.data);
+      }).catch(() => null);
+      if (response && response.ok) {
+        const data = await response.json().catch(() => null);
+        if (data && data.success) {
+          setClients(data.data);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch clients:', err);

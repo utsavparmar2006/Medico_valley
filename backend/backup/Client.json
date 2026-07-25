@@ -1,0 +1,86 @@
+[
+  {
+    "_id": "6a4b47a40854a6b7d181302f",
+    "name": "All India Institute of Medical Sciences",
+    "location": "AIIMS, New Delhi",
+    "testimonial": "Top-tier simulators and excellent service. Medico Valley is our trusted partner in setting up state-of-the-art simulation labs.",
+    "type": "Apex Public Medical Institute",
+    "logoUrl": "http://localhost:5000/uploads/client_aiims.svg",
+    "displayOrder": 4,
+    "createdAt": "2026-07-06T06:13:56.172Z",
+    "updatedAt": "2026-07-06T06:13:56.172Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a4b47a40854a6b7d181302e",
+    "name": "Pramukhswami Medical College",
+    "location": "Karamsad, Gujarat",
+    "testimonial": "Their customer support and high-fidelity anatomical models are second to none. Our students have gained incredible clinical confidence. dvdmv dvd",
+    "type": "Medical College & Research",
+    "logoUrl": "http://localhost:5000/uploads/client_pmc.svg",
+    "displayOrder": 3,
+    "createdAt": "2026-07-06T06:13:56.172Z",
+    "updatedAt": "2026-07-06T06:27:22.482Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a4b47a40854a6b7d181302c",
+    "name": "Bharati Vidyapeeth Deemed University dfefcd",
+    "location": "Pune, Maharashtra",
+    "testimonial": "Medico Valley's advanced simulation technology has significantly enhanced our training capabilities with the latest simulation models.",
+    "type": "Educational Institute / University svsjhd",
+    "logoUrl": "http://localhost:5000/uploads/client_bv.svg",
+    "displayOrder": 1,
+    "createdAt": "2026-07-06T06:13:56.171Z",
+    "updatedAt": "2026-07-06T06:49:06.550Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a4b47a40854a6b7d181302d",
+    "name": "KD Hospital",
+    "location": "Ahmedabad, Gujarat",
+    "testimonial": "The high-fidelity simulators provided by Medico Valley offer our clinicians a highly realistic training environment, drastically improving procedural outcomes.",
+    "type": "Super Speciality Hospital",
+    "logoUrl": "http://localhost:5000/uploads/client_kd.svg",
+    "displayOrder": 2,
+    "createdAt": "2026-07-06T06:13:56.172Z",
+    "updatedAt": "2026-07-06T06:13:56.172Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a4b47a40854a6b7d1813030",
+    "name": "Armed Forces Medical College",
+    "location": "AFMC, Pune",
+    "testimonial": "Empowering our defense healthcare teams with premium training models. The fidelity and build quality are outstanding.",
+    "type": "Defense Medical Training Institute",
+    "logoUrl": "http://localhost:5000/uploads/client_afmc.svg",
+    "displayOrder": 5,
+    "createdAt": "2026-07-06T06:13:56.172Z",
+    "updatedAt": "2026-07-06T06:13:56.172Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a4b47a40854a6b7d1813031",
+    "name": "Apollo Hospitals Group",
+    "location": "Chennai, Tamil Nadu",
+    "testimonial": "Empowering our nurses and clinical students with standard clinical simulators. The educational impact is highly quantifiable.",
+    "type": "Leading Healthcare Network",
+    "logoUrl": "http://localhost:5000/uploads/client_apollo.svg",
+    "displayOrder": 6,
+    "createdAt": "2026-07-06T06:13:56.172Z",
+    "updatedAt": "2026-07-06T06:13:56.172Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a5f1796c8a987e6acf1bdeb",
+    "name": "utsav",
+    "location": "",
+    "testimonial": "dsfdfafvdasvavaavgad",
+    "type": "",
+    "logoUrl": "http://localhost:5000/uploads/1784616713428-161669397.png",
+    "displayOrder": 0,
+    "createdAt": "2026-07-21T06:54:14.520Z",
+    "updatedAt": "2026-07-21T07:00:31.754Z",
+    "__v": 0
+  }
+]

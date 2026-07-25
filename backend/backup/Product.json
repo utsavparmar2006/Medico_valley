@@ -1,0 +1,87 @@
+[
+  {
+    "_id": "6a3ce25e1c9f9a4ca7c14675",
+    "name": "Human Head & Neck Muscular Anatomy Model",
+    "slug": "human-head-and-neck-muscular-anatomy-model",
+    "description": "Life-size human head and neck anatomy model displaying muscles, blood vessels, nerves, facial structures, and upper thoracic anatomy for medical education and clinical training.",
+    "category": "6a3ce0f71c9f9a4ca7c14624",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782375845236-453883793.png"
+    ],
+    "catalogUrl": "http://localhost:5000/uploads/1782375005620-428836607.pdf",
+    "isActive": true,
+    "createdAt": "2026-06-25T08:10:06.680Z",
+    "updatedAt": "2026-06-25T08:24:07.435Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3cfde3e22fbe1f0439206d",
+    "name": "Anatomical Hand Muscle Model",
+    "slug": "anatomical-hand-muscle-model",
+    "description": "A detailed anatomical model of the human hand showcasing muscles, tendons, nerves, and ligaments, mounted on a sturdy stand for medical study.",
+    "category": "6a3ce0f71c9f9a4ca7c14624",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782382165633-385829023.png"
+    ],
+    "isActive": true,
+    "createdAt": "2026-06-25T10:07:31.853Z",
+    "updatedAt": "2026-06-25T10:09:30.547Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3cffb0dd6bfc912051240b",
+    "name": "Life-Size Human Heart Model",
+    "slug": "life-size-human-heart-model",
+    "description": " A highly detailed, life-size 5-part anatomical model of the human heart. It features a detachable anterior wall, allowing students and medical professionals to explore internal heart chambers, valves, and major coronary blood vessels with great clinical accuracy. Perfect for cardiovascular education and training.",
+    "category": "6a3ce0f71c9f9a4ca7c14624",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782382510966-523281421.png"
+    ],
+    "isActive": true,
+    "createdAt": "2026-06-25T10:15:12.361Z",
+    "updatedAt": "2026-06-25T10:15:12.361Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3d135cff740f3ab5716e0d",
+    "name": "Advanced Clinical Skills Training Simulator Kit",
+    "slug": "advanced-clinical-skills-training-simulator-kit",
+    "description": "Comprehensive clinical skills training simulator kit designed for nursing education and medical training. Includes multiple procedure trainers for airway management, injection practice, catheterization, IV access, and patient care skill development.",
+    "category": "6a3d00f0c3fb586bf8e528ba",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782387546055-666340491.png"
+    ],
+    "isActive": true,
+    "createdAt": "2026-06-25T11:39:08.441Z",
+    "updatedAt": "2026-06-25T11:39:08.441Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3d13b3ff740f3ab5716e19",
+    "name": "Advanced Adult CPR Training",
+    "slug": "advanced-adult-cpr-training",
+    "description": "Advanced adult CPR training manikin with an electronic monitoring console for realistic cardiopulmonary resuscitation (CPR), airway management, and emergency life support training.",
+    "category": "6a3d00f0c3fb586bf8e528ba",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782387632743-583364881.png"
+    ],
+    "isActive": true,
+    "createdAt": "2026-06-25T11:40:35.329Z",
+    "updatedAt": "2026-06-25T11:40:35.329Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3d14c1ff740f3ab5716e3e",
+    "name": "Advanced IV Injection & Venipuncture Training Arm",
+    "slug": "advanced-iv-injection-and-venipuncture-training-arm",
+    "description": "Professional intravenous (IV) injection and venipuncture training arm designed for realistic practice of blood collection, IV cannulation, infusion therapy, and intravenous injection techniques.",
+    "category": "6a3d143aff740f3ab5716e24",
+    "mediaUrls": [
+      "http://localhost:5000/uploads/1782387902606-232270676.png"
+    ],
+    "isActive": true,
+    "createdAt": "2026-06-25T11:45:05.631Z",
+    "updatedAt": "2026-06-25T11:45:05.631Z",
+    "__v": 0
+  }
+]

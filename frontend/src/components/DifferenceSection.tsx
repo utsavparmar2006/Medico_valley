@@ -198,8 +198,8 @@ export default function DifferenceSection() {
         scrollTrigger: {
           trigger: differenceSectionRef.current,
           start: 'top 85%',
-          end: 'bottom 30%',
-          scrub: 1.2, // Links the animation progress directly to scrollbar with smooth lag
+          end: 'center 45%',
+          scrub: 1.0, // Links the animation progress directly to scrollbar with smooth lag
           invalidateOnRefresh: true,
           refreshPriority: -1,
         }
@@ -209,7 +209,7 @@ export default function DifferenceSection() {
       tl.fromTo(
         bgTitle,
         { scale: 0.95, opacity: 0 },
-        { scale: 1, opacity: 1, ease: 'power2.out', duration: 0.4 },
+        { scale: 1, opacity: 1, ease: 'power2.out', duration: 0.35 },
         0
       );
 
@@ -222,8 +222,8 @@ export default function DifferenceSection() {
         tl.fromTo(
           card,
           { x: xVal, y: yVal, rotation: rotateStart, opacity: 0, scale: 0.9 },
-          { x: 0, y: 0, rotation: rotation, opacity: 1, scale: 1, ease: 'power3.out', duration: 0.5 },
-          idx * 0.08 + 0.1 // staggered start times
+          { x: 0, y: 0, rotation: rotation, opacity: 1, scale: 1, ease: 'power3.out', duration: 0.4 },
+          idx * 0.05 + 0.05 // staggered start times so all 5 cards complete fully when entering section
         );
       });
 
@@ -263,7 +263,7 @@ export default function DifferenceSection() {
           <div className={styles.emblaContainer}>
             {cards.map((c, idx) => (
               <div key={idx} className={styles.emblaSlide}>
-                <div className={`${styles.testimonialCard} ${styles[`cardBg${idx + 1}`]} ${styles.mobileTestimonialCard}`}>
+                <div className={`${styles.mobileTestimonialCard} ${styles[`cardBg${idx + 1}`]}`}>
                   <p className={styles.testimonialQuote}>"{c.description}"</p>
                   <div className={styles.testimonialAuthor}>
                     <div className={styles.authorAvatar}>
@@ -292,7 +292,7 @@ export default function DifferenceSection() {
       {/* Background logo watermark centered, scaling and fading on scroll */}
       <div className={styles.stickyHeader}>
         <div ref={differenceBgTitleRef} className={styles.differenceBgLogo}>
-          <img src="/logo-medico-transparent.png" alt="Medico Valley Logo Watermark" />
+          <img src="/logo-icon-only.png" alt="Medico Valley Logo Watermark" />
         </div>
       </div>
 

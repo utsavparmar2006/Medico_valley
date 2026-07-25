@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "6a3a779cd2ff2f71b7b968ba",
+    "title": "Utsav PARMAR",
+    "category": "Anatomy",
+    "description": "Dissectible organs, sagittal divisions, and highly-detailed vascular structures for deep scientific learning.",
+    "initials": "AM",
+    "displayOrder": 1,
+    "isActive": true,
+    "__v": 0,
+    "createdAt": "2026-06-23T12:10:04.464Z",
+    "updatedAt": "2026-06-26T13:43:06.359Z"
+  },
+  {
+    "_id": "6a3a779cd2ff2f71b7b968bb",
+    "title": "Clinical Skills",
+    "category": "Task Trainers",
+    "description": "Realistic feedback modules for vascular access, airway management, and suturing techniques.",
+    "initials": "CS",
+    "displayOrder": 2,
+    "isActive": true,
+    "__v": 0,
+    "createdAt": "2026-06-23T12:10:04.465Z",
+    "updatedAt": "2026-06-23T12:10:04.465Z"
+  },
+  {
+    "_id": "6a3a779cd2ff2f71b7b968bc",
+    "title": "High-Fidelity Manikins",
+    "category": "Simulators",
+    "description": "Full-body simulation systems with integrated physiology, life-like responses, and clinical monitoring.",
+    "initials": "HF",
+    "displayOrder": 3,
+    "isActive": true,
+    "__v": 0,
+    "createdAt": "2026-06-23T12:10:04.465Z",
+    "updatedAt": "2026-06-23T12:10:04.465Z"
+  },
+  {
+    "_id": "6a3a779cd2ff2f71b7b968bd",
+    "title": "Immersive Training",
+    "category": "Innovation",
+    "description": "State-of-the-art virtual clinical environments (VR) for training multiple student teams simultaneously.",
+    "initials": "VR",
+    "displayOrder": 4,
+    "isActive": true,
+    "__v": 0,
+    "createdAt": "2026-06-23T12:10:04.466Z",
+    "updatedAt": "2026-06-23T12:10:04.466Z"
+  },
+  {
+    "_id": "6a3a779cd2ff2f71b7b968be",
+    "title": "Exclusive Partnerships",
+    "category": "Global Reach",
+    "description": "Bringing the world's most trusted, international-standard medical simulation technologies directly to Indian labs.",
+    "initials": "EP",
+    "displayOrder": 5,
+    "isActive": true,
+    "__v": 0,
+    "createdAt": "2026-06-23T12:10:04.466Z",
+    "updatedAt": "2026-06-23T12:10:04.466Z"
+  }
+]

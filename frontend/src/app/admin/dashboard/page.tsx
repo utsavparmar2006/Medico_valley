@@ -26,6 +26,7 @@ interface ProductObj {
   };
   mediaUrls: string[];
   catalogUrl?: string;
+  keyFeatures?: string[];
 }
 
 interface DeltaDifferenceCardObj {
@@ -45,7 +46,7 @@ export default function AdminDashboard() {
 
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors'>('overview');
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
@@ -68,6 +69,20 @@ export default function AdminDashboard() {
   const [isCreatingClient, setIsCreatingClient] = useState(false);
   const [showConfirmDeleteClientModal, setShowConfirmDeleteClientModal] = useState<string | null>(null);
 
+  // Sectors / Labs States
+  const [sectorsList, setSectorsList] = useState<any[]>([]);
+  const [sectorTitle, setSectorTitle] = useState('');
+  const [sectorDesc, setSectorDesc] = useState('');
+  const [sectorDefaultImg, setSectorDefaultImg] = useState('');
+  const [sectorHoverImg, setSectorHoverImg] = useState('');
+  const [sectorLinkUrl, setSectorLinkUrl] = useState('/products');
+  const [sectorDisplayOrder, setSectorDisplayOrder] = useState<number>(0);
+  const [editingSector, setEditingSector] = useState<any | null>(null);
+  const [isCreatingSector, setIsCreatingSector] = useState(false);
+  const [showConfirmDeleteSectorModal, setShowConfirmDeleteSectorModal] = useState<string | null>(null);
+  const [sectorUploadingDefault, setSectorUploadingDefault] = useState(false);
+  const [sectorUploadingHover, setSectorUploadingHover] = useState(false);
+
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
   const [blogSubject, setBlogSubject] = useState('');
@@ -87,6 +102,7 @@ export default function AdminDashboard() {
   const [editProductCategoryId, setEditProductCategoryId] = useState('');
   const [editProductMedia, setEditProductMedia] = useState<string[]>([]);
   const [editProductCatalog, setEditProductCatalog] = useState('');
+  const [editProductKeyFeatures, setEditProductKeyFeatures] = useState('');
 
   // Search & Filtering states for Listings Tab
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,6 +178,7 @@ export default function AdminDashboard() {
   const [productCategoryId, setProductCategoryId] = useState('');
   const [productMediaUrls, setProductMediaUrls] = useState<string[]>([]);
   const [productCatalogUrl, setProductCatalogUrl] = useState('');
+  const [productKeyFeatures, setProductKeyFeatures] = useState('');
 
   // Delta Difference Cards states
   const [deltaCardsList, setDeltaCardsList] = useState<DeltaDifferenceCardObj[]>([]);
@@ -318,6 +335,19 @@ export default function AdminDashboard() {
       if (clientRes.ok && clientData.success) {
         setClientsList(clientData.data);
       }
+
+      // Fetch Sectors / Labs
+      const sectorRes = await fetch(`http://localhost:5000/api/public/sectors?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      const sectorData = await sectorRes.json();
+      if (sectorRes.ok && sectorData.success) {
+        setSectorsList(sectorData.data);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -455,8 +485,13 @@ export default function AdminDashboard() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!categoryName || !categoryDesc || !categoryImgUrl) {
-      setStatusMessage({ type: 'error', text: 'All category fields are required.' });
+    if (!categoryName || !categoryDesc) {
+      setStatusMessage({ type: 'error', text: 'Category Name and Description are required.' });
+      return;
+    }
+
+    if (!categoryImgUrl) {
+      setStatusMessage({ type: 'error', text: 'Category Cover Image is required. Please upload an image.' });
       return;
     }
 
@@ -497,10 +532,20 @@ export default function AdminDashboard() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!productName || !productDesc || !productCategoryId || productMediaUrls.length === 0) {
-      setStatusMessage({ type: 'error', text: 'Name, Description, Category, and at least one image/video are required.' });
+    if (!productName || !productDesc || !productCategoryId) {
+      setStatusMessage({ type: 'error', text: 'Product Name, Description, and Category are required.' });
       return;
     }
+
+    if (productMediaUrls.length === 0) {
+      setStatusMessage({ type: 'error', text: 'Product Media is required. Please upload at least one image or video.' });
+      return;
+    }
+
+    const keyFeaturesArray = productKeyFeatures
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     startTransition(async () => {
       try {
@@ -515,6 +560,7 @@ export default function AdminDashboard() {
             categoryId: productCategoryId,
             mediaUrls: productMediaUrls,
             catalogUrl: productCatalogUrl || undefined,
+            keyFeatures: keyFeaturesArray,
           }),
         });
 
@@ -527,6 +573,7 @@ export default function AdminDashboard() {
           setProductCategoryId('');
           setProductMediaUrls([]);
           setProductCatalogUrl('');
+          setProductKeyFeatures('');
           loadDashboardData();
           setActiveTab('overview');
         } else {
@@ -557,6 +604,7 @@ export default function AdminDashboard() {
     setEditProductCategoryId(product.category?._id || '');
     setEditProductMedia(product.mediaUrls);
     setEditProductCatalog(product.catalogUrl || '');
+    setEditProductKeyFeatures(product.keyFeatures ? product.keyFeatures.join('\n') : '');
     setStatusMessage(null);
     setActiveTab('productDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -595,7 +643,22 @@ export default function AdminDashboard() {
 
   const handleProductUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProduct || !editProductName || !editProductDesc || !editProductCategoryId || editProductMedia.length === 0) return;
+    if (!selectedProduct) return;
+
+    if (!editProductName || !editProductDesc || !editProductCategoryId) {
+      setStatusMessage({ type: 'error', text: 'Product Name, Description, and Category are required.' });
+      return;
+    }
+
+    if (editProductMedia.length === 0) {
+      setStatusMessage({ type: 'error', text: 'Product Media is required. Please upload at least one image or video.' });
+      return;
+    }
+
+    const keyFeaturesArray = editProductKeyFeatures
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     setStatusMessage(null);
     startTransition(async () => {
@@ -609,6 +672,7 @@ export default function AdminDashboard() {
             categoryId: editProductCategoryId,
             mediaUrls: editProductMedia,
             catalogUrl: editProductCatalog || undefined,
+            keyFeatures: keyFeaturesArray,
           }),
         });
         const data = await response.json();
@@ -916,8 +980,8 @@ export default function AdminDashboard() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!clientName || !clientLocation || !clientTestimonial || !clientType || !clientLogoUrl) {
-      setStatusMessage({ type: 'error', text: 'All fields including Logo Image are required.' });
+    if (!clientName.trim() || !clientTestimonial.trim() || !clientLogoUrl.trim()) {
+      setStatusMessage({ type: 'error', text: 'Client Name, Testimonial Message, and Logo Image are required.' });
       return;
     }
 
@@ -987,6 +1051,152 @@ export default function AdminDashboard() {
     }
   };
 
+  // Sector Handler Methods
+  const resetSectorForm = () => {
+    setEditingSector(null);
+    setIsCreatingSector(false);
+    setSectorTitle('');
+    setSectorDesc('');
+    setSectorDefaultImg('');
+    setSectorHoverImg('');
+    setSectorLinkUrl('/products');
+    setSectorDisplayOrder(0);
+    setSectorUploadingDefault(false);
+    setSectorUploadingHover(false);
+  };
+
+  const openSectorEdit = (sector: any) => {
+    setEditingSector(sector);
+    setSectorTitle(sector.title);
+    setSectorDesc(sector.desc);
+    setSectorDefaultImg(sector.defaultImg);
+    setSectorHoverImg(sector.hoverImg || '');
+    setSectorLinkUrl(sector.linkUrl || '/products');
+    setSectorDisplayOrder(sector.displayOrder || 0);
+    setIsCreatingSector(true);
+  };
+
+  const handleFileUploadForSector = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'default' | 'hover'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'default') setSectorUploadingDefault(true);
+    else setSectorUploadingHover(true);
+
+    try {
+      const url = await handleFileUpload(file);
+      if (url) {
+        if (type === 'default') setSectorDefaultImg(url);
+        else setSectorHoverImg(url);
+        setStatusMessage({ type: 'success', text: `${type === 'default' ? 'Default' : 'Hover'} image uploaded successfully!` });
+      } else {
+        setStatusMessage({ type: 'error', text: 'Image upload failed' });
+      }
+    } catch (err) {
+      console.error('Sector image upload error:', err);
+      setStatusMessage({ type: 'error', text: 'Image upload failed' });
+    } finally {
+      if (type === 'default') setSectorUploadingDefault(false);
+      else setSectorUploadingHover(false);
+    }
+  };
+
+  const handleSaveSector = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!editingSector && sectorsList.length >= 4) {
+      setStatusMessage({ type: 'error', text: 'Maximum limit of 4 sector cards reached. Edit or delete an existing card to add a new one.' });
+      return;
+    }
+
+    if (!sectorTitle.trim()) {
+      setStatusMessage({ type: 'error', text: 'Sector title is required.' });
+      return;
+    }
+    if (sectorTitle.length > 40) {
+      setStatusMessage({ type: 'error', text: 'Title cannot exceed 40 characters.' });
+      return;
+    }
+    if (!sectorDesc.trim()) {
+      setStatusMessage({ type: 'error', text: 'Short description is required.' });
+      return;
+    }
+    if (sectorDesc.length > 180) {
+      setStatusMessage({ type: 'error', text: 'Short description cannot exceed 180 characters.' });
+      return;
+    }
+    if (!sectorDefaultImg.trim()) {
+      setStatusMessage({ type: 'error', text: 'Default (without hover) image is required.' });
+      return;
+    }
+
+    const payload = {
+      title: sectorTitle.trim(),
+      desc: sectorDesc.trim(),
+      defaultImg: sectorDefaultImg,
+      hoverImg: sectorHoverImg,
+      linkUrl: sectorLinkUrl,
+      displayOrder: Number(sectorDisplayOrder) || 0,
+    };
+
+    const targetUrl = editingSector
+      ? `http://localhost:5000/api/admin/sectors/${editingSector._id}`
+      : 'http://localhost:5000/api/admin/sectors';
+    const method = editingSector ? 'PUT' : 'POST';
+
+    try {
+      const response = await authFetch(targetUrl, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setStatusMessage({
+          type: 'success',
+          text: editingSector ? 'Sector updated successfully!' : 'Sector created successfully!',
+        });
+        resetSectorForm();
+        await loadDashboardData();
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Action failed.' });
+      }
+    } catch (err) {
+      console.error('Save sector error:', err);
+      setStatusMessage({ type: 'error', text: 'Could not connect to database.' });
+    }
+  };
+
+  const confirmDeleteSector = async (id: string) => {
+    setShowConfirmDeleteSectorModal(null);
+    setStatusMessage(null);
+
+    try {
+      const response = await authFetch(`http://localhost:5000/api/admin/sectors/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStatusMessage({ type: 'success', text: 'Sector deleted successfully!' });
+        await loadDashboardData();
+        if (editingSector?._id === id) {
+          resetSectorForm();
+        }
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Deletion failed.' });
+      }
+    } catch (err) {
+      console.error('Delete sector error:', err);
+      setStatusMessage({ type: 'error', text: 'Could not delete sector.' });
+    }
+  };
+
   if (!adminUser) {
     return <div className={styles.wrapper}>Loading session...</div>;
   }
@@ -1013,15 +1223,6 @@ export default function AdminDashboard() {
           <p>Manage Medico Valley categories, products, and published assets.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button
-            onClick={() => loadDashboardData()}
-            className={styles.logoutBtn}
-            style={{ background: 'rgba(10, 141, 147, 0.08)', color: '#0a8d93', borderColor: 'rgba(10, 141, 147, 0.2)', display: 'flex', alignItems: 'center' }}
-            title="Force refresh all catalog data from database"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', marginRight: '6px' }}>sync</span>
-            <span>Refresh Data</span>
-          </button>
           <button onClick={handleLogout} className={styles.logoutBtn}>
             <span>Log Out</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1122,6 +1323,7 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>mail</span>
               <span style={{ position: 'relative', zIndex: 2 }}>Inquiries</span>
             </button>
+            {/* 
             <button
               onClick={() => { setActiveTab('difference'); setStatusMessage(null); setEditingDeltaCard(null); }}
               className={`${styles.navBtn} ${activeTab === 'difference' ? styles.navBtnActive : ''}`}
@@ -1137,6 +1339,7 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>star</span>
               <span style={{ position: 'relative', zIndex: 2 }}>Delta Difference</span>
             </button>
+            */}
             <button
               onClick={() => { setActiveTab('blogs'); setStatusMessage(null); setEditingBlog(null); }}
               className={`${styles.navBtn} ${activeTab === 'blogs' ? styles.navBtnActive : ''}`}
@@ -1166,6 +1369,21 @@ export default function AdminDashboard() {
               )}
               <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>group</span>
               <span style={{ position: 'relative', zIndex: 2 }}>Top Clients</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('sectors'); setStatusMessage(null); resetSectorForm(); }}
+              className={`${styles.navBtn} ${activeTab === 'sectors' ? styles.navBtnActive : ''}`}
+              style={{ position: 'relative' }}
+            >
+              {activeTab === 'sectors' && (
+                <motion.div
+                  layoutId="sidebarActive"
+                  className={styles.navActiveBg}
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>domain</span>
+              <span style={{ position: 'relative', zIndex: 2 }}>Our Sectors</span>
             </button>
           </nav>
         </aside>
@@ -1477,6 +1695,10 @@ export default function AdminDashboard() {
                     <textarea id="edit-product-description" className={styles.input} rows={7} value={editProductDesc} onChange={(e) => setEditProductDesc(e.target.value)} required />
                   </div>
                   <div className={styles.inputGroup}>
+                    <label className={styles.label} htmlFor="edit-product-keyfeatures">Key Features (One feature per line)</label>
+                    <textarea id="edit-product-keyfeatures" className={styles.input} rows={4} value={editProductKeyFeatures} onChange={(e) => setEditProductKeyFeatures(e.target.value)} placeholder="Enter each bullet point feature on a new line" />
+                  </div>
+                  <div className={styles.inputGroup}>
                     <label className={styles.label}>Product Brochure (PDF)</label>
                     {editProductCatalog ? (
                       <div className={styles.detailPdfRow}>
@@ -1508,7 +1730,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className={styles.detailActions}>
                     <button type="button" className={styles.secondaryButton} onClick={() => setActiveTab(detailReturnTab)}>Cancel</button>
-                    <button type="submit" className={styles.primaryButton} disabled={isPending || uploadingFile || editProductMedia.length === 0}>
+                    <button type="submit" className={styles.primaryButton} disabled={isPending || uploadingFile}>
                       <span className="material-symbols-outlined">save</span>
                       {isPending ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -1785,7 +2007,9 @@ export default function AdminDashboard() {
 
               <div className={styles.grid}>
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label} htmlFor="category-name">Category Name</label>
+                  <label className={styles.label} htmlFor="category-name">
+                    Category Name <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 30 chars)</span>
+                  </label>
                   <input
                     id="category-name"
                     type="text"
@@ -1793,12 +2017,15 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={categoryName}
                     onChange={(e) => setCategoryName(e.target.value)}
+                    maxLength={30}
                     required
                   />
                 </div>
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label} htmlFor="category-desc">Description</label>
+                  <label className={styles.label} htmlFor="category-desc">
+                    Description <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 120 chars)</span>
+                  </label>
                   <input
                     id="category-desc"
                     type="text"
@@ -1806,12 +2033,13 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={categoryDesc}
                     onChange={(e) => setCategoryDesc(e.target.value)}
+                    maxLength={120}
                     required
                   />
                 </div>
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label}>Category Cover Image</label>
+                  <label className={styles.label}>Category Cover Image *</label>
                   <label className={styles.uploadBox}>
                     <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
@@ -1847,7 +2075,7 @@ export default function AdminDashboard() {
                 type="submit"
                 className="ctaButton"
                 style={{ width: '220px', marginTop: '16px', background: 'var(--primary)', border: 'none', padding: '14px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-                disabled={isPending || uploadingFile || !categoryImgUrl}
+                disabled={isPending || uploadingFile}
               >
                 Create Category
               </button>
@@ -1866,7 +2094,9 @@ export default function AdminDashboard() {
 
               <div className={styles.grid}>
                 <div className={styles.inputGroup}>
-                  <label className={styles.label} htmlFor="product-name">Product Name</label>
+                  <label className={styles.label} htmlFor="product-name">
+                    Product Name <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 50 chars)</span>
+                  </label>
                   <input
                     id="product-name"
                     type="text"
@@ -1874,6 +2104,7 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
+                    maxLength={50}
                     required
                   />
                 </div>
@@ -1895,7 +2126,9 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label} htmlFor="product-desc">Description</label>
+                  <label className={styles.label} htmlFor="product-desc">
+                    Description <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 300 chars)</span>
+                  </label>
                   <textarea
                     id="product-desc"
                     placeholder="Enter detailed technical description of the product"
@@ -1903,13 +2136,28 @@ export default function AdminDashboard() {
                     rows={4}
                     value={productDesc}
                     onChange={(e) => setProductDesc(e.target.value)}
+                    maxLength={300}
                     required
+                  />
+                </div>
+
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <label className={styles.label} htmlFor="product-keyfeatures">
+                    Key Features <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional - One feature per line)</span>
+                  </label>
+                  <textarea
+                    id="product-keyfeatures"
+                    placeholder="Enter each bullet point feature on a new line"
+                    className={styles.input}
+                    rows={4}
+                    value={productKeyFeatures}
+                    onChange={(e) => setProductKeyFeatures(e.target.value)}
                   />
                 </div>
 
                 {/* Multiple image / video files upload */}
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label}>Product Media (Images or Videos)</label>
+                  <label className={styles.label}>Product Media (Images or Videos) *</label>
                   <label className={styles.uploadBox}>
                     <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
@@ -1993,7 +2241,7 @@ export default function AdminDashboard() {
                 type="submit"
                 className="ctaButton"
                 style={{ width: '220px', marginTop: '16px', background: 'var(--primary)', border: 'none', padding: '14px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-                disabled={isPending || uploadingFile || productMediaUrls.length === 0}
+                disabled={isPending || uploadingFile}
               >
                 Create Product
               </button>
@@ -2027,7 +2275,6 @@ export default function AdminDashboard() {
                         <th style={{ padding: '12px 16px' }}>Inquiry ID</th>
                         <th style={{ padding: '12px 16px' }}>Date</th>
                         <th style={{ padding: '12px 16px' }}>Product</th>
-                        <th style={{ padding: '12px 16px' }}>Quantity</th>
                         <th style={{ padding: '12px 16px' }}>Customer</th>
                         <th style={{ padding: '12px 16px' }}>Institution</th>
                         <th style={{ padding: '12px 16px' }}>City</th>
@@ -2065,7 +2312,6 @@ export default function AdminDashboard() {
                               <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.productName}</div>
                               <span style={{ fontSize: '0.75rem', color: '#08777d', background: 'rgba(10, 141, 147, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>{inq.category}</span>
                             </td>
-                            <td style={{ padding: '16px', textAlign: 'center', fontWeight: 'bold', color: '#0f172a' }}>{inq.quantity}</td>
                             <td style={{ padding: '16px' }}>
                               <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.customerName}</div>
                               <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{inq.email}</div>
@@ -2475,8 +2721,8 @@ export default function AdminDashboard() {
                       onClick={() => {
                         setEditingBlog({ isNew: true });
                         setBlogTitle('');
-                        setBlogSubject('anatomy');
-                        setBlogReadTime('5 min read');
+                        setBlogSubject('');
+                        setBlogReadTime('');
                         setBlogExcerpt('');
                         setBlogImageUrl('');
                         setBlogContentText('');
@@ -2706,22 +2952,33 @@ export default function AdminDashboard() {
             >
               <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div>
-                  <h2 className={styles.listSectionTitle}>
-                    <span className="material-symbols-outlined">group</span>
+                  <h2 className={styles.listSectionTitle} style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="material-symbols-outlined" style={{ color: '#0a8d93' }}>group</span>
                     <span>Top Clients Management</span>
                   </h2>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '4px' }}>
-                    Configure the clients that appear in the endless scrolling homepage logo ticker.
+                  <p style={{ color: '#475569', fontSize: '0.88rem', margin: '4px 0 0 0' }}>
+                    Configure the clients and institution testimonials displayed on the home page.
                   </p>
                 </div>
                 {!isCreatingClient && !editingClient && (
                   <button
                     type="button"
                     onClick={() => { resetClientForm(); setIsCreatingClient(true); }}
-                    className="ctaButton"
-                    style={{ background: 'var(--primary)', border: 'none', padding: '12px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: '#0a8d93',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)',
+                    }}
                   >
-                    <span className="material-symbols-outlined">add</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
                     Add Client Logo
                   </button>
                 )}
@@ -2729,41 +2986,47 @@ export default function AdminDashboard() {
 
               {/* Edit / Create Form */}
               {(isCreatingClient || editingClient) ? (
-                <form onSubmit={handleClientSubmit} style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: 'var(--primary-light)', fontWeight: 'bold', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px' }}>
+                <form onSubmit={handleClientSubmit} style={{ background: '#ffffff', border: '1px solid #cbd5e1', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: '#0a8d93', fontWeight: 'bold', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px', margin: 0 }}>
                     {editingClient ? `Edit Client: ${editingClient.name}` : 'Create New Client Logo'}
                   </h3>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label} htmlFor="client-name">Client Name</label>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }} htmlFor="client-name">
+                      Client / Institution Name <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
                     <input
                       id="client-name"
-                      className={styles.input}
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="e.g. Bharati Vidyapeeth University"
                       required
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '500' }}
                     />
                   </div>
 
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label} htmlFor="client-testimonial">Message (Hover Testimonial)</label>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }} htmlFor="client-testimonial">
+                      Message (Testimonial Quote) <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
                     <textarea
                       id="client-testimonial"
-                      className={styles.input}
                       rows={4}
                       value={clientTestimonial}
                       onChange={(e) => setClientTestimonial(e.target.value)}
                       placeholder="e.g. Medico Valley's advanced simulators have significantly enhanced our clinical training programs..."
                       required
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontFamily: 'inherit', fontWeight: '500' }}
                     />
                   </div>
 
                   {/* Logo Image Upload */}
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label}>Client Logo Image</label>
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }}>
+                      Client Logo Image <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '8px' }}>
                       {clientLogoUrl ? (
-                        <div style={{ width: '120px', height: '60px', position: 'relative', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+                        <div style={{ width: '120px', height: '60px', position: 'relative', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
                           <img
                             src={clientLogoUrl}
                             alt="Logo preview"
@@ -2771,18 +3034,18 @@ export default function AdminDashboard() {
                           />
                         </div>
                       ) : (
-                        <div style={{ width: '120px', height: '60px', background: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span className="material-symbols-outlined" style={{ color: '#4b5563' }}>image</span>
+                        <div style={{ width: '120px', height: '60px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span className="material-symbols-outlined" style={{ color: '#0a8d93' }}>image</span>
                         </div>
                       )}
                       
-                      <label className={styles.detailUploadButton} style={{ margin: 0, padding: '10px 16px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <label style={{ background: '#f1f5f9', color: '#0a8d93', border: '1px solid #cbd5e1', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>
                         Upload Logo File
                         <input
                           type="file"
                           accept="image/*"
-                          className={styles.fileInput}
+                          style={{ display: 'none' }}
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
@@ -2795,19 +3058,18 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                     <button
                       type="submit"
                       disabled={isPending || uploadingFile}
-                      className="ctaButton"
-                      style={{ width: '160px', background: 'var(--primary)', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ background: '#0a8d93', color: '#ffffff', border: 'none', padding: '12px 28px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)' }}
                     >
                       {isPending ? 'Saving...' : 'Save Client'}
                     </button>
                     <button
                       type="button"
                       onClick={resetClientForm}
-                      style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#94A3B8', padding: '12px', borderRadius: '8px', width: '100px', fontWeight: 'bold', cursor: 'pointer' }}
+                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                       Cancel
                     </button>
@@ -2817,15 +3079,16 @@ export default function AdminDashboard() {
                 /* Client Grid List */
                 <div>
                   {clientsList.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                       {clientsList.map((client) => (
                         <div
                           key={client._id}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.02)',
-                            border: '1px solid rgba(255, 255, 255, 0.06)',
-                            borderRadius: '12px',
-                            padding: '20px',
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                            padding: '24px',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between',
@@ -2834,7 +3097,7 @@ export default function AdminDashboard() {
                           }}
                         >
                           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                            <div style={{ width: '80px', height: '50px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}>
+                            <div style={{ width: '80px', height: '54px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}>
                               <img
                                 src={client.logoUrl}
                                 alt={client.name}
@@ -2842,45 +3105,325 @@ export default function AdminDashboard() {
                               />
                             </div>
                             <div style={{ flex: 1 }}>
-                              <h4 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#e2e8f0', margin: 0 }}>
+                              <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#0f172a', margin: 0, lineHeight: '1.3' }}>
                                 {client.name}
                               </h4>
                             </div>
                           </div>
 
-                          <div style={{ background: 'rgba(255, 255, 255, 0.02)', borderLeft: '2px solid var(--primary)', padding: '8px 12px', borderRadius: '4px' }}>
-                            <p style={{ fontSize: '0.82rem', color: '#94a3b8', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
+                          <div style={{ background: '#f0fdfa', borderLeft: '3px solid #0a8d93', padding: '12px 16px', borderRadius: '8px' }}>
+                            <p style={{ fontSize: '0.88rem', color: '#334155', fontStyle: 'italic', margin: 0, lineHeight: '1.5' }}>
                               "{client.testimonial}"
                             </p>
                           </div>
 
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '12px' }}>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button
-                                type="button"
-                                onClick={() => openClientEdit(client)}
-                                style={{ background: 'rgba(15, 111, 255, 0.1)', border: '1px solid rgba(15, 111, 255, 0.2)', color: '#60a5fa', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                              >
-                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>edit</span>
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setShowConfirmDeleteClientModal(client._id)}
-                                style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fca5a5', padding: '6px 12px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                              >
-                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>delete</span>
-                                Delete
-                              </button>
-                            </div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '14px', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => openClientEdit(client)}
+                              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmDeleteClientModal(client._id)}
+                              style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                              Delete
+                            </button>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className={styles.emptyState} style={{ padding: '60px 0' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#4b5563', marginBottom: '12px' }}>group</span>
-                      <p style={{ color: '#94a3b8' }}>No clients found in the database. Add your first client logo to populate the home page.</p>
+                    <div className={styles.emptyState} style={{ padding: '60px 0', background: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#0a8d93', marginBottom: '12px' }}>group</span>
+                      <p style={{ color: '#475569', fontWeight: '500' }}>No clients found in the database. Add your first client logo to populate the home page.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ========================================== */}
+          {/* OUR SECTORS / LABS MANAGEMENT TAB          */}
+          {/* ========================================== */}
+          {activeTab === 'sectors' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={styles.tabContent}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+                    Our Sectors (Lab Cards)
+                  </h2>
+                  <p style={{ fontSize: '0.88rem', color: '#475569', margin: '4px 0 0 0' }}>
+                    Manage the sector lab cards displayed under "Our Sectors" on the home page (Maximum 4 cards limit).
+                  </p>
+                </div>
+                {!isCreatingSector && (
+                  sectorsList.length >= 4 ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: '#f1f5f9',
+                        border: '1px solid #cbd5e1',
+                        color: '#475569',
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#0a8d93' }}>lock</span>
+                      Max 4 Cards Reached ({sectorsList.length}/4)
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => { resetSectorForm(); setIsCreatingSector(true); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: '#0a8d93',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)',
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                      Add New Sector ({sectorsList.length}/4)
+                    </button>
+                  )
+                )}
+              </div>
+
+              {isCreatingSector ? (
+                /* Sector Form */
+                <form onSubmit={handleSaveSector} style={{ background: '#ffffff', border: '1px solid #cbd5e1', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#0a8d93', margin: 0 }}>
+                    {editingSector ? 'Edit Sector Card' : 'Create New Sector Card'}
+                  </h3>
+
+                  {/* Title field with max 40 chars limit counter */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>
+                        Sector Title <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <span style={{ fontSize: '0.75rem', color: sectorTitle.length > 40 ? '#ef4444' : '#0a8d93', fontWeight: 'bold' }}>
+                        {sectorTitle.length} / 40 chars
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      maxLength={40}
+                      value={sectorTitle}
+                      onChange={(e) => setSectorTitle(e.target.value)}
+                      placeholder="e.g. Anatomy Lab"
+                      required
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '500' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                      Tip: Keep title concise (max 40 characters) to preserve card layout.
+                    </p>
+                  </div>
+
+                  {/* Short Description with max 180 chars limit counter */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>
+                        Short Description <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <span style={{ fontSize: '0.75rem', color: sectorDesc.length > 180 ? '#ef4444' : '#0a8d93', fontWeight: 'bold' }}>
+                        {sectorDesc.length} / 180 chars
+                      </span>
+                    </div>
+                    <textarea
+                      maxLength={180}
+                      rows={3}
+                      value={sectorDesc}
+                      onChange={(e) => setSectorDesc(e.target.value)}
+                      placeholder="Short description shown when users hover over the card..."
+                      required
+                      style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontFamily: 'inherit', fontWeight: '500' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                      Tip: Maximum 180 characters so the description fits inside the card hover overlay cleanly.
+                    </p>
+                  </div>
+
+                  {/* Image 1: Default / Without Hover */}
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }}>
+                      Default Image (Without Hover) <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        value={sectorDefaultImg}
+                        onChange={(e) => setSectorDefaultImg(e.target.value)}
+                        placeholder="Image URL or upload file..."
+                        required
+                        style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a' }}
+                      />
+                      <label style={{ background: '#f1f5f9', color: '#0a8d93', border: '1px solid #cbd5e1', padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        {sectorUploadingDefault ? 'Uploading...' : 'Upload File'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUploadForSector(e, 'default')}
+                          disabled={sectorUploadingDefault}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Image 2: Hover State */}
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }}>
+                      Hover Image (With Hover) <span style={{ fontSize: '0.75rem', color: '#64748b' }}>(Optional — defaults to standard image if left empty)</span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        value={sectorHoverImg}
+                        onChange={(e) => setSectorHoverImg(e.target.value)}
+                        placeholder="Hover image URL or upload file..."
+                        style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a' }}
+                      />
+                      <label style={{ background: '#f1f5f9', color: '#0a8d93', border: '1px solid #cbd5e1', padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        {sectorUploadingHover ? 'Uploading...' : 'Upload File'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUploadForSector(e, 'hover')}
+                          disabled={sectorUploadingHover}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Display Order */}
+                  <div>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b', display: 'block', marginBottom: '6px' }}>
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      value={sectorDisplayOrder}
+                      onChange={(e) => setSectorDisplayOrder(Number(e.target.value))}
+                      placeholder="0"
+                      style={{ width: '140px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a' }}
+                    />
+                  </div>
+
+                  {/* Submit & Cancel Buttons */}
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                    <button
+                      type="submit"
+                      style={{ background: '#0a8d93', color: '#ffffff', border: 'none', padding: '12px 28px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)' }}
+                    >
+                      {editingSector ? 'Update Sector' : 'Save Sector'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetSectorForm}
+                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* Sector Cards Grid List */
+                <div>
+                  {sectorsList.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+                      {sectorsList.map((sector) => (
+                        <div
+                          key={sector._id}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            position: 'relative'
+                          }}
+                        >
+                          {/* Image preview box */}
+                          <div style={{ position: 'relative', height: '180px', background: '#0f172a', overflow: 'hidden' }}>
+                            <img
+                              src={sector.defaultImg}
+                              alt={sector.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(10, 141, 147, 0.95)', padding: '4px 10px', borderRadius: '20px', color: '#ffffff', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                              Order: {sector.displayOrder}
+                            </div>
+                          </div>
+
+                          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#0f172a', margin: 0, whiteSpace: 'pre-line' }}>
+                              {sector.title}
+                            </h4>
+                            <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, lineHeight: '1.5' }}>
+                              {sector.desc}
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid #e2e8f0', padding: '14px 20px', gap: '8px', background: '#f8fafc' }}>
+                            <button
+                              type="button"
+                              onClick={() => openSectorEdit(sector)}
+                              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmDeleteSectorModal(sector._id)}
+                              style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyState} style={{ padding: '60px 0', background: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#0a8d93', marginBottom: '12px' }}>domain</span>
+                      <p style={{ color: '#475569', fontWeight: '500' }}>No sectors found in database. Default 4 sectors are currently rendering on the home page.</p>
+                      <button
+                        type="button"
+                        onClick={() => { resetSectorForm(); setIsCreatingSector(true); }}
+                        style={{ marginTop: '16px', background: '#0a8d93', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Add Your First Sector
+                      </button>
                     </div>
                   )}
                 </div>
@@ -3282,6 +3825,93 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => confirmDeleteClient(showConfirmDeleteClientModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Modal for confirm sector deletion */}
+      <AnimatePresence>
+        {showConfirmDeleteSectorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(15, 111, 255, 0.2)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 111, 255, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to remove this sector card? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteSectorModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteSector(showConfirmDeleteSectorModal)}
                   style={{
                     flex: 1,
                     background: 'rgba(239, 68, 68, 0.15)',

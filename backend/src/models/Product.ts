@@ -7,6 +7,7 @@ export interface IProduct extends Document {
   category: mongoose.Types.ObjectId;
   mediaUrls: string[];
   catalogUrl?: string;
+  keyFeatures?: string[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -20,6 +21,7 @@ const ProductSchema: Schema = new Schema(
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
     mediaUrls: { type: [String], default: [] },
     catalogUrl: { type: String },
+    keyFeatures: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

@@ -10,8 +10,94 @@ import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import { sendEmail } from '../utils/email';
 import Blog from '../models/Blog';
 import Client from '../models/Client';
+import Sector from '../models/Sector';
 
 const router = express.Router();
+
+const DEFAULT_SECTORS = [
+  {
+    title: 'Anatomy Lab',
+    desc: 'Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.',
+    defaultImg: '/labs/anatomy_default.png',
+    hoverImg: '/labs/anatomy_hover.png',
+    linkUrl: '/products',
+    displayOrder: 1,
+  },
+  {
+    title: 'Homeopathy Lab',
+    desc: 'Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.',
+    defaultImg: '/labs/homeopathy_default.png',
+    hoverImg: '/labs/homeopathy_hover.png',
+    linkUrl: '/products',
+    displayOrder: 2,
+  },
+  {
+    title: 'Nursing Skills Lab',
+    desc: 'Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.',
+    defaultImg: '/labs/nursing_default.png',
+    hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/products',
+    displayOrder: 3,
+  },
+  {
+    title: 'Ayurvedic Lab',
+    desc: 'Traditional anatomical representations, core model structures, and specialized teaching frameworks.',
+    defaultImg: '/labs/ayurvedic_default.png',
+    hoverImg: '/labs/ayurvedic_hover.png',
+    linkUrl: '/products',
+    displayOrder: 4,
+  },
+];
+
+const DEFAULT_CLIENTS = [
+  {
+    name: 'Bharati Vidyapeeth Deemed University',
+    location: 'Pune',
+    testimonial: 'Medico Valley\'s advanced simulation technology has significantly enhanced our training capabilities with the latest simulation models.',
+    type: 'Medical University',
+    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBs1TJS_og_wI-Vgf8amUYZ8jMOJXbvvzhkgtYWdpXQ41nUoq34vTzrXjerJGX04Wx_PPJI2jJurr9BajPereCDYAzIYKr0QBmXHQexjwrDJBZrMBbZMd9c4UHX1gtem_oMMPzbsUzRhbjrMBnjTePZubZOJAGHB9FO5WPFiLHdNyEC0mizXsFRj0GWZhQrOJ936uRrT2rGwO0Cs3WVFmWSPXCmN2_cFfVLe1l_XpJVaprHkIrPpqxwnTFLPV9a9QOWacr_gK8RK-jY',
+    displayOrder: 1,
+  },
+  {
+    name: 'KD Hospital',
+    location: 'Ahmedabad',
+    testimonial: 'The high-fidelity simulators provided by Medico Valley offer our clinicians a highly realistic training environment, drastically improving procedural outcomes.',
+    type: 'Hospital',
+    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBs1TJS_og_wI-Vgf8amUYZ8jMOJXbvvzhkgtYWdpXQ41nUoq34vTzrXjerJGX04Wx_PPJI2jJurr9BajPereCDYAzIYKr0QBmXHQexjwrDJBZrMBbZMd9c4UHX1gtem_oMMPzbsUzRhbjrMBnjTePZubZOJAGHB9FO5WPFiLHdNyEC0mizXsFRj0GWZhQrOJ936uRrT2rGwO0Cs3WVFmWSPXCmN2_cFfVLe1l_XpJVaprHkIrPpqxwnTFLPV9a9QOWacr_gK8RK-jY',
+    displayOrder: 2,
+  },
+  {
+    name: 'Pramukhswami Medical College',
+    location: 'Karamsad',
+    testimonial: 'Their customer support and high-fidelity anatomical models are second to none. Our students have gained incredible clinical confidence.',
+    type: 'Medical College',
+    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBs1TJS_og_wI-Vgf8amUYZ8jMOJXbvvzhkgtYWdpXQ41nUoq34vTzrXjerJGX04Wx_PPJI2jJurr9BajPereCDYAzIYKr0QBmXHQexjwrDJBZrMBbZMd9c4UHX1gtem_oMMPzbsUzRhbjrMBnjTePZubZOJAGHB9FO5WPFiLHdNyEC0mizXsFRj0GWZhQrOJ936uRrT2rGwO0Cs3WVFmWSPXCmN2_cFfVLe1l_XpJVaprHkIrPpqxwnTFLPV9a9QOWacr_gK8RK-jY',
+    displayOrder: 3,
+  },
+  {
+    name: 'All India Institute of Medical Sciences',
+    location: 'New Delhi',
+    testimonial: 'Top-tier simulators and excellent service. Medico Valley is our trusted partner in setting up state-of-the-art simulation labs.',
+    type: 'Medical Institute',
+    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBs1TJS_og_wI-Vgf8amUYZ8jMOJXbvvzhkgtYWdpXQ41nUoq34vTzrXjerJGX04Wx_PPJI2jJurr9BajPereCDYAzIYKr0QBmXHQexjwrDJBZrMBbZMd9c4UHX1gtem_oMMPzbsUzRhbjrMBnjTePZubZOJAGHB9FO5WPFiLHdNyEC0mizXsFRj0GWZhQrOJ936uRrT2rGwO0Cs3WVFmWSPXCmN2_cFfVLe1l_XpJVaprHkIrPpqxwnTFLPV9a9QOWacr_gK8RK-jY',
+    displayOrder: 4,
+  },
+];
+
+// Get all sectors sorted by displayOrder
+router.get('/sectors', async (req, res) => {
+  try {
+    let sectors = await Sector.find({}).sort({ displayOrder: 1 });
+    if (sectors.length === 0) {
+      await Sector.insertMany(DEFAULT_SECTORS);
+      sectors = await Sector.find({}).sort({ displayOrder: 1 });
+    }
+    return res.json({ success: true, data: sectors });
+  } catch (error: any) {
+    console.error('Fetch sectors error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
 
 // Get active Delta Difference cards sorted by displayOrder
 router.get('/delta-difference', async (req, res) => {
@@ -91,6 +177,21 @@ router.get('/categories/:slug', async (req, res) => {
 });
 
 // 3. Get products under a category by categorySlug
+// Get all top clients (public with auto-seeding)
+router.get('/clients', async (req, res) => {
+  try {
+    const count = await Client.countDocuments();
+    if (count === 0) {
+      await Client.insertMany(DEFAULT_CLIENTS);
+    }
+    const clients = await Client.find({}).sort({ displayOrder: 1 });
+    return res.json({ success: true, data: clients });
+  } catch (error: any) {
+    console.error('Fetch public clients error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
 router.get('/categories/:categorySlug/products', async (req, res) => {
   const { categorySlug } = req.params;
   const page = Math.max(Number(req.query.page) || 0, 0);
@@ -294,7 +395,6 @@ router.post('/inquiries', async (req, res) => {
     email,
     phone,
     city,
-    quantity,
     message,
   } = req.body;
 
@@ -304,10 +404,10 @@ router.post('/inquiries', async (req, res) => {
     !category ||
     !customerName ||
     !institution ||
-    !email ||
+    (!email && !phone) ||
     !city
   ) {
-    return res.status(400).json({ message: 'All required quotation fields must be filled' });
+    return res.status(400).json({ message: 'All required fields (including either Email or Phone Number) must be filled' });
   }
 
   try {
@@ -320,7 +420,6 @@ router.post('/inquiries', async (req, res) => {
       email,
       phone: phone || '',
       city,
-      quantity: category === 'General Inquiry' ? 0 : (Number(quantity) || 1),
       message,
       status: 'Pending',
     });
@@ -419,16 +518,17 @@ Medico Valley
 www.medicovalley.com`;
 
     const encodedMailtoBody = encodeURIComponent(mailtoBody);
-    const mailtoUrl = `mailto:${email}?subject=Re:%20Your%20Inquiry%20to%20Medico%20Valley&body=${encodedMailtoBody}`;
+    const mailtoUrl = email 
+      ? `mailto:${email}?subject=Re:%20Your%20Inquiry%20to%20Medico%20Valley&body=${encodedMailtoBody}`
+      : `mailto:?subject=Re:%20Your%20Inquiry%20to%20Medico%20Valley&body=${encodedMailtoBody}`;
 
     const safeCustomerName = sanitizeHTML(customerName);
-    const safeEmail = sanitizeHTML(email);
-    const safePhone = sanitizeHTML(phone) || 'Not provided (Email only)';
+    const safeEmail = email ? sanitizeHTML(email) : 'Not provided (WhatsApp Contact)';
+    const safePhone = phone ? sanitizeHTML(phone) : 'Not provided (Email only)';
     const safeCity = sanitizeHTML(city);
     const safeInstitution = sanitizeHTML(institution);
     const safeProductName = sanitizeHTML(productName);
     const safeCategory = sanitizeHTML(productCategory);
-    const safeQuantity = sanitizeHTML(String(quantity));
     const safeMessage = sanitizeHTML(message);
 
     if (isGeneralInquiry) {
@@ -443,7 +543,6 @@ City: ${city}
 Institution: ${institution}
 Product/Subject: ${productName}
 Category: ${category}
-Quantity: ${quantity}
 
 Customer Message:
 --------------------------------------------
@@ -592,7 +691,7 @@ This is an automated notification from the Medico Valley portal.`;
           </tr>
           <tr>
             <th>Email Address</th>
-            <td><a href="mailto:${safeEmail}">${safeEmail}</a></td>
+            <td>${email ? `<a href="mailto:${safeEmail}">${safeEmail}</a>` : 'Not provided (WhatsApp Contact)'}</td>
           </tr>
           <tr>
             <th>Phone Number</th>
@@ -613,10 +712,6 @@ This is an automated notification from the Medico Valley portal.`;
           <tr>
             <th>Category</th>
             <td>${safeCategory}</td>
-          </tr>
-          <tr>
-            <th>Requested Qty</th>
-            <td>${safeQuantity}</td>
           </tr>
         </table>
 
@@ -675,7 +770,6 @@ Institution: ${institution}
 Email: ${email}
 Phone: ${phone}
 City: ${city}
-Quantity Requested: ${quantity} units
 
 --- Product Details ---
 Item Name: ${productName}
@@ -1033,19 +1127,15 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
             </tr>
             <tr>
               <td class="table-label">Email Address</td>
-              <td class="table-value"><a href="mailto:${safeEmail}">${safeEmail}</a></td>
+              <td class="table-value">${email ? `<a href="mailto:${safeEmail}">${safeEmail}</a>` : 'Not provided (WhatsApp Contact)'}</td>
             </tr>
             <tr>
               <td class="table-label">Phone Number</td>
-              <td class="table-value"><a href="tel:${safePhone}">${safePhone}</a></td>
+              <td class="table-value">${phone ? `<a href="tel:${safePhone}">${safePhone}</a>` : 'Not provided (Email only)'}</td>
             </tr>
             <tr>
-              <td class="table-label">City</td>
-              <td class="table-value">${safeCity}</td>
-            </tr>
-            <tr>
-              <td class="table-label" style="border-bottom: none;">Quantity</td>
-              <td class="table-value" style="font-weight: 700; border-bottom: none;">${safeQuantity} units</td>
+              <td class="table-label" style="border-bottom: none;">City</td>
+              <td class="table-value" style="border-bottom: none;">${safeCity}</td>
             </tr>
           </table>
         </div>
@@ -1078,8 +1168,8 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
         <div class="actions-card">
           <div class="actions-title">Quick Actions</div>
           <div class="actions-btn-group">
-            <a href="${mailtoUrl}" class="action-btn btn-action-primary">📩 Reply to Customer</a>
-            <a href="tel:${safePhone}" class="action-btn btn-action-primary">📞 Call Customer</a>
+            ${email ? `<a href="${mailtoUrl}" class="action-btn btn-action-primary">📩 Reply to Customer</a>` : ''}
+            ${phone ? `<a href="tel:${safePhone}" class="action-btn btn-action-primary">📞 Call Customer</a>` : ''}
             <a href="${siteUrl}/admin/dashboard?tab=inquiries" class="action-btn btn-action-secondary">🖥️ Open Dashboard</a>
           </div>
           <p style="font-size: 11px; color: #94A3B8; margin-top: 10px; margin-bottom: 0; text-align: center;">

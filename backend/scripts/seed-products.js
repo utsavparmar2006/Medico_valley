@@ -18,7 +18,7 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/delta_healthcare';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/medico_valley';
 
 // Schema definitions
 const CategorySchema = new mongoose.Schema({

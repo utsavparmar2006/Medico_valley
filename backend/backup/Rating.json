@@ -1,0 +1,47 @@
+[
+  {
+    "_id": "6a38da3df8bcad978427ffdc",
+    "visitorId": "v_6ideg7x77ame1zv87pgbb",
+    "productId": "6a342b29b619bff0d17428a9",
+    "__v": 0,
+    "createdAt": "2026-06-22T06:46:21.311Z",
+    "rating": 4,
+    "updatedAt": "2026-06-22T06:46:50.357Z"
+  },
+  {
+    "_id": "6a3cc67b6ba688ec62be5e0a",
+    "productId": "6a3cc5da1c9f9a4ca7c14513",
+    "visitorId": "v_2up7b4s72zrtf0dufzse8",
+    "__v": 0,
+    "createdAt": "2026-06-25T06:11:07.410Z",
+    "rating": 5,
+    "updatedAt": "2026-06-25T06:11:12.124Z"
+  },
+  {
+    "_id": "6a3e7408190e46dfb805f117",
+    "productId": "6a3ce25e1c9f9a4ca7c14675",
+    "visitorId": "v_6ideg7x77ame1zv87pgbb",
+    "__v": 0,
+    "createdAt": "2026-06-26T12:43:52.504Z",
+    "rating": 2,
+    "updatedAt": "2026-06-26T12:43:57.733Z"
+  },
+  {
+    "_id": "6a3e78cd190e46dfb805f118",
+    "productId": "6a3cfde3e22fbe1f0439206d",
+    "visitorId": "v_6ideg7x77ame1zv87pgbb",
+    "__v": 0,
+    "createdAt": "2026-06-26T13:04:13.942Z",
+    "rating": 4,
+    "updatedAt": "2026-06-26T13:35:05.516Z"
+  },
+  {
+    "_id": "6a478ee6786aac41717b5dae",
+    "productId": "6a3ce25e1c9f9a4ca7c14675",
+    "visitorId": "v_nqdmyc13bc8dq4kfolssg",
+    "__v": 0,
+    "createdAt": "2026-07-03T10:28:54.249Z",
+    "rating": 3,
+    "updatedAt": "2026-07-03T10:28:56.594Z"
+  }
+]

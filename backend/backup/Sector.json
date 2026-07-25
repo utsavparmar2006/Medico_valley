@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "6a5e2c454778c06e4a0f27d5",
+    "title": "Anatomy Lab",
+    "desc": "Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.",
+    "defaultImg": "/labs/anatomy_default.png",
+    "hoverImg": "/labs/anatomy_hover.png",
+    "linkUrl": "/products",
+    "displayOrder": 1,
+    "__v": 0,
+    "createdAt": "2026-07-20T14:10:13.973Z",
+    "updatedAt": "2026-07-20T14:10:13.973Z"
+  },
+  {
+    "_id": "6a5e2c454778c06e4a0f27d6",
+    "title": "Homeopathy Lab",
+    "desc": "Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.",
+    "defaultImg": "/labs/homeopathy_default.png",
+    "hoverImg": "/labs/homeopathy_hover.png",
+    "linkUrl": "/products",
+    "displayOrder": 2,
+    "__v": 0,
+    "createdAt": "2026-07-20T14:10:13.975Z",
+    "updatedAt": "2026-07-20T14:10:13.975Z"
+  },
+  {
+    "_id": "6a5e2c454778c06e4a0f27d7",
+    "title": "Nursing Skills Lab",
+    "desc": "Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.",
+    "defaultImg": "/labs/nursing_default.png",
+    "hoverImg": "/labs/nursing_hover.png",
+    "linkUrl": "/products",
+    "displayOrder": 3,
+    "__v": 0,
+    "createdAt": "2026-07-20T14:10:13.975Z",
+    "updatedAt": "2026-07-20T14:10:13.975Z"
+  },
+  {
+    "_id": "6a5e2c454778c06e4a0f27d8",
+    "title": "Ayurvedic Lab",
+    "desc": "Traditional anatomical representations, core model structures, and specialized teaching frameworks.",
+    "defaultImg": "/labs/ayurvedic_default.png",
+    "hoverImg": "/labs/ayurvedic_hover.png",
+    "linkUrl": "/products",
+    "displayOrder": 4,
+    "__v": 0,
+    "createdAt": "2026-07-20T14:10:13.975Z",
+    "updatedAt": "2026-07-20T14:10:13.975Z"
+  }
+]

@@ -44,7 +44,6 @@ export default function ContactUs() {
           email,
           phone,
           city,
-          quantity: 0,
           message: `Subject: ${subject}\n\nMessage: ${message}`,
         }),
       });

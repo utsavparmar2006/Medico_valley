@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "6a3ce0f71c9f9a4ca7c14624",
+    "name": "Anatomy Models",
+    "slug": "anatomy-models",
+    "description": "Detailed anatomical model of the human foot and ankle showcasing muscles, tendons, ligaments, nerves, blood vessels, and skeletal structures for medical education and clinical training.",
+    "imageUrl": "http://localhost:5000/uploads/1782375769109-654610154.png",
+    "createdAt": "2026-06-25T08:04:07.211Z",
+    "updatedAt": "2026-07-08T05:51:04.249Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3d00f0c3fb586bf8e528ba",
+    "name": "Training Models",
+    "slug": "training-models",
+    "description": "Professional infant care training models designed for nursing education, pediatric simulation, neonatal care, and healthcare skill development. These realistic newborn manikins help students and healthcare professionals practice.",
+    "imageUrl": "http://localhost:5000/uploads/1782382831320-757146942.png",
+    "createdAt": "2026-06-25T10:20:32.836Z",
+    "updatedAt": "2026-07-05T18:05:35.925Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3d143aff740f3ab5716e24",
+    "name": "task trainer",
+    "slug": "task-trainer",
+    "description": "Professional adult airway management trainer designed for realistic practice of endotracheal intubation, ventilation, airway assessment",
+    "imageUrl": "http://localhost:5000/uploads/1782387768789-609364705.png",
+    "createdAt": "2026-06-25T11:42:50.705Z",
+    "updatedAt": "2026-06-25T11:52:11.067Z",
+    "__v": 0
+  }
+]

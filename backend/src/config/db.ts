@@ -57,7 +57,7 @@ export const seedDeltaDifferenceCards = async () => {
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/delta_healthcare';
+    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/medico_valley';
     
     // Set up mongoose connection options if needed (modern mongoose version 6+ defaults are fine)
     mongoose.connection.on('connected', () => {

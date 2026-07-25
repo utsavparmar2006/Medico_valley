@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function checkDb() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/delta_healthcare');
+    await mongoose.connect('mongodb://localhost:27017/medico_valley');
     console.log('Connected to DB');
     const Product = mongoose.models.Product || mongoose.model('Product', new mongoose.Schema({
       name: String,

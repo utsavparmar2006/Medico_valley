@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView, type Variants } from 'framer-motion';
+import { getBackendUrl } from '@/utils/api';
 import styles from './PremiumFooter.module.css';
 
 const LINKS = {
@@ -76,6 +77,25 @@ export default function PremiumFooter() {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
 
+  const [productsLinks, setProductsLinks] = useState(LINKS.products);
+
+  useEffect(() => {
+    fetch(getBackendUrl('http://localhost:5000/api/public/categories'))
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.data)) {
+          const items = data.data.map((cat: any) => ({
+            label: cat.name,
+            href: `/products/${cat.slug}`,
+          }));
+          if (items.length > 0) {
+            setProductsLinks(items.slice(0, 5));
+          }
+        }
+      })
+      .catch((err) => console.error('Error loading footer categories:', err));
+  }, []);
+
   const colVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -107,8 +127,12 @@ export default function PremiumFooter() {
             animate={isInView ? 'visible' : 'hidden'}
           >
             <div className={styles.brandLogo}>
-              <span className={styles.brandLogoIcon}>⊕</span>
-              Medico Valley
+              <img
+                src="/logo-icon-only.png"
+                alt="MedicoValley icon"
+                style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
+              />
+              MedicoValley
             </div>
             <p className={styles.brandTagline}>
               Setting the global standard for high-fidelity medical simulation and clinical education. Precision in every model.
@@ -157,7 +181,7 @@ export default function PremiumFooter() {
 
           {/* Columns 2, 3, 4: Link Columns */}
           {[
-            { title: 'Products', links: LINKS.products },
+            { title: 'Products', links: productsLinks },
             { title: 'Company', links: LINKS.company },
             { title: 'Support', links: LINKS.support },
           ].map((col, i) => (

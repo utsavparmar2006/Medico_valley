@@ -11,6 +11,7 @@ import styles from './GlobalNavbar.module.css';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
+  { label: 'Simulation Centre', href: '/simulation-centre' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact Us', href: '/contact-us' },
 ];
@@ -142,7 +143,6 @@ export default function GlobalNavbar() {
           {/* Brand text */}
           <div className={styles.logoBrandText}>
             <span className={styles.logoBrandName}>MedicoValley</span>
-            <span className={styles.logoBrandTagline}>Empowering Healthcare Innovations</span>
           </div>
         </Link>
 

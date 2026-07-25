@@ -698,49 +698,164 @@
 }
 
 /* Mobile responsive styles */
-@media (max-width: 1023px) {
+@media (max-width: 768px) {
   .premiumCatalogSectionSwipe {
     height: auto;
     overflow: visible;
+    margin-top: 0 !important; /* Remove 210px desktop glass-panel offset gap */
+    padding: 32px 16px 48px;
+    box-sizing: border-box;
   }
-  
+
   .categorySwipeContainer {
     display: flex;
     flex-direction: column;
     height: auto;
+    gap: 24px;
   }
-  
+
   .categorySwipeSlide {
     position: relative !important;
     transform: none !important;
+    opacity: 1 !important; /* Override GSAP opacity:0 set on non-active slides */
     height: auto;
-    flex-direction: column-reverse;
-    padding: 60px 24px;
-    border-bottom: 1px solid #cbd5e1;
+    flex-direction: column;
+    padding: 24px 20px 28px;
+    border-bottom: 1px solid #e2e8f0;
+    box-sizing: border-box;
   }
-  
+
+  .swipeSlideLeft {
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    align-items: center;
+    text-align: center;
+    margin-top: 0;
+    box-sizing: border-box;
+    order: 2;
+  }
+
+  .swipeSlideTitle {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    margin-bottom: 12px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.2;
+  }
+
+  .swipeSlideDescription {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 100%;
+  }
+
+  .swipeSlideBtn {
+    padding: 12px 32px;
+    font-size: 0.9rem;
+  }
+
+  .swipeSlideRight {
+    max-width: 100%;
+    width: 100%;
+    height: 200px;
+    min-height: 200px;
+    flex-shrink: 0;
+    padding: 0;
+    order: 1;
+    margin-bottom: 16px;
+    position: relative;
+    display: block;
+  }
+
+  .swipeImageWrap {
+    position: relative;
+    width: 100%;
+    height: 200px !important;
+  }
+
+  .swipeImage {
+    transform: scale(1) !important;
+    object-fit: contain !important;
+  }
+
+  .swipeImagePlaceholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.2;
+  }
+
+  .drumProgressBar {
+    display: none !important;
+  }
+}
+
+/* Tablet (769–1023px): hero glass panel still overflows -210px, so keep offset */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .premiumCatalogSectionSwipe {
+    height: auto;
+    overflow: visible;
+  }
+
+  .categorySwipeContainer {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    gap: 24px;
+  }
+
+  .categorySwipeSlide {
+    position: relative !important;
+    transform: none !important;
+    opacity: 1 !important;
+    height: auto;
+    flex-direction: column;
+    padding: 40px 32px;
+    border-bottom: 1px solid #e2e8f0;
+    box-sizing: border-box;
+  }
+
   .swipeSlideLeft {
     max-width: 100%;
     padding: 0;
     align-items: center;
     text-align: center;
-    margin-top: 32px;
+    margin-top: 0;
   }
-  
-  .swipeSlideTitle {
-    font-size: 2.2rem;
-    margin-bottom: 16px;
-  }
-  
+
   .swipeSlideRight {
     max-width: 100%;
     width: 100%;
-    height: 320px;
+    height: 280px;
+    min-height: 280px;
+    flex-shrink: 0;
     padding: 0;
+    order: 1;
+    margin-bottom: 24px;
+    position: relative;
+    display: block;
   }
-  
+
+  .swipeSlideLeft {
+    order: 2;
+  }
+
   .swipeImageWrap {
-    height: 100%;
+    position: relative;
+    width: 100%;
+    height: 280px !important;
+  }
+
+  .swipeImage {
+    transform: scale(1) !important;
+  }
+
+  .drumProgressBar {
+    display: none !important;
   }
 }
 
@@ -1596,8 +1711,8 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  border-top: 1px solid rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  border-top: none;
+  border-bottom: none;
 }
 
 .trustContainer {
@@ -2078,18 +2193,18 @@
   border-radius: 24px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 20px 40px rgba(11, 31, 58, 0.05);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   pointer-events: auto;
   z-index: 5;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  transition: border-color 0.3s ease, transform 0.3s ease;
   will-change: transform;
 }
 
 .testimonialCard:hover {
-  box-shadow: 0 30px 60px rgba(10, 141, 147, 0.12);
+  box-shadow: none;
   border-color: rgba(10, 141, 147, 0.4) !important;
 }
 
@@ -2266,7 +2381,7 @@
     min-height: auto;
     padding: 22px 20px;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(11, 31, 58, 0.06);
+    box-shadow: none;
   }
 
   /* Color-coded top border per card */
@@ -2324,7 +2439,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 56px 16px 48px;
+    padding: 48px 16px 40px;
     background: linear-gradient(180deg, #f8fafc 0%, #f0f9ff 100%);
     overflow: hidden;
     width: 100%;
@@ -2338,37 +2453,39 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   .mobileSectionLabel {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: #0a8d93;
     background: rgba(10, 141, 147, 0.08);
     border: 1px solid rgba(10, 141, 147, 0.2);
     border-radius: 100px;
-    padding: 5px 16px;
+    padding: 4px 14px;
     display: inline-block;
   }
 
   .mobileDifferenceTitle {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    font-size: clamp(1.4rem, 5.5vw, 1.85rem);
     color: #0b1f3a;
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin: 8px 0;
-    line-height: 1.25;
+    margin: 4px 0 8px 0;
+    line-height: 1.2;
+    text-align: center;
   }
 
   .carouselDots {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 8px;
   }
 
   .carouselDot {
@@ -2379,19 +2496,22 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .carouselDotActive {
+    width: 24px;
+    border-radius: 4px;
     background-color: #0a8d93;
-    transform: scale(1.25);
+    box-shadow: 0 2px 8px rgba(10, 141, 147, 0.3);
   }
 
   .emblaViewport {
     overflow: hidden;
     width: 100%;
-    max-width: 440px;
+    max-width: 100%;
     cursor: grab;
+    padding: 8px 0;
   }
 
   .emblaViewport:active {
@@ -2406,33 +2526,37 @@
   .emblaSlide {
     flex: 0 0 100%;
     min-width: 0;
-    padding: 0 12px;
+    padding: 12px 16px;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
+    overflow: hidden;
   }
 
   .mobileTestimonialCard {
     width: 100%;
     max-width: 100%;
-    min-height: 190px;
-    padding: 22px 20px;
+    min-height: 210px;
+    padding: 24px 22px;
     margin: 0;
+    border-radius: 20px;
+    background: #ffffff;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 8px 24px rgba(11, 31, 58, 0.05);
+    box-shadow: none;
+    border: 1px solid rgba(10, 141, 147, 0.12);
   }
 
   .swipeIndicator {
-    font-family: var(--font-mono);
+    font-family: var(--font-mono), monospace;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #64748b;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-top: 20px;
+    margin-top: 24px;
     opacity: 0.8;
   }
 }
@@ -2441,10 +2565,10 @@
 .clientSection {
   position: relative;
   width: 100%;
-  padding: 100px 48px;
+  padding: 60px 48px 24px 48px;
   background-color: #ffffff; /* Matches navbar bg */
-  border-top: 1px solid rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  border-top: none;
+  border-bottom: none;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -2640,7 +2764,7 @@
 .collegesSection {
   position: relative;
   width: 100%;
-  padding: 120px 48px;
+  padding: 36px 48px 100px 48px;
   background-color: #ffffff; /* Matches navbar bg */
   box-sizing: border-box;
   overflow: hidden;
@@ -2840,7 +2964,7 @@
 
 @media (max-width: 1200px) {
   .collegesSection {
-    padding: 100px 32px;
+    padding: 30px 32px 80px;
     margin: 0;
   }
   .collegesGrid {
@@ -2850,7 +2974,7 @@
 
 @media (max-width: 640px) {
   .collegesSection {
-    padding: 80px 20px;
+    padding: 24px 20px 60px;
   }
   .collegesContainer {
     gap: 40px;

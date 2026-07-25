@@ -145,10 +145,17 @@ export default function Home() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch(getBackendUrl("http://localhost:5000/api/public/products"));
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) {
+        const targetUrl = getBackendUrl("http://localhost:5000/api/public/products");
+        const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        }).catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && data.success) {
             setProducts(data.data);
           }
         }
@@ -225,15 +232,22 @@ export default function Home() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch(getBackendUrl("http://localhost:5000/api/public/categories"));
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) {
+        const targetUrl = getBackendUrl("http://localhost:5000/api/public/categories");
+        const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        }).catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && data.success) {
             setCategories(data.data);
           }
         }
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        // Silently catch fetch connection drop
       } finally {
         setCategoriesLoading(false);
       }
@@ -854,26 +868,13 @@ export default function Home() {
             )}
           </div>
 
-          {/* Drum Wheel Progress Indicator */}
-          {!categoriesLoading && categories.length > 1 && (
-            <div className={styles.drumProgressBar}>
-              {categories.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`${styles.drumDot} ${idx === activeSlideIndex ? styles.drumDotActive : ''}`}
-                />
-              ))}
-              <span className={styles.drumCounter}>
-                {String(activeSlideIndex + 1).padStart(2, '0')} / {String(categories.length).padStart(2, '0')}
-              </span>
-            </div>
-          )}
+          {/* Drum Wheel Progress Indicator Removed */}
         </section>
 
         {/* Heavy content sections loaded dynamically on client-side to improve loading speeds */}
-        <DifferenceSection />
-        <ValuePropSection />
+        {/* <DifferenceSection /> */}
         <InstitutionTrustSection />
+        <ValuePropSection />
       </main>
 
       <PremiumFooter />

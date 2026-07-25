@@ -114,6 +114,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: #FFFFFF;
+  font-family: var(--font-display);
   letter-spacing: normal;
 }
 

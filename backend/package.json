@@ -6,9 +6,11 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "migrate-s3": "ts-node src/scripts/migrate-to-s3.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1095.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -17,6 +19,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.4.1",
     "multer": "^2.2.0",
+    "multer-s3": "^3.0.1",
     "nodemailer": "^9.0.1",
     "slugify": "^1.6.9"
   },
@@ -27,6 +30,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
+    "@types/multer-s3": "^3.0.3",
     "@types/node": "^20.14.2",
     "@types/nodemailer": "^8.0.1",
     "nodemon": "^3.1.14",

@@ -61,8 +61,13 @@ export default function AdminLogin() {
 
       <div className={styles.loginCard}>
         <div className={styles.header}>
-          <div className={styles.logo}>
-            ⊕ <span className={styles.highlight}>Medico Valley Admin</span>
+          <div className={styles.logo} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <img
+              src="/logo-icon-only.png"
+              alt="MedicoValley icon"
+              style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
+            />
+            <span className={styles.highlight}>MedicoValley Admin</span>
           </div>
           <h2 className={styles.title}>Welcome Back</h2>
           <p className={styles.subtitle}>Log in to manage categories and products.</p>
@@ -70,7 +75,7 @@ export default function AdminLogin() {
 
         {errorMsg && <div className={styles.errorBanner}>{errorMsg}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form} autoComplete="off">
           <div className={styles.inputGroup}>
             <label className={styles.label} htmlFor="email">Email Address</label>
             <input
@@ -82,6 +87,7 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isPending}
+              autoComplete="off"
             />
           </div>
 
@@ -96,6 +102,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isPending}
+              autoComplete="new-password"
             />
           </div>
 

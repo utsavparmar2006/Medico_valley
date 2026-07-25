@@ -6,13 +6,19 @@ interface Props {
   description: string;
   productName: string;
   categoryName?: string;
+  keyFeatures?: string[];
 }
 
-export default function ProductDetailsTabs({ description, productName, categoryName }: Props) {
+export default function ProductDetailsTabs({ description, productName, categoryName, keyFeatures }: Props) {
   const [activeTab, setActiveTab] = useState<'features' | 'details'>('details');
 
-  // Generate high-quality key features list dynamically based on product context
+  // Generate high-quality key features list dynamically based on product context or saved data
   const getFeaturesList = () => {
+    // If manual key features exist, use them
+    if (keyFeatures && keyFeatures.length > 0) {
+      return keyFeatures;
+    }
+
     const list: string[] = [];
     
     // Parse sentences from description

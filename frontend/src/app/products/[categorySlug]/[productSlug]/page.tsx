@@ -184,6 +184,7 @@ export default async function ProductDetailPage({ params }: Props) {
           description={product.description} 
           productName={product.name} 
           categoryName={product.category?.name}
+          keyFeatures={product.keyFeatures}
         />
 
         {relatedProducts.length > 0 && (

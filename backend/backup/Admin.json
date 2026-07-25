@@ -1,0 +1,31 @@
+[
+  {
+    "_id": "6a3139ef8fc3b6491bde3de5",
+    "name": "Delta Admin",
+    "email": "admin@deltahealthcare.com",
+    "password": "$2b$10$/GA5Zi74.dzt1KZ5.cORpOHezTWSY0yvpTzV2ROboSxdBSFEAi3rS",
+    "createdAt": "2026-06-16T11:56:31.942Z",
+    "updatedAt": "2026-06-16T13:23:09.781Z",
+    "__v": 0,
+    "tokenVersion": 4
+  },
+  {
+    "_id": "6a314cae3fb32223806fcc0c",
+    "name": "Utsav Parmar",
+    "email": "utsav@deltahealthcare.com",
+    "password": "$2b$10$Geg5wrJxDypc5tBKGpLN9OU4N6ZYr3nz6eFRFh/pzC4sDEdTzwjrK",
+    "tokenVersion": 0,
+    "createdAt": "2026-06-16T13:16:30.124Z",
+    "updatedAt": "2026-06-16T13:16:30.124Z",
+    "__v": 0
+  },
+  {
+    "_id": "6a3820c12b4bb1fb585dbc25",
+    "name": "Medico Valley Admin",
+    "email": "admin@medicovalley.com",
+    "password": "$2b$10$kmXwNye2nrJpIEl36LHsdeDKZpEs3qsgTuHQP3Y//k6n0O96opLuS",
+    "createdAt": "2026-06-21T17:34:57.355Z",
+    "updatedAt": "2026-06-21T17:34:57.355Z",
+    "__v": 0
+  }
+]

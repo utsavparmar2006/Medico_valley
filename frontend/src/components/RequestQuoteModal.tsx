@@ -26,21 +26,72 @@ export default function RequestQuoteModal({
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
-  const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    fullName?: string;
+    institution?: string;
+    email?: string;
+    phone?: string;
+    city?: string;
+  }>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedInquiryId, setSubmittedInquiryId] = useState('');
 
   if (!isOpen) return null;
 
+  const validateForm = () => {
+    const errors: typeof fieldErrors = {};
+
+    if (!fullName.trim()) {
+      errors.fullName = 'Full Name is required';
+    } else if (fullName.trim().length < 2) {
+      errors.fullName = 'Full Name must be at least 2 characters';
+    }
+
+    if (!institution.trim()) {
+      errors.institution = 'Institution / Company is required';
+    }
+
+    // Validate that at least one contact method (Email or Phone) is provided
+    if (!email.trim() && !phone.trim()) {
+      errors.email = 'Email or Phone Number is required';
+      errors.phone = 'Phone Number or Email is required';
+    } else {
+      if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        errors.email = 'Please enter a valid email address';
+      }
+      if (phone.trim() && !/^[0-9\+\-\s\(\)]{10,15}$/.test(phone.trim())) {
+        errors.phone = 'Please enter a valid phone number (10-15 digits)';
+      }
+    }
+
+    if (!city.trim()) {
+      errors.city = 'City is required';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleFieldChange = (
+    field: keyof typeof fieldErrors,
+    value: string,
+    setter: (val: string) => void
+  ) => {
+    setter(value);
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!fullName || !institution || !email || !city) {
-      setErrorMsg('Please fill in all required fields (*)');
+    if (!validateForm()) {
+      setErrorMsg('Please fix the errors highlighted below before submitting.');
       return;
     }
 
@@ -64,7 +115,6 @@ export default function RequestQuoteModal({
           email,
           phone: phone || '',
           city,
-          quantity,
           message,
         }),
       });
@@ -87,7 +137,6 @@ export default function RequestQuoteModal({
       setEmail('');
       setPhone('');
       setCity('');
-      setQuantity(1);
       setMessage('');
 
       if (hasPhone) {
@@ -157,9 +206,6 @@ ${productName}
 
 - Category:
 ${categoryName}
-
-- Quantity:
-${quantity} Unit(s)
 
 ${emojiLink} Product Page:
 ${absoluteProductUrl}
@@ -408,92 +454,110 @@ ${emDash} Medico Valley Website`;
 
             {/* Grid fields */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-fullName">Full Name *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="modal-label" htmlFor="quote-fullName">Full Name</label>
                 <input
                   id="quote-fullName"
                   type="text"
                   required
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={(e) => handleFieldChange('fullName', e.target.value, setFullName)}
                   className="modal-input"
+                  style={fieldErrors.fullName ? { borderBottomColor: '#ef4444' } : undefined}
                   placeholder="Rahul Patel"
                 />
+                {fieldErrors.fullName ? (
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>
+                    {fieldErrors.fullName}
+                  </span>
+                ) : null}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-institution">Institution / Company *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="modal-label" htmlFor="quote-institution">Institution / Company</label>
                 <input
                   id="quote-institution"
                   type="text"
                   required
                   value={institution}
-                  onChange={(e) => setInstitution(e.target.value)}
+                  onChange={(e) => handleFieldChange('institution', e.target.value, setInstitution)}
                   className="modal-input"
+                  style={fieldErrors.institution ? { borderBottomColor: '#ef4444' } : undefined}
                   placeholder="ABC Medical College"
                 />
+                {fieldErrors.institution ? (
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>
+                    {fieldErrors.institution}
+                  </span>
+                ) : null}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-email">Email *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="modal-label" htmlFor="quote-email">Email</label>
                 <input
                   id="quote-email"
                   type="email"
-                  required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleFieldChange('email', e.target.value, setEmail)}
                   className="modal-input"
+                  style={fieldErrors.email ? { borderBottomColor: '#ef4444' } : undefined}
                   placeholder="rahul@gmail.com"
                 />
-                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
-                  For quotations and official communications.
-                </span>
+                {fieldErrors.email ? (
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>
+                    {fieldErrors.email}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
+                    For quotations and official communications.
+                  </span>
+                )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-phone">Phone Number (Optional)</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="modal-label" htmlFor="quote-phone">Phone Number</label>
                 <input
                   id="quote-phone"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => handleFieldChange('phone', e.target.value, setPhone)}
                   className="modal-input"
+                  style={fieldErrors.phone ? { borderBottomColor: '#ef4444' } : undefined}
                   placeholder="9876543210"
                 />
-                <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
-                  Enter number to get updates via WhatsApp.
-                </span>
+                {fieldErrors.phone ? (
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>
+                    {fieldErrors.phone}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>
+                    Enter number to get updates via WhatsApp.
+                  </span>
+                )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-city">City *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="modal-label" htmlFor="quote-city">City</label>
                 <input
                   id="quote-city"
                   type="text"
                   required
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  onChange={(e) => handleFieldChange('city', e.target.value, setCity)}
                   className="modal-input"
+                  style={fieldErrors.city ? { borderBottomColor: '#ef4444' } : undefined}
                   placeholder="Ahmedabad"
                 />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label className="modal-label" htmlFor="quote-quantity">Quantity *</label>
-                <input
-                  id="quote-quantity"
-                  type="number"
-                  min={1}
-                  required
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="modal-input"
-                />
+                {fieldErrors.city ? (
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 500 }}>
+                    {fieldErrors.city}
+                  </span>
+                ) : null}
               </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label className="modal-label" htmlFor="quote-message">Message (Optional)</label>
+              <label className="modal-label" htmlFor="quote-message">Message</label>
               <textarea
                 id="quote-message"
                 rows={3}
