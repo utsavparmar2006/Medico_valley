@@ -1,0 +1,9 @@
+{
+  "name": "medico-valley-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "powershell -ExecutionPolicy Bypass -File ./deploy.ps1",
+    "ssh": "ssh -i medico-valley-key.pem ubuntu@43.204.100.94"
+  }
+}
