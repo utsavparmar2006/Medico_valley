@@ -37,6 +37,31 @@ export default function ShareProductButton({ productName }: Props) {
   const shareTitle = `${productName} | Medico Valley`;
   const shareText = `Check out the detailed medical specifications of ${productName} on Medico Valley:`;
 
+  const handleShareClick = async () => {
+    const shareData = {
+      title: shareTitle,
+      text: shareText,
+      url: getShareUrl(),
+    };
+
+    // Primary Attempt: Directly trigger Native OS System Share Sheet (Mobile / Supported Desktops)
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return; // Native OS system share tray popped up successfully!
+      } catch (err: any) {
+        // Ignore user cancellation (AbortError)
+        if (err.name === 'AbortError') {
+          return;
+        }
+        console.log('Native share failed or blocked, opening fallback menu:', err);
+      }
+    }
+
+    // Fallback: If native share is unsupported or blocked (e.g., non-HTTPS context), open fallback options popup
+    setIsOpen((prev) => !prev);
+  };
+
   const handleCopyLink = async () => {
     const url = getShareUrl();
     try {
@@ -85,11 +110,21 @@ export default function ShareProductButton({ productName }: Props) {
       },
     },
     {
-      name: 'Facebook',
-      icon: '📘',
-      bg: '#1877f2',
+      name: 'LinkedIn',
+      icon: '💼',
+      bg: '#0a66c2',
       action: () => {
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`;
+        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getShareUrl())}`;
+        window.open(url, '_blank');
+        setIsOpen(false);
+      },
+    },
+    {
+      name: 'X (Twitter)',
+      icon: '🐦',
+      bg: '#000000',
+      action: () => {
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(getShareUrl())}`;
         window.open(url, '_blank');
         setIsOpen(false);
       },
@@ -105,7 +140,7 @@ export default function ShareProductButton({ productName }: Props) {
   return (
     <div ref={menuRef} style={{ position: 'relative', display: 'inline-block' }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleShareClick}
         title="Share Product"
         style={{
           background: isOpen ? 'rgba(10, 141, 147, 0.12)' : 'transparent',
@@ -143,7 +178,7 @@ export default function ShareProductButton({ productName }: Props) {
         </svg>
       </button>
 
-      {/* Share Options Popup Menu */}
+      {/* Fallback Share Options Popup Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -160,7 +195,7 @@ export default function ShareProductButton({ productName }: Props) {
               borderRadius: '16px',
               boxShadow: '0 12px 32px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05)',
               padding: '10px',
-              minWidth: '200px',
+              minWidth: '210px',
               zIndex: 100,
               display: 'flex',
               flexDirection: 'column',
