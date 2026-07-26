@@ -87,7 +87,7 @@ export default function InstitutionTrustSection() {
                 {/* Front: Dynamic sharp logo */}
                 <div className={styles.logoFront}>
                   <img
-                    src={client.logoUrl}
+                    src={client.logoUrl ? (client.logoUrl.startsWith('http') ? client.logoUrl : getBackendUrl(`http://127.0.0.1:5000${client.logoUrl}`)) : ''}
                     alt={client.name}
                     className={styles.clientLogoImage}
                   />
