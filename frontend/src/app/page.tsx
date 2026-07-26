@@ -18,7 +18,6 @@ import DifferenceSection from "@/components/DifferenceSection";
 import ValuePropSection from "@/components/ValuePropSection";
 import InstitutionTrustSection from "@/components/InstitutionTrustSection";
 import PremiumFooter from "@/components/PremiumFooter";
-import RequestQuoteModal from "@/components/RequestQuoteModal";
 
 interface Category {
   _id: string;
@@ -62,7 +61,6 @@ export default function Home() {
   const mediaWrapperRef = useRef<HTMLDivElement>(null);
 
   const [isHovered, setIsHovered] = useState(false);
-  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -881,16 +879,6 @@ export default function Home() {
       </main>
 
       <PremiumFooter />
-
-      {/* Request Quotation Modal */}
-      {isQuoteModalOpen && (
-        <RequestQuoteModal
-          isOpen={isQuoteModalOpen}
-          onClose={() => setIsQuoteModalOpen(false)}
-          productName="Medical Education Solutions"
-          categoryName="General Inquiry"
-        />
-      )}
     </div>
   );
 }

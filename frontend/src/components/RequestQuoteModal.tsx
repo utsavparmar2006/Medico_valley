@@ -7,18 +7,18 @@ import { getBackendUrl } from '@/utils/api';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
+  productId?: string;
   productName: string;
-  productSlug: string;
+  productSlug?: string;
   categoryName: string;
 }
 
 export default function RequestQuoteModal({
   isOpen,
   onClose,
-  productId,
+  productId = '',
   productName,
-  productSlug,
+  productSlug = '',
   categoryName,
 }: Props) {
   const [fullName, setFullName] = useState('');
