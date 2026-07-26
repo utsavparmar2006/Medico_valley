@@ -2728,17 +2728,31 @@
 
 @media (max-width: 991px) {
   .clientSection {
-    padding: 80px 24px;
+    padding: 60px 24px;
   }
   
+  .clientContainer {
+    gap: 32px;
+  }
+  
+  .clientTitle {
+    font-size: 1.85rem;
+    margin-bottom: 12px;
+  }
+  
+  .clientDesc {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
   .logoCard {
-    flex: 0 0 300px;
-    width: 300px;
-    height: 220px;
+    flex: 0 0 280px;
+    width: 280px;
+    height: 200px;
   }
   
   .logoFront {
-    padding: 20px;
+    padding: 24px;
   }
   
   .logoBackOverlay {
@@ -2753,10 +2767,49 @@
 }
 
 @media (max-width: 600px) {
+  .clientSection {
+    padding: 40px 16px;
+  }
+  
+  .clientContainer {
+    gap: 24px;
+  }
+  
+  .clientTitle {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+
+  .clientDesc {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
   .logoCard {
-    flex: 0 0 100%; /* 1 card on mobile */
+    flex: 0 0 220px; /* Allow multiple cards to slide horizontally on mobile */
+    width: 220px;
+    height: 150px;
+  }
+  
+  .logoFront {
+    padding: 16px;
+  }
+  
+  .logoBackOverlay {
+    padding: 12px;
+  }
+  
+  .cardTestimonial {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  
+  .cardClientAuthor {
+    font-size: 0.65rem;
   }
 }
+
 
 /* ============================================================
    10. Colleges & Institutions Hub Section (ValueProp Replacement)
