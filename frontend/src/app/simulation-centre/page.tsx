@@ -240,7 +240,7 @@ export default function SimulationCentrePage() {
             <div className={styles.heroGraphicBox}>
               <div className={styles.heroImageWrapper}>
                 <img
-                  src="/uploads/1783083309596-994279147.png"
+                  src="https://medico-valley-media-production.s3.ap-south-1.amazonaws.com/uploads/simulation_hero.png"
                   alt="Clinical Simulation Training Centre"
                   className={styles.heroImage}
                 />
