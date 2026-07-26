@@ -57,6 +57,7 @@ export default function ProductDetailsTabs({ description, productName, categoryN
       borderTop: '1px solid #e2e8f0',
       paddingTop: '32px',
       width: '100%',
+      fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
     }}>
       {/* ── Tabs Navigation ── */}
       <div style={{
@@ -73,14 +74,14 @@ export default function ProductDetailsTabs({ description, productName, categoryN
             border: 'none',
             padding: '12px 4px',
             fontSize: '0.88rem',
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: '0.5px',
             color: activeTab === 'features' ? '#0f172a' : '#94a3b8',
             cursor: 'pointer',
-            borderBottom: activeTab === 'features' ? '2.5px solid #0f172a' : '2.5px solid transparent',
+            borderBottom: activeTab === 'features' ? '2.5px solid #0a8d93' : '2.5px solid transparent',
             transition: 'all 0.2s ease',
             textTransform: 'uppercase',
-            fontFamily: 'inherit',
+            fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
           }}
         >
           Key Features
@@ -92,14 +93,14 @@ export default function ProductDetailsTabs({ description, productName, categoryN
             border: 'none',
             padding: '12px 4px',
             fontSize: '0.88rem',
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: '0.5px',
             color: activeTab === 'details' ? '#0f172a' : '#94a3b8',
             cursor: 'pointer',
-            borderBottom: activeTab === 'details' ? '2.5px solid #0f172a' : '2.5px solid transparent',
+            borderBottom: activeTab === 'details' ? '2.5px solid #0a8d93' : '2.5px solid transparent',
             transition: 'all 0.2s ease',
             textTransform: 'uppercase',
-            fontFamily: 'inherit',
+            fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
           }}
         >
           Product Details
@@ -107,7 +108,7 @@ export default function ProductDetailsTabs({ description, productName, categoryN
       </div>
 
       {/* ── Tabs Content Panel ── */}
-      <div style={{ minHeight: '160px' }}>
+      <div style={{ minHeight: '160px', fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif' }}>
         {activeTab === 'features' ? (
           <div style={{ animation: 'fadeInTab 0.3s ease both' }}>
             <ul style={{
@@ -118,10 +119,13 @@ export default function ProductDetailsTabs({ description, productName, categoryN
               gap: '12px',
               color: '#334155',
               fontSize: '0.94rem',
-              lineHeight: '1.6',
+              lineHeight: '1.65',
+              fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
             }}>
               {features.map((feat, idx) => (
-                <li key={idx} style={{ paddingLeft: '4px' }}>
+                <li key={idx} style={{ paddingLeft: '4px', wordBreak: 'break-word' }}>
                   {feat}
                 </li>
               ))}
@@ -132,9 +136,12 @@ export default function ProductDetailsTabs({ description, productName, categoryN
             color: '#334155',
             fontSize: '0.94rem',
             lineHeight: '1.7',
+            fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
             animation: 'fadeInTab 0.3s ease both',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
           }}>
-            <p style={{ marginBottom: '16px' }}>{description}</p>
+            <p style={{ marginBottom: '16px', wordBreak: 'break-word' }}>{description}</p>
             <p style={{ fontSize: '0.88rem', color: '#64748b', fontStyle: 'italic', marginTop: '16px' }}>
               This professional {productName.toLowerCase()} is a great addition to any medical laboratory or classroom study of healthcare disciplines.
             </p>
