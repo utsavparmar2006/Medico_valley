@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getBackendUrl } from '@/utils/api';
 import styles from './dashboard.module.css';
 
 interface CategoryObj {
@@ -202,6 +203,7 @@ export default function AdminDashboard() {
 
   // Auth fetch wrapper with automatic silent token refresh interceptor
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const targetUrl = getBackendUrl(url);
     let token = localStorage.getItem('adminAccessToken');
     const headers = new Headers(options.headers || {});
 
@@ -210,7 +212,7 @@ export default function AdminDashboard() {
     }
     options.headers = headers;
 
-    let response = await fetch(url, options);
+    let response = await fetch(targetUrl, options);
 
     // If unauthorized, check if it was due to token expiration
     if (response.status === 401) {
@@ -222,7 +224,7 @@ export default function AdminDashboard() {
 
         try {
           // Send request to token refresh endpoint (automatically shares cookie)
-          const refreshRes = await fetch('http://localhost:5000/api/admin/refresh', {
+          const refreshRes = await fetch(getBackendUrl('http://localhost:5000/api/admin/refresh'), {
             method: 'POST',
             credentials: 'include',
           });
@@ -236,7 +238,7 @@ export default function AdminDashboard() {
             // Re-apply Authorization header and retry the original call
             headers.set('Authorization', `Bearer ${token}`);
             options.headers = headers;
-            response = await fetch(url, options);
+            response = await fetch(targetUrl, options);
           } else {
             // Refresh token has expired/revoked, force login
             console.warn('Session expired. Redirecting to login...');
@@ -289,14 +291,14 @@ export default function AdminDashboard() {
     }
     try {
       // Fetch Categories
-      const catRes = await fetch('http://localhost:5000/api/public/categories');
+      const catRes = await fetch(getBackendUrl('http://localhost:5000/api/public/categories'));
       const catData = await catRes.json();
       if (catRes.ok && catData.success) {
         setCategoriesList(catData.data);
       }
 
       // Fetch Products
-      const prodRes = await fetch('http://localhost:5000/api/public/products');
+      const prodRes = await fetch(getBackendUrl('http://localhost:5000/api/public/products'));
       const prodData = await prodRes.json();
       if (prodRes.ok && prodData.success) {
         setProductsList(prodData.data);
@@ -317,14 +319,14 @@ export default function AdminDashboard() {
       }
 
       // Fetch Blogs
-      const blogRes = await fetch('http://localhost:5000/api/public/blogs');
+      const blogRes = await fetch(getBackendUrl('http://localhost:5000/api/public/blogs'));
       const blogData = await blogRes.json();
       if (blogRes.ok && blogData.success) {
         setBlogsList(blogData.data);
       }
 
       // Fetch Clients
-      const clientRes = await fetch(`http://localhost:5000/api/public/clients?t=${Date.now()}`, {
+      const clientRes = await fetch(getBackendUrl(`http://localhost:5000/api/public/clients?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -337,7 +339,7 @@ export default function AdminDashboard() {
       }
 
       // Fetch Sectors / Labs
-      const sectorRes = await fetch(`http://localhost:5000/api/public/sectors?t=${Date.now()}`, {
+      const sectorRes = await fetch(getBackendUrl(`http://localhost:5000/api/public/sectors?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
