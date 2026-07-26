@@ -227,7 +227,7 @@ ${emDash} Medico Valley Website`;
         console.log('Generated WhatsApp message:\n', whatsappText);
 
         // 3. Trigger WhatsApp Redirect
-        const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
+        const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919512446258';
         const encodedText = encodeURIComponent(whatsappText);
         const whatsappUrl = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${encodedText}`;
 
