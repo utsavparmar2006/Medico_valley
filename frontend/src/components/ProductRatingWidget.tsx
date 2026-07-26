@@ -113,12 +113,8 @@ export default function ProductRatingWidget({ productId, productSlug, categorySl
   const renderStars = (rating: number, interactive = false) => {
     return Array.from({ length: 5 }).map((_, idx) => {
       const starValue = idx + 1;
-      // For interactive rating: show hover value if hovering, otherwise the user's selected rating
-      // For read-only average rating: show filled stars up to the average rating
-      const isFilled = interactive
-        ? starValue <= (hoverRating ?? userRating ?? 0)
-        : starValue <= Math.floor(rating);
-      const isHalf = !interactive && !isFilled && rating - idx >= 0.4;
+      const isInteractiveFilled = starValue <= (hoverRating ?? userRating ?? 0);
+      const fillAmount = Math.max(0, Math.min(1, rating - idx));
 
       return (
         <span
@@ -128,15 +124,31 @@ export default function ProductRatingWidget({ productId, productSlug, categorySl
           onMouseLeave={() => interactive && setHoverRating(null)}
           style={{
             cursor: interactive ? 'pointer' : 'default',
-            color: isFilled || isHalf ? '#f59e0b' : '#e2e8f0',
-            fontSize: interactive ? '1.45rem' : '1.15rem',
-            marginRight: '3px',
-            display: 'inline-block',
-            transition: 'transform 0.15s ease, color 0.15s ease',
+            display: 'inline-flex',
+            alignItems: 'center',
+            marginRight: '2px',
+            transition: 'transform 0.15s ease',
             transform: interactive && hoverRating === starValue ? 'scale(1.25)' : 'none',
           }}
         >
-          {isFilled ? '★' : isHalf ? '⯪' : '★'}
+          {interactive ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill={isInteractiveFilled ? '#f59e0b' : '#cbd5e1'}>
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <defs>
+                <linearGradient id={`star-grad-${productId}-${idx}`}>
+                  <stop offset={`${fillAmount * 100}%`} stopColor="#f59e0b" />
+                  <stop offset={`${fillAmount * 100}%`} stopColor="#e2e8f0" />
+                </linearGradient>
+              </defs>
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                fill={`url(#star-grad-${productId}-${idx})`}
+              />
+            </svg>
+          )}
         </span>
       );
     });
