@@ -63,40 +63,58 @@
 }
 
 @media (max-width: 600px) {
+  .footer {
+    padding-top: 32px;
+  }
   .mainRow {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding-bottom: 24px;
   }
   .brandCol {
-    grid-column: span 2;
+    grid-column: span 3;
     gap: 12px;
+    margin-bottom: 8px;
   }
   .brandTagline {
     max-width: 100%;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
   }
   .contactInfo {
-    gap: 6px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .contactItem {
-    font-size: 0.78rem;
+    font-size: 0.74rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    border-radius: 8px;
   }
   .socials {
     gap: 8px;
+    margin-top: 4px;
   }
   .socialIcon {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
   .colTitle {
     margin: 0 0 10px;
-    font-size: 0.68rem;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
   }
   .colList {
     gap: 6px;
   }
   .colLink {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
+    gap: 4px;
+  }
+  .colLinkArrow {
+    display: none;
   }
 }
 
