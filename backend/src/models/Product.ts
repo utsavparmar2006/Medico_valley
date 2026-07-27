@@ -18,7 +18,7 @@ const ProductSchema: Schema = new Schema(
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     description: { type: String, required: true },
-    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
     mediaUrls: { type: [String], default: [] },
     catalogUrl: { type: String },
     keyFeatures: { type: [String], default: [] },

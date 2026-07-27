@@ -647,7 +647,7 @@ export default function Home() {
               className={styles.heroMediaChild}
               muted
               playsInline
-              preload="auto"
+              preload="none"
             />
             <img
               ref={posterRef}
