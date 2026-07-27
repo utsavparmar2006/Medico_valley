@@ -48,12 +48,27 @@ export default function AdminDashboard() {
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors'>('overview');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryObj | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductObj | null>(null);
   const [detailReturnTab, setDetailReturnTab] = useState<'overview' | 'manage'>('overview');
+
+  const TABS_CONFIG = [
+    { id: 'overview', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'manage', label: 'Catalog Listings', icon: 'manage_search' },
+    { id: 'categories', label: 'New Category', icon: 'category' },
+    { id: 'products', label: 'New Product', icon: 'inventory' },
+    { id: 'inquiries', label: 'Inquiries', icon: 'mail' },
+    { id: 'blogs', label: 'Blogs', icon: 'article' },
+    { id: 'clients', label: 'Top Clients', icon: 'group' },
+    { id: 'sectors', label: 'Our Sectors', icon: 'domain' }
+  ] as const;
+
+  const activeTabId = ['categoryDetail', 'productDetail'].includes(activeTab) ? detailReturnTab : activeTab;
+  const activeTabConfig = TABS_CONFIG.find((t) => t.id === activeTabId) || TABS_CONFIG[0];
 
   const [blogsList, setBlogsList] = useState<any[]>([]);
   const [showConfirmDeleteBlogModal, setShowConfirmDeleteBlogModal] = useState<string | null>(null);
@@ -1272,145 +1287,86 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Desktop Sidebar Navigation */}
           <nav className={styles.sidebarNav}>
-            <button
-              onClick={() => { setActiveTab('overview'); setStatusMessage(null); }}
-              className={`${styles.navBtn} ${(activeTab === 'overview' || (['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'overview')) ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {(activeTab === 'overview' || (['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'overview')) && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>dashboard</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Dashboard</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('manage'); setStatusMessage(null); }}
-              className={`${styles.navBtn} ${(activeTab === 'manage' || (['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'manage')) ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {(activeTab === 'manage' || (['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'manage')) && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>manage_search</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Catalog Listings</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('categories'); setStatusMessage(null); }}
-              className={`${styles.navBtn} ${activeTab === 'categories' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'categories' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>category</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>New Category</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('products'); setStatusMessage(null); }}
-              className={`${styles.navBtn} ${activeTab === 'products' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'products' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>inventory</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>New Product</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('inquiries'); setStatusMessage(null); }}
-              className={`${styles.navBtn} ${activeTab === 'inquiries' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'inquiries' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>mail</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Inquiries</span>
-            </button>
-            {/* 
-            <button
-              onClick={() => { setActiveTab('difference'); setStatusMessage(null); setEditingDeltaCard(null); }}
-              className={`${styles.navBtn} ${activeTab === 'difference' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'difference' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>star</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Delta Difference</span>
-            </button>
-            */}
-            <button
-              onClick={() => { setActiveTab('blogs'); setStatusMessage(null); setEditingBlog(null); }}
-              className={`${styles.navBtn} ${activeTab === 'blogs' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'blogs' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>article</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Blogs</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('clients'); setStatusMessage(null); resetClientForm(); }}
-              className={`${styles.navBtn} ${activeTab === 'clients' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'clients' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>group</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Top Clients</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('sectors'); setStatusMessage(null); resetSectorForm(); }}
-              className={`${styles.navBtn} ${activeTab === 'sectors' ? styles.navBtnActive : ''}`}
-              style={{ position: 'relative' }}
-            >
-              {activeTab === 'sectors' && (
-                <motion.div
-                  layoutId="sidebarActive"
-                  className={styles.navActiveBg}
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-              <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>domain</span>
-              <span style={{ position: 'relative', zIndex: 2 }}>Our Sectors</span>
-            </button>
+            {TABS_CONFIG.map((tab) => {
+              const isTabActive = activeTab === tab.id || (tab.id === 'overview' && ['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'overview') || (tab.id === 'manage' && ['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'manage');
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    if (tab.id === 'blogs') setEditingBlog(null);
+                    if (tab.id === 'clients') resetClientForm();
+                    if (tab.id === 'sectors') resetSectorForm();
+                    setStatusMessage(null);
+                  }}
+                  className={`${styles.navBtn} ${isTabActive ? styles.navBtnActive : ''}`}
+                  style={{ position: 'relative' }}
+                >
+                  {isTabActive && (
+                    <motion.div
+                      layoutId="sidebarActive"
+                      className={styles.navActiveBg}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="material-symbols-outlined" style={{ position: 'relative', zIndex: 2 }}>{tab.icon}</span>
+                  <span style={{ position: 'relative', zIndex: 2 }}>{tab.label}</span>
+                </button>
+              );
+            })}
           </nav>
+
+          {/* Mobile View Switcher (Unique Glassmorphic Dropdown) */}
+          <div className={styles.mobileNavContainer}>
+            <button
+              type="button"
+              className={styles.mobileNavTrigger}
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+            >
+              <div className={styles.mobileNavTriggerLeft}>
+                <span className="material-symbols-outlined">{activeTabConfig.icon}</span>
+                <span>{activeTabConfig.label}</span>
+              </div>
+              <span className="material-symbols-outlined">
+                {isMobileNavOpen ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+
+            <AnimatePresence>
+              {isMobileNavOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={styles.mobileNavDropdown}
+                >
+                  {TABS_CONFIG.map((tab) => {
+                    const isTabActive = activeTab === tab.id || (tab.id === 'overview' && ['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'overview') || (tab.id === 'manage' && ['categoryDetail', 'productDetail'].includes(activeTab) && detailReturnTab === 'manage');
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        className={`${styles.mobileDropdownItem} ${isTabActive ? styles.mobileDropdownItemActive : ''}`}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          if (tab.id === 'blogs') setEditingBlog(null);
+                          if (tab.id === 'clients') resetClientForm();
+                          if (tab.id === 'sectors') resetSectorForm();
+                          setStatusMessage(null);
+                          setIsMobileNavOpen(false);
+                        }}
+                      >
+                        <span className="material-symbols-outlined">{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </aside>
 
         {/* Dynamic Content Panel */}
@@ -2737,7 +2693,7 @@ export default function AdminDashboard() {
             >
               {!editingBlog ? (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
                     <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Blog Articles</h2>
                     <button
                       type="button"
@@ -2766,7 +2722,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#334155', fontSize: '0.9rem' }}>
+                      <table style={{ width: '100%', minWidth: '850px', borderCollapse: 'collapse', color: '#334155', fontSize: '0.9rem' }}>
                         <thead>
                           <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#475569', fontSize: '0.85rem', textAlign: 'left' }}>
                             <th style={{ padding: '12px 8px' }}>Cover</th>
@@ -2975,7 +2931,7 @@ export default function AdminDashboard() {
               animate="show"
               className={styles.dashboardListSection}
             >
-              <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
                 <div>
                   <h2 className={styles.listSectionTitle} style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span className="material-symbols-outlined" style={{ color: '#0a8d93' }}>group</span>
@@ -3184,7 +3140,7 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -10 }}
               className={styles.tabContent}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
                 <div>
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
                     Our Sectors (Lab Cards)

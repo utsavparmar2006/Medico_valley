@@ -638,25 +638,41 @@
 }
 
 .swipeSlideBtn {
-  display: inline-block;
-  padding: 14px 42px;
-  border: 1px solid var(--secondary-text); /* Matches navbar inactive links border outline */
-  background: transparent;
-  color: var(--secondary-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 36px;
+  background: linear-gradient(135deg, #0a8d93 0%, #00BFA6 100%);
+  border: none;
+  color: #ffffff !important;
   font-family: var(--font-sans), sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 700;
   text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.3s ease;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(10, 141, 147, 0.22);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
   cursor: pointer;
 }
 
+.swipeSlideBtn::after {
+  content: '→';
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: transform 0.25s ease;
+  display: inline-block;
+  line-height: 1;
+}
+
 .swipeSlideBtn:hover {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
+  background: linear-gradient(135deg, #0b9ea5 0%, #089096 100%);
+  box-shadow: 0 8px 24px rgba(10, 141, 147, 0.35);
+  transform: translateY(-2px);
+}
+
+.swipeSlideBtn:hover::after {
+  transform: translateX(4px);
 }
 
 .swipeSlideRight {
@@ -720,9 +736,19 @@
     opacity: 1 !important; /* Override GSAP opacity:0 set on non-active slides */
     height: auto;
     flex-direction: column;
-    padding: 24px 20px 28px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 32px 24px 30px !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(10, 141, 147, 0.12) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(10, 141, 147, 0.04) !important;
     box-sizing: border-box;
+    margin-bottom: 20px !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .categorySwipeSlide:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 15px 35px rgba(10, 141, 147, 0.08) !important;
   }
 
   .swipeSlideLeft {
@@ -737,47 +763,72 @@
   }
 
   .swipeSlideTitle {
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    font-size: clamp(1.5rem, 6vw, 1.85rem);
     margin-bottom: 12px;
     overflow-wrap: break-word;
     word-break: break-word;
     line-height: 1.2;
+    color: #0b1f3a !important;
   }
 
   .swipeSlideDescription {
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     line-height: 1.6;
     margin-bottom: 20px;
     max-width: 100%;
+    color: #4a5568 !important;
   }
 
   .swipeSlideBtn {
-    padding: 12px 32px;
-    font-size: 0.9rem;
+    padding: 11px 28px !important;
+    font-size: 0.85rem !important;
   }
 
   .swipeSlideRight {
     max-width: 100%;
     width: 100%;
-    height: 200px;
-    min-height: 200px;
+    height: 180px;
+    min-height: 180px;
     flex-shrink: 0;
     padding: 0;
     order: 1;
     margin-bottom: 16px;
     position: relative;
-    display: block;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .swipeSlideRight::before {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(10, 141, 147, 0.12) 0%, transparent 70%);
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .swipeImageWrap {
     position: relative;
     width: 100%;
-    height: 200px !important;
+    height: 180px !important;
+    z-index: 1;
   }
 
   .swipeImage {
-    transform: scale(1) !important;
+    transform: scale(1.1) !important;
     object-fit: contain !important;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05));
+    transition: transform 0.3s ease !important;
+  }
+
+  .categorySwipeSlide:hover .swipeImage {
+    transform: scale(1.16) translateY(-4px) !important;
   }
 
   .swipeImagePlaceholder {
@@ -814,9 +865,19 @@
     opacity: 1 !important;
     height: auto;
     flex-direction: column;
-    padding: 40px 32px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 40px 32px 36px !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(10, 141, 147, 0.12) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 30px rgba(10, 141, 147, 0.04) !important;
     box-sizing: border-box;
+    margin-bottom: 24px !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .categorySwipeSlide:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 15px 35px rgba(10, 141, 147, 0.08) !important;
   }
 
   .swipeSlideLeft {
@@ -825,33 +886,54 @@
     align-items: center;
     text-align: center;
     margin-top: 0;
+    order: 2;
   }
 
   .swipeSlideRight {
     max-width: 100%;
     width: 100%;
-    height: 280px;
-    min-height: 280px;
+    height: 240px;
+    min-height: 240px;
     flex-shrink: 0;
     padding: 0;
     order: 1;
     margin-bottom: 24px;
     position: relative;
-    display: block;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
 
-  .swipeSlideLeft {
-    order: 2;
+  .swipeSlideRight::before {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(10, 141, 147, 0.12) 0%, transparent 70%);
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .swipeImageWrap {
     position: relative;
     width: 100%;
-    height: 280px !important;
+    height: 240px !important;
+    z-index: 1;
   }
 
   .swipeImage {
-    transform: scale(1) !important;
+    transform: scale(1.1) !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.05));
+    transition: transform 0.3s ease !important;
+  }
+
+  .categorySwipeSlide:hover .swipeImage {
+    transform: scale(1.18) translateY(-4px) !important;
   }
 
   .drumProgressBar {

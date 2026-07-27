@@ -260,26 +260,61 @@ export default function SimulationCentrePage() {
           </div>
 
           <div className={styles.zoneExplorerLayout}>
-            {/* Vertical Tab Sidebar */}
+            {/* Vertical Tab Sidebar (morphs into Accordion on mobile) */}
             <div className={styles.zoneSidebar}>
-              {(['skills', 'icu', 'debrief', 'seminar'] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`${styles.zoneTabBtn} ${activeTab === key ? styles.zoneTabBtnActive : ''}`}
-                  onClick={() => setActiveTab(key)}
-                  style={activeTab === key ? { borderLeftColor: labZones[key].accentColor, color: labZones[key].accentColor } : {}}
-                >
-                  <span
-                    className={styles.zoneTabIcon}
-                    style={activeTab === key ? { background: labZones[key].lightBg } : {}}
-                  >
-                    {labZones[key].icon}
-                  </span>
-                  <span className={styles.zoneTabLabel}>{labZones[key].title}</span>
-                  {activeTab === key && <span className={styles.zoneTabArrow}>›</span>}
-                </button>
-              ))}
+              {(['skills', 'icu', 'debrief', 'seminar'] as const).map((key) => {
+                const isActive = activeTab === key;
+                return (
+                  <React.Fragment key={key}>
+                    <button
+                      type="button"
+                      className={`${styles.zoneTabBtn} ${isActive ? styles.zoneTabBtnActive : ''}`}
+                      onClick={() => setActiveTab(key)}
+                      style={isActive ? { borderLeftColor: labZones[key].accentColor, color: labZones[key].accentColor } : {}}
+                    >
+                      <span
+                        className={styles.zoneTabIcon}
+                        style={isActive ? { background: labZones[key].lightBg } : {}}
+                      >
+                        {labZones[key].icon}
+                      </span>
+                      <span className={styles.zoneTabLabel}>{labZones[key].title}</span>
+                      <span className={`${styles.zoneTabArrow} ${isActive ? styles.arrowExpanded : ''}`}>
+                        {isActive ? '▼' : '▶'}
+                      </span>
+                    </button>
+
+                    {/* Inline Accordion details block visible on mobile only */}
+                    {isActive && (
+                      <div className={styles.mobileAccordionContent}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+                          <p className={styles.zoneTagline} style={{ color: labZones[key].accentColor }}>
+                            {labZones[key].tagline}
+                          </p>
+                          <div className={styles.featureList}>
+                            {labZones[key].features.map((feat, idx) => (
+                              <div key={idx} className={styles.featureRow}>
+                                <span className={styles.featureCheck} style={{ color: labZones[key].accentColor }}>✓</span>
+                                <span>{feat}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className={styles.zoneStatsStrip} style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', width: '100%', boxSizing: 'border-box' }}>
+                            {labZones[key].stats.map((stat, i) => (
+                              <div key={i} className={styles.zoneStat}>
+                                <span className={styles.zoneStatValue} style={{ color: labZones[key].accentColor }}>
+                                  {stat.value}
+                                </span>
+                                <span className={styles.zoneStatLabel}>{stat.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
 
             {/* Zone Detail Card */}
