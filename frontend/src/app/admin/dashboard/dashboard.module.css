@@ -1675,7 +1675,149 @@
   }
 }
 
+/* Inquiries Mobile & Responsive Card List System */
+.inquiriesTableView {
+  display: block;
+  width: 100%;
+}
+
+.inquiriesMobileView {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.inquiryCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 14px rgba(10, 48, 65, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.22s ease;
+}
+
+.inquiryCard:hover {
+  border-color: rgba(10, 141, 147, 0.3);
+  box-shadow: 0 8px 24px rgba(10, 141, 147, 0.08);
+}
+
+.inquiryCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.inquiryCardId {
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: #0a8d93;
+  letter-spacing: 0.5px;
+  background: rgba(10, 141, 147, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(10, 141, 147, 0.18);
+}
+
+.inquiryStatusSelect {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+
+.inquiryCardProduct {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inquiryProductName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.inquiryCategoryBadge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #08777d;
+  background: rgba(10, 141, 147, 0.08);
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.inquiryCardDetails {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.inquiryDetailItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: #334155;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.inquiryDetailItem span.material-symbols-outlined {
+  font-size: 18px;
+  color: #0a8d93;
+  flex-shrink: 0;
+}
+
+.inquiryDetailItem a {
+  color: #0a8d93;
+  text-decoration: none;
+}
+
+.inquiryDetailItem a:hover {
+  text-decoration: underline;
+}
+
+.inquiryCardFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.inquiryCardFooter span.material-symbols-outlined {
+  font-size: 16px;
+  color: #94a3b8;
+}
+
 @media (max-width: 1023px) {
+  .inquiriesTableView {
+    display: none !important;
+  }
+
+  .inquiriesMobileView {
+    display: flex !important;
+  }
   .profileBox {
     display: none !important;
   }
