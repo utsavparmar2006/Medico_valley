@@ -270,20 +270,43 @@ export default function AdminDashboard() {
 
   // Automatically refresh dashboard data in the background on window focus or at short intervals
   useEffect(() => {
+    const isEditing = 
+      editingClient || 
+      editingSector || 
+      editingBlog || 
+      editingDeltaCard || 
+      isCreatingClient || 
+      isCreatingSector ||
+      selectedCategory ||
+      selectedProduct;
+
     const handleFocus = () => {
-      loadDashboardData(true);
+      if (!isEditing) {
+        loadDashboardData(true);
+      }
     };
     window.addEventListener('focus', handleFocus);
 
     const interval = setInterval(() => {
-      loadDashboardData(true);
-    }, 15000); // Check for updates every 15 seconds
+      if (!isEditing) {
+        loadDashboardData(true);
+      }
+    }, 60000); // Check for updates every 60 seconds (optimized from 15s to prevent input lag and save CPU)
 
     return () => {
       window.removeEventListener('focus', handleFocus);
       clearInterval(interval);
     };
-  }, []);
+  }, [
+    editingClient,
+    editingSector,
+    editingBlog,
+    editingDeltaCard,
+    isCreatingClient,
+    isCreatingSector,
+    selectedCategory,
+    selectedProduct
+  ]);
 
   const loadDashboardData = async (isBackground: boolean = false) => {
     if (!isBackground) {
