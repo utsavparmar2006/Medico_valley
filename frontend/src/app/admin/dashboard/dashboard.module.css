@@ -1675,6 +1675,130 @@
   }
 }
 
+/* Inquiry Search & Status Filter Toolbar */
+.inquiryToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+@media (min-width: 850px) {
+  .inquiryToolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.inquirySearchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #dce0e2;
+  border-radius: 10px;
+  padding: 10px 16px;
+  flex: 1;
+  max-width: 480px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inquirySearchBox:focus-within {
+  border-color: #0a8d93;
+  box-shadow: 0 0 0 3px rgba(10, 141, 147, 0.12);
+}
+
+.inquirySearchInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.inquirySearchClear {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.inquirySearchClear:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.inquiryFilterPills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inquiryFilterPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inquiryFilterPill:hover {
+  background: #e2e8f0;
+}
+
+.inquiryFilterPillActive {
+  background: #eaf6f6 !important;
+  border-color: #0a8d93 !important;
+  color: #08777d !important;
+  font-weight: 700 !important;
+}
+
+.inquiryFilterCount {
+  background: rgba(10, 141, 147, 0.12);
+  color: #08777d;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.inquiryFilterPillActive .inquiryFilterCount {
+  background: #08777d;
+  color: #ffffff;
+}
+
+.emptySearchState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
+  color: #475569;
+  margin-top: 16px;
+}
+
 /* Inquiries Mobile & Responsive Card List System */
 .inquiriesTableView {
   display: block;

@@ -52,6 +52,8 @@ export default function AdminDashboard() {
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
+  const [inquirySearchQuery, setInquirySearchQuery] = useState('');
+  const [inquiryStatusFilter, setInquiryStatusFilter] = useState<'All' | 'Pending' | 'Contacted' | 'Quoted' | 'Completed'>('All');
   const [selectedCategory, setSelectedCategory] = useState<CategoryObj | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<ProductObj | null>(null);
   const [detailReturnTab, setDetailReturnTab] = useState<'overview' | 'manage'>('overview');
@@ -125,6 +127,42 @@ export default function AdminDashboard() {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
   const [manageView, setManageView] = useState<'categories' | 'products'>('products');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Search & Filtering calculations for Inquiries Tab
+  const filteredInquiriesList = inquiriesList.filter((inq) => {
+    const query = inquirySearchQuery.toLowerCase().trim();
+    const matchesStatus = inquiryStatusFilter === 'All' || inq.status === inquiryStatusFilter;
+
+    if (!query) return matchesStatus;
+
+    const matchesId = inq.inquiryId?.toLowerCase().includes(query);
+    const matchesProduct = inq.productName?.toLowerCase().includes(query);
+    const matchesCategory = inq.category?.toLowerCase().includes(query);
+    const matchesCustomer = inq.customerName?.toLowerCase().includes(query);
+    const matchesEmail = inq.email?.toLowerCase().includes(query);
+    const matchesPhone = inq.phone?.toLowerCase().includes(query);
+    const matchesInstitution = inq.institution?.toLowerCase().includes(query);
+    const matchesCity = inq.city?.toLowerCase().includes(query);
+
+    return matchesStatus && (
+      matchesId ||
+      matchesProduct ||
+      matchesCategory ||
+      matchesCustomer ||
+      matchesEmail ||
+      matchesPhone ||
+      matchesInstitution ||
+      matchesCity
+    );
+  });
+
+  const inquiryCounts = {
+    All: inquiriesList.length,
+    Pending: inquiriesList.filter((i) => i.status === 'Pending').length,
+    Contacted: inquiriesList.filter((i) => i.status === 'Contacted').length,
+    Quoted: inquiriesList.filter((i) => i.status === 'Quoted').length,
+    Completed: inquiriesList.filter((i) => i.status === 'Completed').length,
+  };
 
   // Custom Modal States
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState<string | null>(null);
@@ -2241,200 +2279,263 @@ export default function AdminDashboard() {
                   <span>Customer Quotation Inquiries</span>
                 </h2>
               </div>
+              {/* Search & Status Filter Toolbar */}
+              <div className={styles.inquiryToolbar}>
+                {/* Search Input Bar */}
+                <div className={styles.inquirySearchBox}>
+                  <span className="material-symbols-outlined" style={{ color: '#0a8d93', fontSize: '20px' }}>search</span>
+                  <input
+                    type="text"
+                    placeholder="Search ID, customer, email, phone, product, city..."
+                    value={inquirySearchQuery}
+                    onChange={(e) => setInquirySearchQuery(e.target.value)}
+                    className={styles.inquirySearchInput}
+                  />
+                  {inquirySearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setInquirySearchQuery('')}
+                      className={styles.inquirySearchClear}
+                      title="Clear search"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Status Filter Pills */}
+                <div className={styles.inquiryFilterPills}>
+                  {(['All', 'Pending', 'Contacted', 'Quoted', 'Completed'] as const).map((statusKey) => {
+                    const isActive = inquiryStatusFilter === statusKey;
+                    return (
+                      <button
+                        key={statusKey}
+                        type="button"
+                        onClick={() => setInquiryStatusFilter(statusKey)}
+                        className={`${styles.inquiryFilterPill} ${isActive ? styles.inquiryFilterPillActive : ''}`}
+                      >
+                        <span>{statusKey}</span>
+                        <span className={styles.inquiryFilterCount}>{inquiryCounts[statusKey]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {inquiriesList.length > 0 ? (
-                <>
-                  {/* Desktop Table View */}
-                  <div className={styles.inquiriesTableView}>
-                    <div style={{ overflowX: 'auto', width: '100%', marginTop: '8px' }}>
-                      <table style={{
-                        width: '100%',
-                        minWidth: '1000px',
-                        borderCollapse: 'collapse',
-                        textAlign: 'left',
-                        color: '#334155',
-                      }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#475569', fontSize: '0.85rem' }}>
-                            <th style={{ padding: '12px 16px' }}>Inquiry ID</th>
-                            <th style={{ padding: '12px 16px' }}>Date</th>
-                            <th style={{ padding: '12px 16px' }}>Product</th>
-                            <th style={{ padding: '12px 16px' }}>Customer</th>
-                            <th style={{ padding: '12px 16px' }}>Institution</th>
-                            <th style={{ padding: '12px 16px' }}>City</th>
-                            <th style={{ padding: '12px 16px' }}>Contact</th>
-                            <th style={{ padding: '12px 16px' }}>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {inquiriesList.slice(0, visibleInquiriesCount).map((inq) => {
-                            const dateStr = new Date(inq.createdAt).toLocaleDateString('en-GB', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric',
-                            });
-                            const timeStr = new Date(inq.createdAt).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            });
+                filteredInquiriesList.length > 0 ? (
+                  <>
+                    {/* Desktop Table View */}
+                    <div className={styles.inquiriesTableView}>
+                      <div style={{ overflowX: 'auto', width: '100%', marginTop: '8px' }}>
+                        <table style={{
+                          width: '100%',
+                          minWidth: '1000px',
+                          borderCollapse: 'collapse',
+                          textAlign: 'left',
+                          color: '#334155',
+                        }}>
+                          <thead>
+                            <tr style={{ borderBottom: '1px solid #cbd5e1', color: '#475569', fontSize: '0.85rem' }}>
+                              <th style={{ padding: '12px 16px' }}>Inquiry ID</th>
+                              <th style={{ padding: '12px 16px' }}>Date</th>
+                              <th style={{ padding: '12px 16px' }}>Product</th>
+                              <th style={{ padding: '12px 16px' }}>Customer</th>
+                              <th style={{ padding: '12px 16px' }}>Institution</th>
+                              <th style={{ padding: '12px 16px' }}>City</th>
+                              <th style={{ padding: '12px 16px' }}>Contact</th>
+                              <th style={{ padding: '12px 16px' }}>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredInquiriesList.slice(0, visibleInquiriesCount).map((inq) => {
+                              const dateStr = new Date(inq.createdAt).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              });
+                              const timeStr = new Date(inq.createdAt).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              });
 
-                            return (
-                              <tr key={inq._id} style={{
-                                borderBottom: '1px solid #e2e8f0',
-                                fontSize: '0.9rem',
-                                transition: 'background 0.2s',
-                              }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                              return (
+                                <tr key={inq._id} style={{
+                                  borderBottom: '1px solid #e2e8f0',
+                                  fontSize: '0.9rem',
+                                  transition: 'background 0.2s',
+                                }}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(10, 141, 147, 0.03)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                  <td style={{ padding: '16px', fontWeight: 'bold', color: '#0A8D93' }}>{inq.inquiryId}</td>
+                                  <td style={{ padding: '16px', color: '#475569', fontSize: '0.8rem' }}>
+                                    <div>{dateStr}</div>
+                                    <div style={{ opacity: 0.7 }}>{timeStr}</div>
+                                  </td>
+                                  <td style={{ padding: '16px' }}>
+                                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.productName}</div>
+                                    <span style={{ fontSize: '0.75rem', color: '#08777d', background: 'rgba(10, 141, 147, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>{inq.category}</span>
+                                  </td>
+                                  <td style={{ padding: '16px' }}>
+                                    <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.customerName}</div>
+                                    <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{inq.email}</div>
+                                  </td>
+                                  <td style={{ padding: '16px', color: '#334155' }}>{inq.institution}</td>
+                                  <td style={{ padding: '16px', color: '#334155' }}>{inq.city}</td>
+                                  <td style={{ padding: '16px', fontSize: '0.8rem', color: '#334155' }}>{inq.phone}</td>
+                                  <td style={{ padding: '16px' }}>
+                                    <select
+                                      value={inq.status}
+                                      onChange={(e) => handleUpdateInquiryStatus(inq._id, e.target.value)}
+                                      style={{
+                                        background: inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' :
+                                          inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
+                                            inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
+                                              'rgba(239, 68, 68, 0.15)',
+                                        color: inq.status === 'Completed' ? '#10b981' :
+                                          inq.status === 'Quoted' ? '#3b82f6' :
+                                            inq.status === 'Contacted' ? '#f59e0b' :
+                                              '#ef4444',
+                                        border: `1px solid ${inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
+                                            inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
+                                              inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
+                                                'rgba(239, 68, 68, 0.3)'
+                                          }`,
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        fontSize: '0.82rem',
+                                        fontWeight: 600,
+                                        outline: 'none',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      <option value="Pending" style={{ background: '#0b1f3a', color: '#ef4444' }}>Pending</option>
+                                      <option value="Contacted" style={{ background: '#0b1f3a', color: '#f59e0b' }}>Contacted</option>
+                                      <option value="Quoted" style={{ background: '#0b1f3a', color: '#3b82f6' }}>Quoted</option>
+                                      <option value="Completed" style={{ background: '#0b1f3a', color: '#10b981' }}>Completed</option>
+                                    </select>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Mobile Glassmorphic Inquiry Cards View */}
+                    <div className={styles.inquiriesMobileView}>
+                      {filteredInquiriesList.slice(0, visibleInquiriesCount).map((inq) => {
+                        const dateStr = new Date(inq.createdAt).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        });
+                        const timeStr = new Date(inq.createdAt).toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        });
+
+                        return (
+                          <div key={inq._id} className={styles.inquiryCard}>
+                            {/* Header: ID + Status */}
+                            <div className={styles.inquiryCardHeader}>
+                              <span className={styles.inquiryCardId}>{inq.inquiryId}</span>
+                              <select
+                                value={inq.status}
+                                onChange={(e) => handleUpdateInquiryStatus(inq._id, e.target.value)}
+                                className={styles.inquiryStatusSelect}
+                                style={{
+                                  background: inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' :
+                                    inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
+                                      inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
+                                        'rgba(239, 68, 68, 0.15)',
+                                  color: inq.status === 'Completed' ? '#10b981' :
+                                    inq.status === 'Quoted' ? '#3b82f6' :
+                                      inq.status === 'Contacted' ? '#f59e0b' :
+                                        '#ef4444',
+                                  border: `1px solid ${inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
+                                      inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
+                                        inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
+                                          'rgba(239, 68, 68, 0.3)'
+                                    }`
+                                }}
                               >
-                                <td style={{ padding: '16px', fontWeight: 'bold', color: '#0A8D93' }}>{inq.inquiryId}</td>
-                                <td style={{ padding: '16px', color: '#475569', fontSize: '0.8rem' }}>
-                                  <div>{dateStr}</div>
-                                  <div style={{ opacity: 0.7 }}>{timeStr}</div>
-                                </td>
-                                <td style={{ padding: '16px' }}>
-                                  <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.productName}</div>
-                                  <span style={{ fontSize: '0.75rem', color: '#08777d', background: 'rgba(10, 141, 147, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>{inq.category}</span>
-                                </td>
-                                <td style={{ padding: '16px' }}>
-                                  <div style={{ fontWeight: 600, color: '#0f172a' }}>{inq.customerName}</div>
-                                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{inq.email}</div>
-                                </td>
-                                <td style={{ padding: '16px', color: '#334155' }}>{inq.institution}</td>
-                                <td style={{ padding: '16px', color: '#334155' }}>{inq.city}</td>
-                                <td style={{ padding: '16px', fontSize: '0.8rem', color: '#334155' }}>{inq.phone}</td>
-                                <td style={{ padding: '16px' }}>
-                                  <select
-                                    value={inq.status}
-                                    onChange={(e) => handleUpdateInquiryStatus(inq._id, e.target.value)}
-                                    style={{
-                                      background: inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' :
-                                        inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
-                                          inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
-                                            'rgba(239, 68, 68, 0.15)',
-                                      color: inq.status === 'Completed' ? '#10b981' :
-                                        inq.status === 'Quoted' ? '#3b82f6' :
-                                          inq.status === 'Contacted' ? '#f59e0b' :
-                                            '#ef4444',
-                                      border: `1px solid ${inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
-                                          inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
-                                            inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
-                                              'rgba(239, 68, 68, 0.3)'
-                                        }`,
-                                      padding: '6px 12px',
-                                      borderRadius: '8px',
-                                      fontSize: '0.82rem',
-                                      fontWeight: 600,
-                                      outline: 'none',
-                                      cursor: 'pointer',
-                                    }}
-                                  >
-                                    <option value="Pending" style={{ background: '#0b1f3a', color: '#ef4444' }}>Pending</option>
-                                    <option value="Contacted" style={{ background: '#0b1f3a', color: '#f59e0b' }}>Contacted</option>
-                                    <option value="Quoted" style={{ background: '#0b1f3a', color: '#3b82f6' }}>Quoted</option>
-                                    <option value="Completed" style={{ background: '#0b1f3a', color: '#10b981' }}>Completed</option>
-                                  </select>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Mobile Glassmorphic Inquiry Cards View */}
-                  <div className={styles.inquiriesMobileView}>
-                    {inquiriesList.slice(0, visibleInquiriesCount).map((inq) => {
-                      const dateStr = new Date(inq.createdAt).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      });
-                      const timeStr = new Date(inq.createdAt).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-
-                      return (
-                        <div key={inq._id} className={styles.inquiryCard}>
-                          {/* Header: ID + Status */}
-                          <div className={styles.inquiryCardHeader}>
-                            <span className={styles.inquiryCardId}>{inq.inquiryId}</span>
-                            <select
-                              value={inq.status}
-                              onChange={(e) => handleUpdateInquiryStatus(inq._id, e.target.value)}
-                              className={styles.inquiryStatusSelect}
-                              style={{
-                                background: inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.15)' :
-                                  inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.15)' :
-                                    inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.15)' :
-                                      'rgba(239, 68, 68, 0.15)',
-                                color: inq.status === 'Completed' ? '#10b981' :
-                                  inq.status === 'Quoted' ? '#3b82f6' :
-                                    inq.status === 'Contacted' ? '#f59e0b' :
-                                      '#ef4444',
-                                border: `1px solid ${inq.status === 'Completed' ? 'rgba(16, 185, 129, 0.3)' :
-                                    inq.status === 'Quoted' ? 'rgba(59, 130, 246, 0.3)' :
-                                      inq.status === 'Contacted' ? 'rgba(245, 158, 11, 0.3)' :
-                                        'rgba(239, 68, 68, 0.3)'
-                                  }`
-                              }}
-                            >
-                              <option value="Pending" style={{ background: '#0b1f3a', color: '#ef4444' }}>Pending</option>
-                              <option value="Contacted" style={{ background: '#0b1f3a', color: '#f59e0b' }}>Contacted</option>
-                              <option value="Quoted" style={{ background: '#0b1f3a', color: '#3b82f6' }}>Quoted</option>
-                              <option value="Completed" style={{ background: '#0b1f3a', color: '#10b981' }}>Completed</option>
-                            </select>
-                          </div>
-
-                          {/* Product Details */}
-                          <div className={styles.inquiryCardProduct}>
-                            <h3 className={styles.inquiryProductName}>{inq.productName}</h3>
-                            {inq.category && (
-                              <span className={styles.inquiryCategoryBadge}>{inq.category}</span>
-                            )}
-                          </div>
-
-                          {/* Customer Details Container */}
-                          <div className={styles.inquiryCardDetails}>
-                            <div className={styles.inquiryDetailItem}>
-                              <span className="material-symbols-outlined">person</span>
-                              <span>{inq.customerName}</span>
+                                <option value="Pending" style={{ background: '#0b1f3a', color: '#ef4444' }}>Pending</option>
+                                <option value="Contacted" style={{ background: '#0b1f3a', color: '#f59e0b' }}>Contacted</option>
+                                <option value="Quoted" style={{ background: '#0b1f3a', color: '#3b82f6' }}>Quoted</option>
+                                <option value="Completed" style={{ background: '#0b1f3a', color: '#10b981' }}>Completed</option>
+                              </select>
                             </div>
-                            <div className={styles.inquiryDetailItem}>
-                              <span className="material-symbols-outlined">mail</span>
-                              <a href={`mailto:${inq.email}`}>{inq.email}</a>
+
+                            {/* Product Details */}
+                            <div className={styles.inquiryCardProduct}>
+                              <h3 className={styles.inquiryProductName}>{inq.productName}</h3>
+                              {inq.category && (
+                                <span className={styles.inquiryCategoryBadge}>{inq.category}</span>
+                              )}
                             </div>
-                            <div className={styles.inquiryDetailItem}>
-                              <span className="material-symbols-outlined">call</span>
-                              <a href={`tel:${inq.phone}`}>{inq.phone}</a>
-                            </div>
-                            {(inq.institution || inq.city) && (
+
+                            {/* Customer Details Container */}
+                            <div className={styles.inquiryCardDetails}>
                               <div className={styles.inquiryDetailItem}>
-                                <span className="material-symbols-outlined">location_city</span>
-                                <span>{[inq.institution, inq.city].filter(Boolean).join(', ')}</span>
+                                <span className="material-symbols-outlined">person</span>
+                                <span>{inq.customerName}</span>
                               </div>
-                            )}
-                          </div>
+                              <div className={styles.inquiryDetailItem}>
+                                <span className="material-symbols-outlined">mail</span>
+                                <a href={`mailto:${inq.email}`}>{inq.email}</a>
+                              </div>
+                              <div className={styles.inquiryDetailItem}>
+                                <span className="material-symbols-outlined">call</span>
+                                <a href={`tel:${inq.phone}`}>{inq.phone}</a>
+                              </div>
+                              {(inq.institution || inq.city) && (
+                                <div className={styles.inquiryDetailItem}>
+                                  <span className="material-symbols-outlined">location_city</span>
+                                  <span>{[inq.institution, inq.city].filter(Boolean).join(', ')}</span>
+                                </div>
+                              )}
+                            </div>
 
-                          {/* Footer Timestamp */}
-                          <div className={styles.inquiryCardFooter}>
-                            <span className="material-symbols-outlined">schedule</span>
-                            <span>Received on {dateStr} at {timeStr}</span>
+                            {/* Footer Timestamp */}
+                            <div className={styles.inquiryCardFooter}>
+                              <span className="material-symbols-outlined">schedule</span>
+                              <span>Received on {dateStr} at {timeStr}</span>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {inquiriesList.length > visibleInquiriesCount && (
-                    <div ref={inquiryLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.6)', gap: '8px' }}>
-                      <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                      <span>Loading more inquiries...</span>
+                        );
+                      })}
                     </div>
-                  )}
-                </>
+
+                    {filteredInquiriesList.length > visibleInquiriesCount && (
+                      <div ref={inquiryLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.6)', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        <span>Loading more inquiries...</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className={styles.emptySearchState}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '42px', color: '#0a8d93' }}>search_off</span>
+                    <h3 style={{ margin: '8px 0 4px', fontSize: '1.1rem', color: '#0f172a' }}>No inquiries found</h3>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748b' }}>
+                      No records match "{inquirySearchQuery}" {inquiryStatusFilter !== 'All' ? `with status "${inquiryStatusFilter}"` : ''}.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInquirySearchQuery('');
+                        setInquiryStatusFilter('All');
+                      }}
+                      className={styles.secondaryButton}
+                      style={{ marginTop: '16px', padding: '8px 16px', fontSize: '0.85rem' }}
+                    >
+                      Clear Search &amp; Filters
+                    </button>
+                  </div>
+                )
               ) : (
                 <div className={styles.emptyState}>
                   <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>inbox</span>
