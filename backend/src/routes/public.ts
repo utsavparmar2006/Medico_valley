@@ -87,11 +87,7 @@ const DEFAULT_CLIENTS = [
 // Get all sectors sorted by displayOrder
 router.get('/sectors', async (req, res) => {
   try {
-    let sectors = await Sector.find({}).sort({ displayOrder: 1 });
-    if (sectors.length === 0) {
-      await Sector.insertMany(DEFAULT_SECTORS);
-      sectors = await Sector.find({}).sort({ displayOrder: 1 });
-    }
+    const sectors = await Sector.find({}).sort({ displayOrder: 1 });
     return res.json({ success: true, data: sectors });
   } catch (error: any) {
     console.error('Fetch sectors error:', error);
@@ -177,13 +173,9 @@ router.get('/categories/:slug', async (req, res) => {
 });
 
 // 3. Get products under a category by categorySlug
-// Get all top clients (public with auto-seeding)
+// Get all top clients (public)
 router.get('/clients', async (req, res) => {
   try {
-    const count = await Client.countDocuments();
-    if (count === 0) {
-      await Client.insertMany(DEFAULT_CLIENTS);
-    }
     const clients = await Client.find({}).sort({ displayOrder: 1 });
     return res.json({ success: true, data: clients });
   } catch (error: any) {
