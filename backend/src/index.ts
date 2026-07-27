@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { connectDB } from './config/db';
 import adminRouter from './routes/admin';
 import publicRouter from './routes/public';
@@ -45,12 +47,25 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Middlewares
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+// Rate Limiting for Public Inquiries (Anti-Spam)
+const inquiryLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit each IP to 10 inquiries per hour
+  message: { message: 'Too many inquiries submitted from this IP, please try again after an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/public/inquiries', inquiryLimiter);
 
 // Serve uploads statically
 app.use('/uploads', express.static(uploadsDir));
