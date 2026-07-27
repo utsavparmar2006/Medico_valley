@@ -21,12 +21,36 @@ export default function ContactUs() {
     e.preventDefault();
     setSubmitStatus(null);
 
-    if (!fullName || !institution || !email || !phone || !city || !subject || !message) {
+    // 1. Check empty values
+    if (!fullName.trim() || !institution.trim() || !email.trim() || !phone.trim() || !city.trim() || !subject.trim() || !message.trim()) {
       setSubmitStatus({ type: 'error', text: 'Please fill in all required fields.' });
       return;
     }
 
+    // 2. Full Name validation
+    if (fullName.trim().length < 2) {
+      setSubmitStatus({ type: 'error', text: 'Please enter a valid full name (at least 2 characters).' });
+      return;
+    }
+
+    // 3. Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setSubmitStatus({ type: 'error', text: 'Please enter a valid email address.' });
+      return;
+    }
+
+    // 4. Phone validation (10 digits starting with 6-9)
+    const phoneDigits = phone.replace(/\D/g, '');
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phoneDigits)) {
+      setSubmitStatus({ type: 'error', text: 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).' });
+      return;
+    }
+
     setIsSubmitting(true);
+
+    const formattedPhone = `+91 ${phoneDigits}`;
 
     try {
       // Submit Inquiry to MongoDB Database via public inquiries API route
@@ -39,12 +63,12 @@ export default function ContactUs() {
           productId: '60d21b4667d0d8992e610c85', // Static mock ObjectId for general inquiries
           productName: 'General Inquiry Form',
           category: 'General Inquiry',
-          customerName: fullName,
-          institution,
-          email,
-          phone,
-          city,
-          message: `Subject: ${subject}\n\nMessage: ${message}`,
+          customerName: fullName.trim(),
+          institution: institution.trim(),
+          email: email.trim(),
+          phone: formattedPhone,
+          city: city.trim(),
+          message: `Subject: ${subject.trim()}\n\nMessage: ${message.trim()}`,
         }),
       });
 
@@ -141,10 +165,16 @@ export default function ContactUs() {
                   <input
                     type="tel"
                     required
-                    placeholder="Phone Number"
+                    placeholder="Phone Number (10 digits)"
                     className={styles.inputField}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, ''); // Enforce only digits
+                      if (val.length <= 10) {
+                        setPhone(val);
+                      }
+                    }}
+                    maxLength={10}
                     disabled={isSubmitting}
                   />
 
