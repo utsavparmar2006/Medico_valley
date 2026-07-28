@@ -99,7 +99,12 @@ export default async function ProductsPage() {
           from { opacity: 0; transform: translateY(32px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 900px) {
+        @media (max-width: 1023px) {
+          .productsDirectoryGrid {
+            padding: 0 28px 40px !important;
+          }
+        }
+        @media (max-width: 767px) {
           .productsDirectoryGrid {
             grid-template-columns: 1fr !important;
             padding: 0 20px 60px !important;

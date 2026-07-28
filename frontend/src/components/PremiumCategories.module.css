@@ -7,12 +7,18 @@
 /* ─── SECTION ─── */
 .section {
   background: #F1F5F9;
-  padding: 96px 60px 110px;
+  padding: 96px 40px 110px;
   position: relative;
   overflow: hidden;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
+  .section {
+    padding: 80px 28px 90px;
+  }
+}
+
+@media (max-width: 767px) {
   .section {
     padding: 60px 20px 80px;
   }

@@ -122,9 +122,21 @@
 
 /* Layout Container */
 .blogContainer {
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 60px auto 0;
-  padding: 0 24px;
+  padding: 0 40px;
+}
+
+@media (max-width: 1023px) {
+  .blogContainer {
+    padding: 0 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .blogContainer {
+    padding: 0 20px;
+  }
 }
 
 /* Grid Area */

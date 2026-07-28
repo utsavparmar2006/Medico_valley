@@ -1,6 +1,11 @@
+/* ============================================================
+   SIMULATION CENTRE — PREMIUM ENHANCED DESIGN
+   All white base (#ffffff), Teal accent (#0a8d93)
+   ============================================================ */
+
 .pageWrapper {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   color: #0f172a;
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   display: flex;
@@ -9,45 +14,49 @@
 
 .mainContainer {
   flex: 1;
-  padding-top: 104px;
+  padding-top: 76px;
   width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding-left: 24px;
-  padding-right: 24px;
-  padding-bottom: 80px;
+  background: #ffffff;
 }
 
-/* ==========================================================================
-   HERO BANNER: LIGHT HYBRID PREMIUM HEALTHCARE STUDIO
-   ========================================================================== */
+/* ============================================================
+   HERO — GRADIENT MESH BACKGROUND
+   ============================================================ */
 .heroBanner {
-  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
-  border-radius: 24px;
-  padding: 48px;
-  margin-bottom: 56px;
-  color: #0f172a;
-  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.04);
+  background: #ffffff;
+  padding: 72px 0 68px;
   position: relative;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
 }
 
-.heroBanner::before {
-  content: '';
+/* Subtle dot-grid mesh */
+.heroBgMesh {
   position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(10, 141, 147, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(10,141,147,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* Soft teal glow top-right */
+.heroBgGlow {
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(10,141,147,0.12) 0%, transparent 65%);
   pointer-events: none;
 }
 
 .heroContainer {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
+  gap: 64px;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -56,7 +65,7 @@
 .heroTextCol {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .heroKicker {
@@ -66,188 +75,330 @@
   align-self: flex-start;
   background: rgba(10, 141, 147, 0.08);
   border: 1px solid rgba(10, 141, 147, 0.2);
-  color: #086d71;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.82rem;
+  color: #0a8d93;
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.sparkle {
-  color: #0a8d93;
-}
+.sparkle { color: #0a8d93; }
 
 .heroHeadline {
   font-family: var(--font-display), sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.85rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.16;
   color: #0f172a;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .highlightText {
-  background: linear-gradient(135deg, #0a8d93, #00BFA6);
+  background: linear-gradient(135deg, #0a8d93 0%, #00BFA6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .heroSubline {
-  font-size: 1.02rem;
-  color: #475569;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  color: #64748b;
+  line-height: 1.72;
   margin: 0;
 }
 
+/* Stats row */
 .heroStatsRow {
   display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-top: 8px;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(10, 141, 147, 0.15);
-  padding: 16px 24px;
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
+  align-items: stretch;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
 }
 
 .statItem {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  padding: 18px 28px;
+  flex: 1;
 }
 
 .statNumber {
-  font-size: 1.35rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #0a8d93;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+  transition: color 0.2s;
 }
 
 .statLabel {
-  font-size: 0.78rem;
-  color: #475569;
+  font-size: 0.72rem;
+  color: #94a3b8;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .statDivider {
   width: 1px;
-  height: 32px;
-  background: rgba(10, 141, 147, 0.2);
+  background: #f1f5f9;
+  flex-shrink: 0;
 }
 
+/* CTA group */
 .heroCtaGroup {
-  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .heroBtnPrimary {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #0a8d93, #0b6f78);
+  gap: 10px;
+  background: #0a8d93;
   color: #ffffff;
   border: none;
-  padding: 16px 34px;
-  border-radius: 14px;
+  padding: 15px 30px;
+  border-radius: 10px;
   font-weight: 700;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(10, 141, 147, 0.2);
-  transition: all 0.25s ease;
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 18px rgba(10,141,147,0.25);
 }
 
 .heroBtnPrimary:hover {
+  background: #0b9ea5;
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(10, 141, 147, 0.35);
-  background: linear-gradient(135deg, #0b9ea5, #0a8d93);
+  box-shadow: 0 8px 28px rgba(10,141,147,0.35);
 }
 
 .arrowIcon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   transition: transform 0.2s ease;
 }
 
-.heroBtnPrimary:hover .arrowIcon {
-  transform: translateX(4px);
+.heroBtnPrimary:hover .arrowIcon { transform: translateX(4px); }
+
+.heroTrustNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
+.trustDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(34,197,94,0.08); }
+}
+
+/* Hero image */
 .heroGraphicBox {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
 }
 
 .heroImageWrapper {
+  position: relative;
   width: 100%;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  background: #ffffff;
-  padding: 8px;
+  border-radius: 18px;
+  overflow: visible;
 }
 
 .heroImage {
   width: 100%;
   height: auto;
-  border-radius: 14px;
   display: block;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.09);
 }
 
-/* ==========================================================================
-   SECTION 2: LAB ZONE EXPLORER
-   ========================================================================== */
-.labExplorerSection {
-  margin-bottom: 72px;
+/* Floating badge on hero image */
+.heroFloatBadge {
+  position: absolute;
+  bottom: -18px;
+  left: -18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  z-index: 2;
 }
 
+.floatBadgeIcon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.floatBadgeTitle {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.floatBadgeSub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   TRUST STRIP
+   ============================================================ */
+.trustStrip {
+  background: linear-gradient(90deg, #f0fdf9 0%, #f8fafc 50%, #f0fdf9 100%);
+  border-top: 1px solid #e2f8f4;
+  border-bottom: 1px solid #e2f8f4;
+  padding: 20px 0;
+  overflow: hidden;
+}
+
+.trustStripInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.trustStripLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.trustBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trustBadge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #d1fae5;
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0a8d93;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(10,141,147,0.06);
+  transition: all 0.2s ease;
+}
+
+.trustBadge:hover {
+  border-color: #0a8d93;
+  background: #f0fdf9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10,141,147,0.1);
+}
+
+/* ============================================================
+   SHARED SECTION STYLES
+   ============================================================ */
 .sectionHeaderCenter {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 52px;
 }
 
 .badgeTeal {
   display: inline-block;
-  background: rgba(10, 141, 147, 0.08);
+  background: rgba(10, 141, 147, 0.07);
   color: #0a8d93;
-  padding: 4px 14px;
-  border-radius: 16px;
-  font-size: 0.78rem;
+  padding: 5px 16px;
+  border-radius: 100px;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
 .sectionTitle {
   font-family: var(--font-display), sans-serif;
-  font-size: 1.95rem;
+  font-size: 2.05rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 4px 0 8px 0;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.025em;
 }
 
 .sectionSub {
-  font-size: 0.98rem;
+  font-size: 1rem;
   color: #64748b;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 520px;
+  line-height: 1.65;
+}
+
+.titleLine {
+  display: none;
+}
+
+/* ============================================================
+   LAB ZONE EXPLORER
+   ============================================================ */
+.labExplorerSection {
+  padding: 80px 0;
+  background: #ffffff;
+}
+
+.labExplorerInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .zoneExplorerLayout {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 24px;
-  align-items: stretch;
+  grid-template-columns: 290px 1fr;
+  gap: 28px;
+  align-items: start;
 }
 
-/* ---- Sidebar ---- */
 .zoneSidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .zoneTabBtn {
@@ -256,78 +407,78 @@
   gap: 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-left: 4px solid transparent;
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-left: 3px solid transparent;
+  border-radius: 12px;
+  padding: 15px 16px;
   cursor: pointer;
   text-align: left;
-  color: #475569;
-  font-size: 0.88rem;
+  color: #64748b;
+  font-size: 0.875rem;
   font-weight: 600;
-  transition: all 0.22s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  position: relative;
+  transition: all 0.2s ease;
 }
 
 .zoneTabBtn:hover {
   background: #f8fafc;
-  border-left-color: #cbd5e1;
   color: #0f172a;
+  border-left-color: #cbd5e1;
 }
 
 .zoneTabBtnActive {
-  background: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  font-weight: 700;
-  color: #0f172a;
+  background: #f0fdfc !important;
+  border-color: #b2f0ec;
+  border-left-color: #0a8d93 !important;
+  color: #0a8d93 !important;
+  box-shadow: 0 2px 14px rgba(10,141,147,0.1);
 }
 
 .zoneTabIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
-  transition: background 0.22s ease;
+  transition: background 0.2s ease;
 }
 
 .zoneTabLabel {
   flex: 1;
   line-height: 1.35;
+  font-size: 0.85rem;
 }
 
 .zoneTabArrow {
-  font-size: 1.3rem;
-  font-weight: 400;
+  font-size: 0.68rem;
+  font-weight: 700;
   color: inherit;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
 }
 
-.mobileAccordionContent {
-  display: none !important;
-}
+.arrowExpanded { }
 
-/* ---- Detail Card ---- */
+.mobileAccordionContent { display: none !important; }
+
 .zoneDetailCard {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
+  border-left: 4px solid #0a8d93;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 32px rgba(10,141,147,0.1);
+  transition: border-left-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .zoneAccentBar {
-  height: 5px;
+  height: 4px;
   width: 100%;
 }
 
 .zoneDetailInner {
-  padding: 36px 40px;
+  padding: 36px;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -340,19 +491,18 @@
 }
 
 .zoneIconLarge {
-  font-size: 2.8rem;
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
+  font-size: 2.4rem;
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.22s ease;
 }
 
 .zoneTitle {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 6px 0;
@@ -360,11 +510,10 @@
 }
 
 .zoneTagline {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
   margin: 0;
   line-height: 1.5;
-  transition: color 0.22s ease;
 }
 
 .zoneDetailBody {
@@ -376,33 +525,31 @@
 .featureList {
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 12px;
 }
 
 .featureRow {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  font-size: 0.93rem;
+  font-size: 0.92rem;
   color: #334155;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .featureCheck {
   font-weight: 900;
-  font-size: 1.05rem;
+  font-size: 1rem;
   flex-shrink: 0;
-  margin-top: 1px;
-  transition: color 0.22s ease;
+  margin-top: 2px;
 }
 
-/* Stats strip */
 .zoneStatsStrip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  padding-top: 20px;
+  padding-top: 24px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -413,66 +560,68 @@
   gap: 4px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 16px 12px;
   text-align: center;
 }
 
 .zoneStatValue {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 800;
   font-family: var(--font-display), sans-serif;
-  transition: color 0.22s ease;
   line-height: 1;
 }
 
 .zoneStatLabel {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #64748b;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-
-/* ==========================================================================
-   SECTION 3: EXPERTISE GRID
-   ========================================================================== */
+/* ============================================================
+   EXPERTISE GRID — ultra-light teal tint background
+   ============================================================ */
 .expertiseSection {
-  margin-bottom: 72px;
+  padding: 80px 0;
+  background: #ffffff;
 }
 
-.titleLine {
-  width: 60px;
-  height: 4px;
-  background: #0a8d93;
-  border-radius: 2px;
-  margin: 12px auto 0;
+.expertiseInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .expertiseGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .expertiseGlassCard {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 28px 24px;
+  border: 1px solid #e8ecf0;
+  border-top: 3px solid transparent;
+  border-radius: 14px;
+  padding: 26px 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  transition: all 0.28s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.025);
   position: relative;
 }
 
+/* Left-border accent — removed */
+.cardAccentLine { display: none; }
+
 .expertiseGlassCard:hover {
   transform: translateY(-4px);
-  border-color: #0a8d93;
-  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.08);
+  border-top-color: #0a8d93;
+  border-color: #e2e8f0;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.07);
 }
 
 .cardTopRow {
@@ -482,450 +631,479 @@
 }
 
 .iconCircle {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: #e6f7f4;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(10,141,147,0.08);
   color: #0a8d93;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.25s ease;
+}
+
+.expertiseGlassCard:hover .iconCircle {
+  background: rgba(10,141,147,0.14);
 }
 
 .numBadge {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  color: #cbd5e1;
+  color: #e2e8f0;
   font-family: var(--font-display), sans-serif;
+  transition: color 0.25s ease;
+}
+
+.expertiseGlassCard:hover .numBadge {
+  color: rgba(10,141,147,0.25);
 }
 
 .cardHeading {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .cardBody {
-  font-size: 0.88rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.55;
-}
-
-/* ==========================================================================
-   SECTION 4: WORKFLOW TIMELINE
-   ========================================================================== */
-.workflowSection {
-  margin-bottom: 72px;
-}
-
-.workflowGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  position: relative;
-}
-
-.workflowCard {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 28px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  position: relative;
-  transition: transform 0.25s ease, border-color 0.25s ease;
-}
-
-.workflowCard:hover {
-  transform: translateY(-2px);
-  border-color: #0a8d93;
-}
-
-.workflowStepNum {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #0a8d93;
-  font-family: var(--font-display), sans-serif;
-}
-
-.workflowTitle {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-}
-
-.workflowDesc {
   font-size: 0.85rem;
   color: #64748b;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-.connectorArrow {
+/* ============================================================
+   WORKFLOW — HORIZONTAL STEPPER
+   ============================================================ */
+.workflowSection {
+  padding: 80px 0;
+  background: #ffffff;
+}
+
+.workflowInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* Desktop stepper track */
+.stepperTrack {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  position: relative;
+}
+
+.stepperItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 20px;
+  position: relative;
+}
+
+.stepperCircleWrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+/* Connecting line between circles */
+.stepperLine {
   position: absolute;
-  right: -14px;
+  right: 50%;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.2rem;
-  color: #cbd5e1;
-  font-weight: bold;
-  z-index: 2;
+  width: calc(100% + 40px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #d1fae5 30%, #0a8d93 100%);
+  z-index: 0;
+  margin-right: -20px;
 }
 
-/* ==========================================================================
-   SECTION 5: FINAL CTA
-   ========================================================================== */
+.stepperItem:first-child .stepperLine { display: none; }
+
+.stepperCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0a8d93, #00BFA6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(10,141,147,0.28);
+  z-index: 1;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  flex-shrink: 0;
+}
+
+.stepperItem:hover .stepperCircle {
+  transform: scale(1.08);
+  box-shadow: 0 12px 32px rgba(10,141,147,0.4);
+}
+
+.stepperIcon {
+  font-size: 1.6rem;
+}
+
+.stepperContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepperNum {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #0a8d93;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stepperTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.stepperDesc {
+  font-size: 0.84rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.55;
+  max-width: 200px;
+}
+
+/* ============================================================
+   FINAL CTA — Dark navy with teal glow
+   ============================================================ */
 .finalCtaSection {
-  margin-bottom: 20px;
+  padding: 80px 0;
+  background: #ffffff;
+}
+
+.finalCtaInner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .finalCtaBox {
-  background: linear-gradient(135deg, #0B1F3A 0%, #0d2a4f 100%);
+  background: #0a1628;
   border-radius: 24px;
-  padding: 48px;
+  padding: 60px 64px;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 40px;
-  box-shadow: 0 12px 36px rgba(11, 31, 58, 0.15);
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(10,141,147,0.15);
+}
+
+/* Multi-glow decorative bg */
+.finalCtaBox_bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 40% 60% at 90% 20%, rgba(10,141,147,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 40% at 10% 80%, rgba(0,191,166,0.12) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .finalCtaLeft {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 680px;
+  gap: 18px;
+  max-width: 620px;
+  position: relative;
+  z-index: 1;
 }
 
 .targetBadge {
-  display: inline-block;
+  display: inline-flex;
   align-self: flex-start;
-  background: rgba(73, 211, 231, 0.15);
-  color: #49d3e7;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10,141,147,0.18);
+  color: #5ce0e0;
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 0.82rem;
   font-weight: 700;
+  border: 1px solid rgba(10,141,147,0.3);
 }
 
 .finalCtaTitle {
   font-family: var(--font-display), sans-serif;
-  font-size: 1.85rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #ffffff;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
 }
 
 .finalCtaDesc {
-  font-size: 0.98rem;
-  color: #cbd5e1;
+  font-size: 0.97rem;
+  color: #94a3b8;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.68;
 }
 
 .contactChips {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 6px;
+  gap: 10px;
 }
 
 .contactChips span {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
   color: #cbd5e1;
   padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  border-radius: 100px;
+  font-size: 0.82rem;
   font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.contactChips span:hover {
+  background: rgba(255,255,255,0.1);
 }
 
 .finalCtaRight {
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .finalActionBtn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, #0a8d93, #0b6f78);
+  background: linear-gradient(135deg, #0a8d93, #00BFA6);
   color: #ffffff;
   border: none;
-  padding: 18px 34px;
-  border-radius: 14px;
+  padding: 18px 36px;
+  border-radius: 12px;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(10, 141, 147, 0.2);
-  transition: all 0.25s ease;
+  box-shadow: 0 8px 28px rgba(10,141,147,0.35);
+  transition: all 0.22s ease;
   white-space: nowrap;
 }
 
 .finalActionBtn:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #0b9ea5, #0a8d93);
-  box-shadow: 0 12px 32px rgba(10, 141, 147, 0.35);
+  box-shadow: 0 14px 38px rgba(10,141,147,0.5);
 }
 
 .btnArrow {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   transition: transform 0.2s ease;
 }
 
-.finalActionBtn:hover .btnArrow {
-  transform: translateX(4px);
-}
+.finalActionBtn:hover .btnArrow { transform: translateX(5px); }
 
-/* RESPONSIVE DESIGN */
-@media (max-width: 992px) {
+/* ============================================================
+   RESPONSIVE — TABLET (<=1023px)
+   ============================================================ */
+@media (max-width: 1023px) {
   .heroContainer,
-  .finalCtaBox {
+  .trustStripInner,
+  .labExplorerInner,
+  .expertiseInner,
+  .workflowInner,
+  .finalCtaInner {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .heroContainer {
     grid-template-columns: 1fr;
-    flex-direction: column;
+    gap: 40px;
+  }
+
+  .heroHeadline { font-size: 2.2rem; }
+
+  .heroGraphicBox { margin-bottom: 28px; }
+
+  .heroFloatBadge {
+    bottom: -12px;
+    left: 12px;
+  }
+
+  .expertiseGrid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Stepper becomes vertical on tablet */
+  .stepperTrack {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .stepperItem {
+    flex-direction: row;
+    text-align: left;
+    padding: 0;
+    gap: 24px;
     align-items: flex-start;
   }
 
-  .workflowGrid {
-    grid-template-columns: repeat(2, 1fr);
+  .stepperCircleWrap {
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+    margin-bottom: 0;
+    flex-shrink: 0;
   }
 
-  .connectorArrow {
+  .stepperLine {
     display: none;
   }
 
+  .stepperContent { align-items: flex-start; }
+
+  .stepperDesc { max-width: none; }
+
   .zoneExplorerLayout {
     grid-template-columns: 1fr;
-  }
-
-  .zoneSidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .zoneTabBtn {
-    width: 100%;
-    min-width: 0;
-    border-left: 4px solid transparent;
-    border-bottom: none;
-    border-radius: 14px;
-    padding: 16px 18px;
-    justify-content: space-between;
-  }
-
-  .zoneTabBtnActive {
-    border-radius: 14px 14px 0 0 !important;
-    box-shadow: none !important;
-    background: #ffffff;
-  }
-
-  .zoneDetailCard {
-    display: none !important;
+    gap: 0;
   }
 
   .mobileAccordionContent {
     display: block !important;
     width: 100%;
-    margin-top: -12px;
+    margin-top: -8px;
     margin-bottom: 8px;
     border: 1px solid #e2e8f0;
-    border-left: 4px solid currentColor;
+    border-left: 3px solid;
     border-top: none;
-    border-radius: 0 0 14px 14px;
-    background: #ffffff;
-    padding: 24px 20px;
+    border-radius: 0 0 12px 12px;
+    background: #f8fafc;
+    padding: 22px 18px;
     box-sizing: border-box;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-    animation: slideDownAccordion 0.25s ease-out;
+    animation: slideDown 0.22s ease-out;
   }
 
-  @keyframes slideDownAccordion {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
+
+  .zoneTabBtnActive { border-radius: 12px 12px 0 0 !important; }
+  .zoneDetailCard { display: none !important; }
+
+  .finalCtaBox {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 44px 40px;
+    gap: 32px;
+  }
+
+  .finalActionBtn { width: 100%; justify-content: center; }
 }
 
-@media (max-width: 768px) {
-  .mainContainer {
-    padding-top: 84px;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-bottom: 48px;
+/* ============================================================
+   RESPONSIVE — MOBILE (<=767px)
+   ============================================================ */
+@media (max-width: 767px) {
+  .heroBanner { padding: 48px 0 40px; }
+
+  .heroContainer,
+  .trustStripInner,
+  .labExplorerInner,
+  .expertiseInner,
+  .workflowInner,
+  .finalCtaInner {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
-  .heroBanner {
-    padding: 28px 20px;
-    border-radius: 20px;
-    margin-bottom: 40px;
-  }
-
-  .heroHeadline {
-    font-size: 1.85rem;
-    line-height: 1.25;
-  }
-
-  .heroSubline {
-    font-size: 0.94rem;
-  }
+  .heroHeadline { font-size: 1.8rem; line-height: 1.22; }
+  .heroSubline { font-size: 0.95rem; }
 
   .heroStatsRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 12px;
-    border-radius: 14px;
-    width: 100%;
+    flex-direction: column;
+    border-radius: 12px;
   }
 
   .statItem {
-    align-items: center;
-    text-align: center;
-  }
-
-  .statNumber {
-    font-size: 1.15rem;
-  }
-
-  .statLabel {
-    font-size: 0.7rem;
-  }
-
-  .statDivider {
-    display: none;
-  }
-
-  .heroCtaGroup,
-  .heroBtnPrimary,
-  .finalCtaRight,
-  .finalActionBtn {
-    width: 100%;
-  }
-
-  .heroBtnPrimary,
-  .finalActionBtn {
-    justify-content: center;
     padding: 14px 20px;
-    font-size: 0.95rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #f1f5f9;
   }
+
+  .statItem:last-child { border-bottom: none; }
+  .statDivider { display: none; }
+  .statNumber { font-size: 1.3rem; }
+
+  .heroCtaGroup { flex-direction: column; align-items: flex-start; }
+
+  .heroFloatBadge { display: none; }
+
+  .trustStripInner { flex-direction: column; gap: 14px; }
+  .trustBadgesRow { gap: 8px; }
 
   .labExplorerSection,
   .expertiseSection,
-  .workflowSection {
-    margin-bottom: 48px;
+  .workflowSection,
+  .finalCtaSection {
+    padding: 56px 0;
   }
 
-  .sectionTitle {
-    font-size: 1.5rem;
-  }
-
-  .sectionSub {
-    font-size: 0.9rem;
-  }
-
-  .zoneDetailInner {
-    padding: 20px 16px;
-    gap: 20px;
-  }
-
-  .zoneDetailHeader {
-    gap: 12px;
-  }
-
-  .zoneIconLarge {
-    width: 52px;
-    height: 52px;
-    font-size: 1.8rem;
-    border-radius: 14px;
-  }
-
-  .zoneTitle {
-    font-size: 1.15rem;
-  }
-
-  .zoneTagline {
-    font-size: 0.85rem;
-  }
-
-  .featureRow {
-    font-size: 0.88rem;
-  }
-
-  .zoneStatsStrip {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    padding-top: 16px;
-  }
-
-  .zoneStat {
-    padding: 10px 4px;
-    border-radius: 10px;
-  }
-
-  .zoneStatValue {
-    font-size: 1.1rem;
-  }
-
-  .zoneStatLabel {
-    font-size: 0.65rem;
-    letter-spacing: 0;
-  }
+  .sectionTitle { font-size: 1.6rem; }
+  .sectionSub { font-size: 0.92rem; }
 
   .expertiseGrid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .expertiseGlassCard {
-    padding: 20px 18px;
-  }
-
-  .workflowGrid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
 
-  .workflowCard {
-    padding: 20px 16px;
+  .stepperTrack { grid-template-columns: 1fr; gap: 28px; }
+
+  .stepperItem {
+    flex-direction: row;
+    text-align: left;
+    padding: 0;
+    gap: 20px;
+    align-items: flex-start;
   }
 
-  .finalCtaBox {
-    padding: 28px 20px;
-    border-radius: 20px;
-    gap: 24px;
-  }
+  .stepperCircleWrap { width: auto; margin-bottom: 0; flex-shrink: 0; }
+  .stepperLine { display: none; }
+  .stepperContent { align-items: flex-start; }
+  .stepperCircle { width: 52px; height: 52px; }
+  .stepperIcon { font-size: 1.3rem; }
+  .stepperDesc { max-width: none; }
 
-  .finalCtaTitle {
-    font-size: 1.45rem;
-  }
+  .zoneDetailInner { padding: 24px 18px; }
+  .zoneStatsStrip { gap: 8px; }
+  .zoneStat { padding: 12px 6px; }
+  .zoneStatValue { font-size: 1.15rem; }
+  .zoneStatLabel { font-size: 0.62rem; }
 
-  .finalCtaDesc {
-    font-size: 0.9rem;
-  }
+  .finalCtaBox { padding: 32px 24px; border-radius: 16px; }
+  .finalCtaTitle { font-size: 1.5rem; }
+  .finalCtaDesc { font-size: 0.9rem; }
+  .contactChips span { font-size: 0.78rem; padding: 6px 12px; }
 }
 
 @media (max-width: 480px) {
-  .zoneStatsStrip {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .zoneStatValue {
-    font-size: 1rem;
-  }
-  .zoneStatLabel {
-    font-size: 0.6rem;
-  }
+  .heroHeadline { font-size: 1.55rem; }
+  .expertiseGlassCard { padding: 20px 16px; }
+  .trustBadge { font-size: 0.74rem; padding: 5px 10px; }
 }
-

@@ -1,7 +1,7 @@
 .wrapper {
   min-height: 100vh;
   background: #ffffff;
-  padding: 130px 4% 80px;
+  padding: 130px 0 80px;
   /* Offset for top fixed navbar */
   font-family: var(--font-sans);
   position: relative;
@@ -9,10 +9,23 @@
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1320px;
   margin: 0 auto;
+  padding: 0 40px;
   position: relative;
   z-index: 10;
+}
+
+@media (max-width: 1023px) {
+  .container {
+    padding: 0 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 0 20px;
+  }
 }
 
 /* 2-Column Grid */

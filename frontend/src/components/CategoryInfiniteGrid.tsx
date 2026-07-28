@@ -84,9 +84,9 @@ export default function CategoryInfiniteGrid({
   return (
     <>
       <main className="productsDirectoryGrid" style={{
-        maxWidth: '1280px',
+        maxWidth: '1320px',
         margin: '0 auto',
-        padding: '0 48px 20px',
+        padding: '0 40px 20px',
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '28px',
