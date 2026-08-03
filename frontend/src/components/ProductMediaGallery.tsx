@@ -40,7 +40,7 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
             fill
             priority={activeIndex === 0}
             sizes="(max-width: 768px) 100vw, 50vw"
-            style={{ objectFit: 'contain', padding: '18px' }}
+            style={{ objectFit: 'contain' }}
             className={styles.mainMedia}
           />
         )}

@@ -273,12 +273,11 @@
   font-size: 1.25rem;
 }
 
-/* Product Info Right Column */
 .infoSection {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 18px 4px;
+  padding: 0;
   background: transparent;
 }
 
