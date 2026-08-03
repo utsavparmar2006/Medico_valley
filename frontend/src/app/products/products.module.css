@@ -3,7 +3,7 @@
   font-family: var(--font-sans), sans-serif;
   background: #ffffff;
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
   padding-top: 76px;
 }
 
