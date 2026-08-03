@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getBackendUrl } from '@/utils/api';
 import CategoryCard from './CategoryCard';
+import styles from '@/app/products/products.module.css';
 
 interface Category {
   _id: string;
@@ -83,14 +84,7 @@ export default function CategoryInfiniteGrid({
 
   return (
     <>
-      <main className="productsDirectoryGrid" style={{
-        maxWidth: '1320px',
-        margin: '0 auto',
-        padding: '0 40px 20px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '28px',
-      }}>
+      <main className={styles.productsDirectoryGrid}>
         {categories.map((cat, idx) => (
           <CategoryCard key={cat._id} cat={cat} index={idx} />
         ))}
