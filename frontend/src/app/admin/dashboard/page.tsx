@@ -2027,7 +2027,7 @@ export default function AdminDashboard() {
               <div className={styles.grid}>
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
                   <label className={styles.label} htmlFor="category-name">
-                    Category Name <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 30 chars)</span>
+                    Category Name
                   </label>
                   <input
                     id="category-name"
@@ -2043,7 +2043,7 @@ export default function AdminDashboard() {
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
                   <label className={styles.label} htmlFor="category-desc">
-                    Description <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 120 chars)</span>
+                    Description
                   </label>
                   <input
                     id="category-desc"
@@ -2114,7 +2114,7 @@ export default function AdminDashboard() {
               <div className={styles.grid}>
                 <div className={styles.inputGroup}>
                   <label className={styles.label} htmlFor="product-name">
-                    Product Name <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 50 chars)</span>
+                    Product Name
                   </label>
                   <input
                     id="product-name"
@@ -2146,7 +2146,7 @@ export default function AdminDashboard() {
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
                   <label className={styles.label} htmlFor="product-desc">
-                    Description <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Max 300 chars)</span>
+                    Description
                   </label>
                   <textarea
                     id="product-desc"
@@ -3398,9 +3398,6 @@ export default function AdminDashboard() {
                       <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>
                         Sector Title <span style={{ color: '#ef4444' }}>*</span>
                       </label>
-                      <span style={{ fontSize: '0.75rem', color: sectorTitle.length > 40 ? '#ef4444' : '#0a8d93', fontWeight: 'bold' }}>
-                        {sectorTitle.length} / 40 chars
-                      </span>
                     </div>
                     <input
                       type="text"
@@ -3411,20 +3408,14 @@ export default function AdminDashboard() {
                       required
                       style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', fontWeight: '500' }}
                     />
-                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
-                      Tip: Keep title concise (max 40 characters) to preserve card layout.
-                    </p>
                   </div>
 
-                  {/* Short Description with max 180 chars limit counter */}
+                  {/* Short Description */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>
                         Short Description <span style={{ color: '#ef4444' }}>*</span>
                       </label>
-                      <span style={{ fontSize: '0.75rem', color: sectorDesc.length > 180 ? '#ef4444' : '#0a8d93', fontWeight: 'bold' }}>
-                        {sectorDesc.length} / 180 chars
-                      </span>
                     </div>
                     <textarea
 
