@@ -2036,7 +2036,7 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={categoryName}
                     onChange={(e) => setCategoryName(e.target.value)}
-                    maxLength={30}
+
                     required
                   />
                 </div>
@@ -2052,7 +2052,7 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={categoryDesc}
                     onChange={(e) => setCategoryDesc(e.target.value)}
-                    maxLength={120}
+
                     required
                   />
                 </div>
@@ -2123,7 +2123,7 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-                    maxLength={50}
+
                     required
                   />
                 </div>
@@ -2155,7 +2155,7 @@ export default function AdminDashboard() {
                     rows={4}
                     value={productDesc}
                     onChange={(e) => setProductDesc(e.target.value)}
-                    maxLength={300}
+
                     required
                   />
                 </div>
@@ -2596,7 +2596,7 @@ export default function AdminDashboard() {
                       <input
                         id="edit-card-initials"
                         type="text"
-                        maxLength={2}
+
                         placeholder="e.g. AM"
                         className={styles.input}
                         value={editCardInitials}
@@ -2802,7 +2802,7 @@ export default function AdminDashboard() {
                           <input
                             id="new-card-initials"
                             type="text"
-                            maxLength={2}
+
                             placeholder="e.g. AM"
                             className={styles.input}
                             value={newCardInitials}
@@ -3404,7 +3404,7 @@ export default function AdminDashboard() {
                     </div>
                     <input
                       type="text"
-                      maxLength={40}
+
                       value={sectorTitle}
                       onChange={(e) => setSectorTitle(e.target.value)}
                       placeholder="e.g. Anatomy Lab"
@@ -3427,7 +3427,7 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <textarea
-                      maxLength={180}
+
                       rows={3}
                       value={sectorDesc}
                       onChange={(e) => setSectorDesc(e.target.value)}
