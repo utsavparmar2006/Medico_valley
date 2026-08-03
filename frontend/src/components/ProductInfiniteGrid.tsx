@@ -155,7 +155,7 @@ export default function ProductInfiniteGrid({
       </div>
 
       <div ref={loaderRef} className={styles.productGridLoader}>
-        {loading ? 'Loading more products...' : hasMore ? '' : products.length > PAGE_SIZE ? 'All products loaded' : ''}
+        {loading ? 'Loading more products...' : ''}
       </div>
     </>
   );

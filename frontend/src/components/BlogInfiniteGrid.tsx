@@ -132,13 +132,7 @@ export default function BlogInfiniteGrid({ allArticles, pageSize }: Props) {
             }} />
             <span>Loading more articles...</span>
           </div>
-        ) : hasMore ? (
-          ''
-        ) : allArticles.length > pageSize ? (
-          'All articles loaded'
-        ) : (
-          ''
-        )}
+        ) : null}
       </div>
 
       <style>{`

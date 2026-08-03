@@ -112,13 +112,7 @@ export default function CategoryInfiniteGrid({
             }} />
             <span>Loading more categories...</span>
           </div>
-        ) : hasMore ? (
-          ''
-        ) : categories.length > pageSize ? (
-          'All categories loaded'
-        ) : (
-          ''
-        )}
+        ) : null}
       </div>
 
       <style>{`
