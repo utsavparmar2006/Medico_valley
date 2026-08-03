@@ -1096,14 +1096,18 @@
   .zoneStatValue { font-size: 1.15rem; }
   .zoneStatLabel { font-size: 0.62rem; }
 
-  .finalCtaBox { padding: 32px 24px; border-radius: 16px; }
-  .finalCtaTitle { font-size: 1.5rem; }
-  .finalCtaDesc { font-size: 0.9rem; }
-  .contactChips span { font-size: 0.78rem; padding: 6px 12px; }
+  .finalCtaBox { padding: 32px 20px; border-radius: 16px; }
+  .finalCtaTitle { font-size: 1.4rem; }
+  .finalCtaDesc { font-size: 0.875rem; }
+  .contactChips { gap: 8px; }
+  .contactChips span { font-size: 0.75rem; padding: 5px 10px; }
+  .finalActionBtn { width: 100%; justify-content: center; font-size: 0.9rem; padding: 15px 20px; }
 }
 
 @media (max-width: 480px) {
   .heroHeadline { font-size: 1.55rem; }
   .expertiseGlassCard { padding: 20px 16px; }
   .trustBadge { font-size: 0.74rem; padding: 5px 10px; }
+  .contactChips span { font-size: 0.7rem; padding: 4px 8px; }
+  .finalCtaTitle { font-size: 1.25rem; }
 }
