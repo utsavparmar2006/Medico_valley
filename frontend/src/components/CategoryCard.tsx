@@ -105,19 +105,6 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
                 onError={() => setImgError(true)}
               />
             </div>
-            {/* Subtle depth shadow under the image */}
-            <div style={{
-              position: 'absolute',
-              bottom: '15px',
-              left: '15%',
-              right: '15%',
-              height: '16px',
-              background: 'radial-gradient(ellipse, rgba(8, 145, 178, 0.22) 0%, transparent 70%)',
-              filter: 'blur(7px)',
-              pointerEvents: 'none',
-              transform: hovered ? 'scale(0.9) translateY(4px)' : 'scale(1) translateY(0)',
-              transition: 'transform 0.5s ease',
-            }} />
           </>
         ) : (
           /* Fallback gradient placeholder */

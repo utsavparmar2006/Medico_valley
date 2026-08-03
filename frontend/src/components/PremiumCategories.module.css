@@ -215,18 +215,6 @@
   mix-blend-mode: multiply; /* removes white bg from images that have it */
 }
 
-/* Soft drop shadow under the product image */
-.imageShadow {
-  position: absolute;
-  bottom: 0;
-  left: 10%;
-  right: 10%;
-  height: 24px;
-  background: radial-gradient(ellipse, rgba(8, 145, 178, 0.12) 0%, transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-}
-
 /* ─── PLACEHOLDER SVG ─── */
 .placeholder {
   width: 100%;

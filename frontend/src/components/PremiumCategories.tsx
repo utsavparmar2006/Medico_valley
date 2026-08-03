@@ -121,9 +121,6 @@ function CategoryCard({ cat, index }: { cat: CategoryWithCount; index: number })
               <PlaceholderIcon index={index} />
             </motion.div>
           )}
-
-          {/* Subtle depth shadow under the image */}
-          <div className={styles.imageShadow} />
         </div>
 
         {/* ── Glass name overlay ── */}
