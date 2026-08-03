@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import ProductInfiniteGrid from '@/components/ProductInfiniteGrid';
+import CategoryNavigation from '@/components/CategoryNavigation';
 import styles from '../products.module.css';
 
 interface Props {
@@ -113,27 +114,12 @@ export default async function CategoryProductsPage({ params }: Props) {
 
   return (
     <div className={`${styles.categoryPage} animate-fade-in`}>
-      <header className={styles.categoryHeader}>
-        <div className={styles.categoryHeaderInner}>
-          <Link href="/products" className={styles.categoryBackLink} aria-label="Back to products directory">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            <span>Back</span>
-          </Link>
-          <nav className={styles.categoryTabs} aria-label="Product categories">
-            {categories.map((item: CategoryItem) => (
-              <Link
-                key={item._id}
-                href={`/products/${item.slug}`}
-                className={item.slug === category.slug ? styles.categoryTabActive : ''}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <CategoryNavigation
+        categories={categories}
+        activeSlug={category.slug}
+        backLinkHref="/products"
+        backLinkText="Back"
+      />
 
       <section className={styles.categoryHero}>
         {/* Background photo wrapper with blur filter & dark overlay */}

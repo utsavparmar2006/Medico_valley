@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import CategoryInfiniteGrid from '@/components/CategoryInfiniteGrid';
+import CategoryNavigation from '@/components/CategoryNavigation';
 import styles from './products.module.css';
 
 interface Category {
@@ -63,29 +64,12 @@ export default async function ProductsPage() {
   return (
     <div className={styles.productsMainPage}>
 
-      {/* Header */}
-      <header className={styles.categoryHeader}>
-        <div className={styles.categoryHeaderInner}>
-          <Link href="/" className={styles.categoryBackLink} aria-label="Back to home page">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            <span>Home</span>
-          </Link>
-
-          {/* Category nav tabs */}
-          <nav className={styles.categoryTabs} aria-label="Product categories">
-            {allCategories.map((cat) => (
-              <Link
-                key={cat._id}
-                href={`/products/${cat.slug}`}
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+      {/* Header Navigation */}
+      <CategoryNavigation
+        categories={allCategories}
+        backLinkHref="/"
+        backLinkText="Home"
+      />
 
       {/* Cards Grid with Infinite Scroll */}
       <CategoryInfiniteGrid
