@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -23,6 +23,27 @@ interface CategoryCardProps {
 export default function CategoryCard({ cat, index }: CategoryCardProps) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const cardRef = useRef<HTMLAnchorElement | null>(null);
+
+  // Reset hover state when touch happens outside
+  useEffect(() => {
+    if (!hovered) return;
+    const handleClickOutside = (e: TouchEvent | MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setHovered(false);
+      }
+    };
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => document.removeEventListener('touchstart', handleClickOutside);
+  }, [hovered]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (isTouch && !hovered) {
+      e.preventDefault();
+      setHovered(true);
+    }
+  };
 
   const animStyle: React.CSSProperties = {
     animation: `cardIn 0.6s ease both`,
@@ -31,6 +52,7 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
 
   return (
     <Link
+      ref={cardRef}
       href={`/products/${cat.slug}`}
       id={cat.slug}
       style={{
@@ -45,6 +67,7 @@ export default function CategoryCard({ cat, index }: CategoryCardProps) {
         cursor: 'pointer',
         ...animStyle,
       }}
+      onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

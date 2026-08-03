@@ -53,6 +53,94 @@ const FALLBACK_SECTORS: CollegeSector[] = [
   },
 ];
 
+interface SectorCardItemProps {
+  sector: CollegeSector;
+  index: number;
+}
+
+function SectorCardItem({ sector, index }: SectorCardItemProps) {
+  const router = useRouter();
+  const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isHovered) return;
+    const handleClickOutside = (e: TouchEvent | MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setIsHovered(false);
+      }
+    };
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => document.removeEventListener('touchstart', handleClickOutside);
+  }, [isHovered]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (isTouch && !isHovered) {
+      e.preventDefault();
+      setIsHovered(true);
+      return;
+    }
+    router.push(sector.linkUrl || '/simulation-centre');
+  };
+
+  const hoverImageSrc = sector.hoverImg && sector.hoverImg.trim() !== '' ? sector.hoverImg : sector.defaultImg;
+
+  return (
+    <div
+      ref={cardRef}
+      key={sector._id || sector.id || index}
+      className={`${styles.collegeCard} ${isHovered ? styles.touchActive : ''}`}
+      onClick={handleCardClick}
+    >
+      {/* Card Background Image (Default / Hover states swap) */}
+      <div className={styles.cardImageContainer}>
+        <Image
+          src={sector.defaultImg}
+          alt={sector.title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          className={styles.cardSectorImage}
+          priority={index === 0}
+        />
+        <Image
+          src={hoverImageSrc}
+          alt={`${sector.title} Hover`}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          className={`${styles.cardSectorImage} ${styles.cardSectorImageHover}`}
+        />
+      </div>
+
+      {/* Card Overlay Content */}
+      <div className={styles.cardOverlay}>
+        {/* Top Content: Large Bold Title & Teal Build Your Lab Button */}
+        <div className={styles.cardTopContent}>
+          <h3 className={styles.cardTitleLarge} style={{ whiteSpace: 'pre-line' }}>{sector.title}</h3>
+          <button
+            type="button"
+            className={styles.exploreNowBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+              if (isTouch && !isHovered) {
+                setIsHovered(true);
+                return;
+              }
+              router.push('/simulation-centre');
+            }}
+          >
+            Build Your Lab
+          </button>
+        </div>
+
+        {/* Bottom Content: Short Description appears on hover */}
+        <p className={styles.cardDescFade}>{sector.desc}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ValuePropSection() {
   const router = useRouter();
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -129,11 +217,6 @@ export default function ValuePropSection() {
     { scope: sectionRef }
   );
 
-  const handleCardClick = () => {
-    // Navigate to products catalog page
-    router.push('/products');
-  };
-
   return (
     <section ref={sectionRef} className={styles.collegesSection}>
       <div className={styles.collegesContainer}>
@@ -151,56 +234,9 @@ export default function ValuePropSection() {
 
         {/* Colleges Grid — 4 items rendered side by side with entrance animation */}
         <div ref={gridRef} className={styles.collegesGrid}>
-          {sectors.map((sector, index) => {
-            const hoverImageSrc = sector.hoverImg && sector.hoverImg.trim() !== '' ? sector.hoverImg : sector.defaultImg;
-            return (
-              <div
-                key={sector._id || sector.id || index}
-                className={styles.collegeCard}
-                onClick={() => router.push(sector.linkUrl || '/simulation-centre')}
-              >
-                {/* Card Background Image (Default / Hover states swap) */}
-                <div className={styles.cardImageContainer}>
-                  <Image
-                    src={sector.defaultImg}
-                    alt={sector.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    className={styles.cardSectorImage}
-                    priority={index === 0}
-                  />
-                  <Image
-                    src={hoverImageSrc}
-                    alt={`${sector.title} Hover`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    className={`${styles.cardSectorImage} ${styles.cardSectorImageHover}`}
-                  />
-                </div>
-
-                {/* Card Overlay Content */}
-                <div className={styles.cardOverlay}>
-                  {/* Top Content: Large Bold Title & Teal Build Your Lab Button */}
-                  <div className={styles.cardTopContent}>
-                    <h3 className={styles.cardTitleLarge} style={{ whiteSpace: 'pre-line' }}>{sector.title}</h3>
-                    <button
-                      type="button"
-                      className={styles.exploreNowBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push('/simulation-centre');
-                      }}
-                    >
-                      Build Your Lab
-                    </button>
-                  </div>
-
-                  {/* Bottom Content: Short Description appears on hover */}
-                  <p className={styles.cardDescFade}>{sector.desc}</p>
-                </div>
-              </div>
-            );
-          })}
+          {sectors.map((sector, index) => (
+            <SectorCardItem key={sector._id || sector.id || index} sector={sector} index={index} />
+          ))}
         </div>
       </div>
     </section>

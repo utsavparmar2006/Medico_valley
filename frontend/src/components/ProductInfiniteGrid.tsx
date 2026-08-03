@@ -22,6 +22,73 @@ interface Props {
 
 const PAGE_SIZE = 12;
 
+interface ProductCardProps {
+  prod: ProductItem;
+  categorySlug: string;
+}
+
+function ProductCardItem({ prod, categorySlug }: ProductCardProps) {
+  const router = useRouter();
+  const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef<HTMLAnchorElement | null>(null);
+
+  // Clear hover on outside touch
+  useEffect(() => {
+    if (!isHovered) return;
+    const handleClickOutside = (e: TouchEvent | MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setIsHovered(false);
+      }
+    };
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => document.removeEventListener('touchstart', handleClickOutside);
+  }, [isHovered]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (isTouch && !isHovered) {
+      e.preventDefault();
+      setIsHovered(true);
+    }
+  };
+
+  return (
+    <Link
+      ref={cardRef}
+      key={prod._id}
+      href={`/products/${categorySlug}/${prod.slug}`}
+      className={`${styles.productImageCard} ${isHovered ? styles.touchActive : ''}`}
+      onClick={handleClick}
+    >
+      <div className={styles.productImageOnlyBox}>
+        {prod.mediaUrls.length > 0 ? (
+          prod.mediaUrls[0].endsWith('.mp4') ? (
+            <div className={styles.productVideoPreview}>
+              <span>Video Preview</span>
+            </div>
+          ) : (
+            <Image
+              src={prod.mediaUrls[0]}
+              alt={prod.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 900px) 50vw, 25vw"
+              className={styles.productImageOnly}
+            />
+          )
+        ) : (
+          <div className={styles.productImagePlaceholder}>
+            <span>No Image Available</span>
+          </div>
+        )}
+      </div>
+      <div className={styles.productNameBar}>
+        <h3>{prod.name}</h3>
+        <span aria-hidden="true">-&gt;</span>
+      </div>
+    </Link>
+  );
+}
+
 export default function ProductInfiniteGrid({
   categorySlug,
   initialProducts,
@@ -42,8 +109,6 @@ export default function ProductInfiniteGrid({
   useEffect(() => {
     setHasMore(initialHasMore);
   }, [initialHasMore]);
-
-
 
   useEffect(() => {
     const loader = loaderRef.current;
@@ -85,37 +150,7 @@ export default function ProductInfiniteGrid({
     <>
       <div className={`${styles.grid} ${styles.categoryProductGrid}`}>
         {products.map((prod) => (
-          <Link
-            key={prod._id}
-            href={`/products/${categorySlug}/${prod.slug}`}
-            className={styles.productImageCard}
-          >
-            <div className={styles.productImageOnlyBox}>
-              {prod.mediaUrls.length > 0 ? (
-                prod.mediaUrls[0].endsWith('.mp4') ? (
-                  <div className={styles.productVideoPreview}>
-                    <span>Video Preview</span>
-                  </div>
-                ) : (
-                  <Image
-                    src={prod.mediaUrls[0]}
-                    alt={prod.name}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 900px) 50vw, 25vw"
-                    className={styles.productImageOnly}
-                  />
-                )
-              ) : (
-                <div className={styles.productImagePlaceholder}>
-                  <span>No Image Available</span>
-                </div>
-              )}
-            </div>
-            <div className={styles.productNameBar}>
-              <h3>{prod.name}</h3>
-              <span aria-hidden="true">-&gt;</span>
-            </div>
-          </Link>
+          <ProductCardItem key={prod._id} prod={prod} categorySlug={categorySlug} />
         ))}
       </div>
 

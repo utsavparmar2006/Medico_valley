@@ -823,7 +823,8 @@
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
-.productImageCard:hover {
+.productImageCard:hover,
+.productImageCard.touchActive {
   transform: translateY(-4px);
   border-color: rgba(10, 141, 147, 0.24);
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.1);
@@ -844,7 +845,8 @@
   transition: transform 0.35s ease;
 }
 
-.productImageCard:hover .productImageOnly {
+.productImageCard:hover .productImageOnly,
+.productImageCard.touchActive .productImageOnly {
   transform: scale(1.07);
 }
 
@@ -894,7 +896,8 @@
   transition: opacity 0.24s ease, transform 0.24s ease;
 }
 
-.productImageCard:hover .productNameBar span {
+.productImageCard:hover .productNameBar span,
+.productImageCard.touchActive .productNameBar span {
   opacity: 1;
   transform: translateX(0);
 }
