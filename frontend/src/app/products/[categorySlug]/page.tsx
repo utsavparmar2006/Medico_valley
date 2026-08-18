@@ -239,8 +239,7 @@ export default async function CategoryProductsPage({ params, searchParams }: Pro
       <CategoryNavigation
         categories={categories}
         activeSlug={category.slug}
-        backLinkHref="/products"
-        backLinkText="Back"
+        showBackLink={false}
       />
 
       <section className={styles.categoryHero}>

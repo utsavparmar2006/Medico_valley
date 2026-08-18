@@ -13,41 +13,49 @@ interface CategoryItem {
 interface Props {
   categories: CategoryItem[];
   activeSlug?: string;
-  backLinkHref: string;
-  backLinkText: string;
+  backLinkHref?: string;
+  backLinkText?: string;
+  showBackLink?: boolean;
 }
 
 export default function CategoryNavigation({
   categories,
   activeSlug,
   backLinkHref,
-  backLinkText,
+  backLinkText = 'Back',
+  showBackLink = true,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Find active category name
   const activeCategory = categories.find((c) => c.slug === activeSlug);
+  const shouldShowBack = showBackLink && Boolean(backLinkHref);
 
   return (
     <header className={styles.categoryHeader}>
       {/* Desktop Header Navigation */}
-      <div className={`${styles.categoryHeaderInner} ${styles.desktopCategoryHeader}`}>
-        <Link href={backLinkHref} className={styles.categoryBackLink} aria-label={backLinkText}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          <span>{backLinkText}</span>
-        </Link>
+      <div
+        className={`${styles.categoryHeaderInner} ${styles.desktopCategoryHeader}`}
+        style={!shouldShowBack ? { justifyContent: 'flex-end' } : undefined}
+      >
+        {shouldShowBack && backLinkHref && (
+          <Link href={backLinkHref} className={styles.categoryBackLink} aria-label={backLinkText}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span>{backLinkText}</span>
+          </Link>
+        )}
 
         <nav className={styles.categoryTabs} aria-label="Product categories">
           {categories.map((item) => {
@@ -69,11 +77,13 @@ export default function CategoryNavigation({
       <div className={styles.mobileCategoryBarWrap}>
         <div className={styles.mobileCategoryBarInner}>
           {/* Circular Back Button */}
-          <Link href={backLinkHref} className={styles.mobileBackBtnCircle} aria-label={backLinkText}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </Link>
+          {shouldShowBack && backLinkHref && (
+            <Link href={backLinkHref} className={styles.mobileBackBtnCircle} aria-label={backLinkText}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </Link>
+          )}
 
           {/* Interactive Category Selector Pill */}
           <button
@@ -81,6 +91,7 @@ export default function CategoryNavigation({
             className={styles.mobileCategoryDropdownToggle}
             onClick={() => setIsOpen(!isOpen)}
             aria-expanded={isOpen}
+            style={!shouldShowBack ? { width: '100%' } : undefined}
           >
             <div className={styles.mobileCategoryTextGroup}>
               <span className={styles.mobileCategoryLabelTag}>EXPLORE CATEGORY</span>
