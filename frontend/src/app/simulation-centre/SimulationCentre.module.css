@@ -39,15 +39,8 @@
   pointer-events: none;
 }
 
-/* Soft teal glow top-right */
 .heroBgGlow {
-  position: absolute;
-  top: -120px;
-  right: -120px;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(10,141,147,0.12) 0%, transparent 65%);
-  pointer-events: none;
+  display: none;
 }
 
 .heroContainer {
@@ -233,7 +226,7 @@
   display: block;
   border-radius: 18px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.09);
+  box-shadow: none;
 }
 
 /* Floating badge on hero image */
@@ -248,7 +241,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  box-shadow: none;
   z-index: 2;
 }
 
@@ -798,27 +791,23 @@
 }
 
 .finalCtaBox {
-  background: #0a1628;
+  background: linear-gradient(135deg, #f0fdfc 0%, #f8fafc 60%, #f0fdfa 100%);
   border-radius: 24px;
-  padding: 60px 64px;
-  color: #ffffff;
+  padding: 52px 56px;
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 48px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(10,141,147,0.15);
+  border: 1px solid #ccfbf1;
+  box-shadow: none;
 }
 
-/* Multi-glow decorative bg */
+/* Multi-glow decorative bg - removed */
 .finalCtaBox_bg {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 40% 60% at 90% 20%, rgba(10,141,147,0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 30% 40% at 10% 80%, rgba(0,191,166,0.12) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 .finalCtaLeft {
@@ -835,20 +824,20 @@
   align-self: flex-start;
   align-items: center;
   gap: 6px;
-  background: rgba(10,141,147,0.18);
-  color: #5ce0e0;
+  background: rgba(10, 141, 147, 0.08);
+  color: #0a8d93;
   padding: 7px 18px;
   border-radius: 100px;
   font-size: 0.82rem;
   font-weight: 700;
-  border: 1px solid rgba(10,141,147,0.3);
+  border: 1px solid rgba(10, 141, 147, 0.2);
 }
 
 .finalCtaTitle {
   font-family: var(--font-display), sans-serif;
   font-size: 2rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin: 0;
   line-height: 1.22;
   letter-spacing: -0.025em;
@@ -856,9 +845,20 @@
 
 .finalCtaDesc {
   font-size: 0.97rem;
-  color: #94a3b8;
+  color: #475569;
   margin: 0;
   line-height: 1.68;
+}
+
+.highlightFree {
+  color: #0a8d93;
+  font-weight: 800;
+  background: rgba(10, 141, 147, 0.12);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(10, 141, 147, 0.25);
+  display: inline-block;
+  letter-spacing: 0.5px;
 }
 
 .contactChips {
@@ -868,18 +868,20 @@
 }
 
 .contactChips span {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #cbd5e1;
+  background: #ffffff;
+  border: 1px solid #d1fae5;
+  color: #0a8d93;
   padding: 8px 16px;
   border-radius: 100px;
   font-size: 0.82rem;
   font-weight: 600;
-  transition: background 0.2s ease;
+  box-shadow: 0 2px 6px rgba(10, 141, 147, 0.05);
+  transition: all 0.2s ease;
 }
 
 .contactChips span:hover {
-  background: rgba(255,255,255,0.1);
+  border-color: #0a8d93;
+  background: #f0fdf9;
 }
 
 .finalCtaRight {
@@ -892,22 +894,23 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, #0a8d93, #00BFA6);
+  background: #0a8d93;
   color: #ffffff;
   border: none;
-  padding: 18px 36px;
+  padding: 16px 32px;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.98rem;
   cursor: pointer;
-  box-shadow: 0 8px 28px rgba(10,141,147,0.35);
-  transition: all 0.22s ease;
+  box-shadow: 0 4px 14px rgba(10, 141, 147, 0.22);
+  transition: all 0.25s ease;
   white-space: nowrap;
 }
 
 .finalActionBtn:hover {
+  background: #08777c;
   transform: translateY(-2px);
-  box-shadow: 0 14px 38px rgba(10,141,147,0.5);
+  box-shadow: 0 8px 24px rgba(10, 141, 147, 0.32);
 }
 
 .btnArrow {

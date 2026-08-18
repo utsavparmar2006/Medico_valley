@@ -10,11 +10,14 @@ import slugify from 'slugify';
 import Admin from '../models/Admin';
 import Category from '../models/Category';
 import Product from '../models/Product';
+import Subcategory from '../models/Subcategory';
 import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import Blog from '../models/Blog';
 import Client from '../models/Client';
 import Sector from '../models/Sector';
+import Review from '../models/Review';
+import SolutionCard from '../models/SolutionCard';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
@@ -215,7 +218,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
 
 // Create Product
 router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, categoryId, mediaUrls, catalogUrl, keyFeatures } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, ratingMode, manualRating, manualRatingCount } = req.body;
 
   if (!name || !description || !categoryId || !mediaUrls || !Array.isArray(mediaUrls)) {
     return res.status(400).json({ message: 'Name, description, categoryId, and mediaUrls (array) are required' });
@@ -245,10 +248,16 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
       slug,
       description,
       category: categoryId,
+      subcategory: subcategoryId && isValidObjectId(subcategoryId) ? subcategoryId : undefined,
       mediaUrls,
       catalogUrl,
       keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
       isActive: true,
+      ratingMode: ratingMode === 'auto' ? 'auto' : 'manual',
+      manualRating: typeof manualRating === 'number' ? Math.max(1, Math.min(5, manualRating)) : 5.0,
+      manualRatingCount: typeof manualRatingCount === 'number' ? Math.max(0, manualRatingCount) : 25,
+      autoRatingAverage: 5.0,
+      autoRatingCount: 0,
     });
 
     return res.status(201).json({ success: true, data: product });
@@ -298,7 +307,7 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
 // Update Product
 router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, categoryId, mediaUrls, catalogUrl, keyFeatures } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, ratingMode, manualRating, manualRatingCount } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Product ID format' });
@@ -329,19 +338,32 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
       return res.status(400).json({ message: 'A product with this name or slug already exists' });
     }
 
+    const updatePayload: any = {
+      name: name.trim(),
+      slug: slugify(name, { lower: true, strict: true }),
+      description: description.trim(),
+      category: categoryId,
+      subcategory: subcategoryId && isValidObjectId(subcategoryId) ? subcategoryId : null,
+      mediaUrls,
+      catalogUrl: catalogUrl || undefined,
+      keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
+    };
+
+    if (ratingMode) {
+      updatePayload.ratingMode = ratingMode === 'auto' ? 'auto' : 'manual';
+    }
+    if (typeof manualRating === 'number') {
+      updatePayload.manualRating = Math.max(1, Math.min(5, manualRating));
+    }
+    if (typeof manualRatingCount === 'number') {
+      updatePayload.manualRatingCount = Math.max(0, manualRatingCount);
+    }
+
     const product = await Product.findByIdAndUpdate(
       id,
-      {
-        name: name.trim(),
-        slug: slugify(name, { lower: true, strict: true }),
-        description: description.trim(),
-        category: categoryId,
-        mediaUrls,
-        catalogUrl: catalogUrl || undefined,
-        keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
-      },
+      updatePayload,
       { new: true, runValidators: true }
-    ).populate('category', 'name slug');
+    ).populate('category', 'name slug').populate('subcategory', 'name slug');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -803,10 +825,6 @@ router.post('/sectors', authMiddleware, async (req: AuthenticatedRequest, res: R
   }
 
   try {
-    const count = await Sector.countDocuments();
-    if (count >= 4) {
-      return res.status(400).json({ message: 'Maximum limit of 4 sector cards reached. Edit or delete an existing card to add a new one.' });
-    }
     const newSector = await Sector.create({
       title: title.trim(),
       desc: desc.trim(),
@@ -878,6 +896,272 @@ router.delete('/sectors/:id', authMiddleware, async (req: AuthenticatedRequest, 
     return res.json({ success: true, message: 'Sector deleted successfully' });
   } catch (error: any) {
     console.error('Delete sector error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN REVIEWS MANAGEMENT ENDPOINTS (PROTECTED)
+// ==========================================
+
+// Get all reviews
+router.get('/reviews', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const reviews = await Review.find({})
+      .populate('productId', 'title slug mainImage images')
+      .sort({ createdAt: -1 });
+
+    return res.json({ success: true, data: reviews });
+  } catch (error: any) {
+    console.error('Get admin reviews error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a review
+router.delete('/reviews/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid review ID format' });
+  }
+
+  try {
+    const deleted = await Review.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+    return res.json({ success: true, message: 'Review deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete review error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// ADMIN SUBCATEGORIES MANAGEMENT ENDPOINTS (PROTECTED)
+// ==========================================
+
+// Get all subcategories
+router.get('/subcategories', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const subcategories = await Subcategory.find({})
+      .populate('category', 'name slug imageUrl')
+      .sort({ createdAt: -1 });
+
+    return res.json({ success: true, data: subcategories });
+  } catch (error: any) {
+    console.error('Get admin subcategories error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a new subcategory
+router.post('/subcategories', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { name, description, imageUrl, categoryId } = req.body;
+
+  if (!name || !categoryId) {
+    return res.status(400).json({ message: 'Name and parent category ID are required' });
+  }
+
+  if (!isValidObjectId(categoryId)) {
+    return res.status(400).json({ message: 'Invalid parent Category ID format' });
+  }
+
+  try {
+    const categoryExists = await Category.findById(categoryId);
+    if (!categoryExists) {
+      return res.status(400).json({ message: 'Parent category does not exist' });
+    }
+
+    const slug = slugify(name, { lower: true, strict: true });
+    const duplicate = await Subcategory.findOne({ category: categoryId, slug });
+    if (duplicate) {
+      return res.status(400).json({ message: 'A subcategory with this name already exists under this category' });
+    }
+
+    const subcategory = await Subcategory.create({
+      name: name.trim(),
+      slug,
+      description: description ? description.trim() : '',
+      imageUrl: imageUrl || '',
+      category: categoryId,
+    });
+
+    const populated = await Subcategory.findById(subcategory._id).populate('category', 'name slug imageUrl');
+    return res.status(201).json({ success: true, data: populated });
+  } catch (error: any) {
+    console.error('Create subcategory error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update a subcategory
+router.put('/subcategories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { name, description, imageUrl, categoryId } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Subcategory ID format' });
+  }
+
+  if (!name || !categoryId) {
+    return res.status(400).json({ message: 'Name and parent category ID are required' });
+  }
+
+  if (!isValidObjectId(categoryId)) {
+    return res.status(400).json({ message: 'Invalid parent Category ID format' });
+  }
+
+  try {
+    const slug = slugify(name, { lower: true, strict: true });
+    const duplicate = await Subcategory.findOne({ category: categoryId, slug, _id: { $ne: id } });
+    if (duplicate) {
+      return res.status(400).json({ message: 'A subcategory with this name already exists under this category' });
+    }
+
+    const updated = await Subcategory.findByIdAndUpdate(
+      id,
+      {
+        name: name.trim(),
+        slug,
+        description: description ? description.trim() : '',
+        imageUrl: imageUrl || '',
+        category: categoryId,
+      },
+      { new: true, runValidators: true }
+    ).populate('category', 'name slug imageUrl');
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Subcategory not found' });
+    }
+
+    return res.json({ success: true, data: updated });
+  } catch (error: any) {
+    console.error('Update subcategory error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a subcategory
+router.delete('/subcategories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Subcategory ID format' });
+  }
+
+  try {
+    const deleted = await Subcategory.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Subcategory not found' });
+    }
+
+    // Unset subcategory from products assigned to this subcategory
+    await Product.updateMany({ subcategory: id }, { $unset: { subcategory: '' } });
+
+    return res.json({ success: true, message: 'Subcategory deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete subcategory error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// --- TAILORED SOLUTIONS ENDPOINTS ---
+
+// Get all solution cards (Admin)
+router.get('/solutions', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const solutions = await SolutionCard.find({}).sort({ displayOrder: 1, createdAt: -1 });
+    return res.json({ success: true, data: solutions });
+  } catch (error: any) {
+    console.error('Fetch admin solutions error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a new solution card
+router.post('/solutions', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { title, category, description, initials, ctaText, href, imageUrl, displayOrder, isActive } = req.body;
+
+  if (!title || !category || !description || !ctaText || !href) {
+    return res.status(400).json({ message: 'Title, Category, Description, CTA text and Link Href are required.' });
+  }
+
+  try {
+    const solution = await SolutionCard.create({
+      title: title.trim(),
+      category: category.trim(),
+      description: description.trim(),
+      initials: (initials || title.substring(0, 2)).trim().toUpperCase(),
+      ctaText: ctaText.trim(),
+      href: href.trim(),
+      imageUrl: imageUrl || '/solutions/solution_centre_planning.png',
+      displayOrder: typeof displayOrder === 'number' ? displayOrder : 0,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+    });
+
+    return res.status(201).json({ success: true, data: solution });
+  } catch (error: any) {
+    console.error('Create solution card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update a solution card
+router.put('/solutions/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { title, category, description, initials, ctaText, href, imageUrl, displayOrder, isActive } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Solution ID format' });
+  }
+
+  try {
+    const updated = await SolutionCard.findByIdAndUpdate(
+      id,
+      {
+        title: title ? title.trim() : undefined,
+        category: category ? category.trim() : undefined,
+        description: description ? description.trim() : undefined,
+        initials: initials ? initials.trim().toUpperCase() : undefined,
+        ctaText: ctaText ? ctaText.trim() : undefined,
+        href: href ? href.trim() : undefined,
+        imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+        displayOrder: typeof displayOrder === 'number' ? displayOrder : undefined,
+        isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Solution card not found' });
+    }
+
+    return res.json({ success: true, data: updated });
+  } catch (error: any) {
+    console.error('Update solution card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a solution card
+router.delete('/solutions/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Solution ID format' });
+  }
+
+  try {
+    const deleted = await SolutionCard.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Solution card not found' });
+    }
+
+    return res.json({ success: true, message: 'Solution card deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete solution card error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

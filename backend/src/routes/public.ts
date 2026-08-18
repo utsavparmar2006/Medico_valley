@@ -4,48 +4,67 @@ import path from 'path';
 import fs from 'fs';
 import Category from '../models/Category';
 import Product from '../models/Product';
+import Subcategory from '../models/Subcategory';
 import Rating from '../models/Rating';
+import Review from '../models/Review';
 import Inquiry from '../models/Inquiry';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
 import { sendEmail } from '../utils/email';
 import Blog from '../models/Blog';
 import Client from '../models/Client';
 import Sector from '../models/Sector';
+import SolutionCard from '../models/SolutionCard';
 
 const router = express.Router();
 
 const DEFAULT_SECTORS = [
   {
-    title: 'Anatomy Lab',
-    desc: 'Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.',
+    title: 'Medical Colleges & Universities',
+    desc: 'Foundational anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and postgraduate training.',
     defaultImg: '/labs/anatomy_default.png',
     hoverImg: '/labs/anatomy_hover.png',
-    linkUrl: '/products',
+    linkUrl: '/simulation-centre',
     displayOrder: 1,
   },
   {
-    title: 'Homeopathy Lab',
-    desc: 'Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.',
-    defaultImg: '/labs/homeopathy_default.png',
-    hoverImg: '/labs/homeopathy_hover.png',
-    linkUrl: '/products',
+    title: 'Nursing Colleges & Schools',
+    desc: 'Comprehensive patient care mannequins, maternal/child simulators, and practical competency kits for nursing skills labs.',
+    defaultImg: '/labs/nursing_default.png',
+    hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/simulation-centre',
     displayOrder: 2,
   },
   {
-    title: 'Nursing Skills Lab',
-    desc: 'Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.',
-    defaultImg: '/labs/nursing_default.png',
-    hoverImg: '/labs/nursing_hover.png',
-    linkUrl: '/products',
+    title: 'Hospitals & Clinical Training Centres',
+    desc: 'High-fidelity simulation equipment, debriefing systems, and acute care scenarios for resident training and team assessment.',
+    defaultImg: '/labs/anatomy_default.png',
+    hoverImg: '/labs/anatomy_hover.png',
+    linkUrl: '/simulation-centre',
     displayOrder: 3,
   },
   {
-    title: 'Ayurvedic Lab',
-    desc: 'Traditional anatomical representations, core model structures, and specialized teaching frameworks.',
+    title: 'Dental, Physiotherapy & Allied Health',
+    desc: 'Specialized phantom heads, physical therapy trainers, and procedural skill kits for allied healthcare education.',
+    defaultImg: '/labs/homeopathy_default.png',
+    hoverImg: '/labs/homeopathy_hover.png',
+    linkUrl: '/simulation-centre',
+    displayOrder: 4,
+  },
+  {
+    title: 'Ayurveda & Homeopathy Colleges',
+    desc: 'Anatomical representations, embryology models, and physiological teaching aids designed for BAMS and BHMS curricula.',
     defaultImg: '/labs/ayurvedic_default.png',
     hoverImg: '/labs/ayurvedic_hover.png',
-    linkUrl: '/products',
-    displayOrder: 4,
+    linkUrl: '/simulation-centre',
+    displayOrder: 5,
+  },
+  {
+    title: 'Independent Simulation Centres',
+    desc: 'Turnkey room planning, AV debriefing systems, and multi-specialty simulator suites for professional clinical training.',
+    defaultImg: '/labs/nursing_default.png',
+    hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/simulation-centre',
+    displayOrder: 6,
   },
 ];
 
@@ -184,8 +203,103 @@ router.get('/clients', async (req, res) => {
   }
 });
 
+const DEFAULT_SOLUTIONS = [
+  {
+    title: 'Simulation Centre Planning & Design',
+    category: 'FLAGSHIP SERVICE',
+    description: 'Create efficient, future-ready learning spaces from concept and layout to integration and handover.',
+    initials: 'PS',
+    ctaText: 'Plan Your Centre',
+    href: '/simulation-centre',
+    imageUrl: '/solutions/solution_centre_planning.png',
+    displayOrder: 1,
+    isActive: true,
+  },
+  {
+    title: 'Anatomy Models',
+    category: 'ANATOMY',
+    description: 'Make complex anatomy easier to see, understand and teach with accurate 3D learning aids.',
+    initials: 'AM',
+    ctaText: 'Explore Anatomy Models',
+    href: '/products/anatomy-models',
+    imageUrl: '/solutions/solution_anatomy_models.png',
+    displayOrder: 2,
+    isActive: true,
+  },
+  {
+    title: 'Medical Simulators',
+    category: 'SIMULATORS',
+    description: 'Build clinical reasoning, teamwork and decision-making in safe, realistic scenarios.',
+    initials: 'MS',
+    ctaText: 'Explore Medical Simulators',
+    href: '/products/medical-simulators',
+    imageUrl: '/solutions/solution_medical_simulators.png',
+    displayOrder: 3,
+    isActive: true,
+  },
+  {
+    title: 'Task Trainers',
+    category: 'TASK TRAINERS',
+    description: 'Develop procedural confidence through deliberate, repeatable hands-on practice.',
+    initials: 'TT',
+    ctaText: 'Explore Task Trainers',
+    href: '/products/task-trainers',
+    imageUrl: '/solutions/solution_task_trainers.png',
+    displayOrder: 4,
+    isActive: true,
+  },
+  {
+    title: 'VR, AR & Immersive Learning',
+    category: 'INNOVATION',
+    description: 'Extend access to interactive clinical learning, visualisation and scenario practice.',
+    initials: 'VR',
+    ctaText: 'Explore Digital Learning',
+    href: '/products',
+    imageUrl: '/solutions/solution_vr_immersive.png',
+    displayOrder: 5,
+    isActive: true,
+  },
+];
+
+// Get tailored solution cards (public)
+router.get('/solutions', async (req, res) => {
+  try {
+    let solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 });
+
+    if (solutions.length === 0) {
+      await SolutionCard.insertMany(DEFAULT_SOLUTIONS);
+      solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 });
+    }
+
+    return res.json({ success: true, data: solutions });
+  } catch (error: any) {
+    console.error('Fetch public solutions error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Get subcategories for a given category
+router.get('/categories/:categorySlug/subcategories', async (req, res) => {
+  const { categorySlug } = req.params;
+
+  try {
+    const category = await Category.findOne({ slug: categorySlug.toLowerCase().trim() });
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    const subcategories = await Subcategory.find({ category: category._id }).sort({ name: 1 });
+    return res.json({ success: true, data: subcategories });
+  } catch (error: any) {
+    console.error('Fetch subcategories error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// 3. Get products by categorySlug (with optional subcategory filter ?sub=slug)
 router.get('/categories/:categorySlug/products', async (req, res) => {
   const { categorySlug } = req.params;
+  const subSlug = req.query.sub ? String(req.query.sub).toLowerCase().trim() : null;
   const page = Math.max(Number(req.query.page) || 0, 0);
   const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 48);
 
@@ -195,19 +309,51 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    const query = { category: category._id, isActive: true };
+    const query: any = { category: category._id, isActive: true };
+
+    if (subSlug) {
+      const subcategoryDoc = await Subcategory.findOne({ category: category._id, slug: subSlug });
+      if (subcategoryDoc) {
+        query.subcategory = subcategoryDoc._id;
+      }
+    }
+
     const productsQuery = Product.find(query)
       .populate('category', 'name slug')
+      .populate('subcategory', 'name slug')
       .sort({ name: 1 });
 
     if (page > 0 && limit > 0) {
       productsQuery.skip((page - 1) * limit).limit(limit);
     }
 
-    const [products, total] = await Promise.all([
+    const [products, total, rawSubcategories] = await Promise.all([
       productsQuery,
       Product.countDocuments(query),
+      Subcategory.find({ category: category._id }).sort({ name: 1 }),
     ]);
+
+    const subcategories = await Promise.all(
+      rawSubcategories.map(async (sub) => {
+        const sampleProd = await Product.findOne({
+          subcategory: sub._id,
+          isActive: true,
+          mediaUrls: { $exists: true, $not: { $size: 0 } },
+        }).select('mediaUrls');
+        const count = await Product.countDocuments({ subcategory: sub._id, isActive: true });
+
+        const firstImage = sampleProd?.mediaUrls?.find((url: string) => !url.endsWith('.mp4')) || sampleProd?.mediaUrls?.[0] || '';
+
+        return {
+          _id: sub._id,
+          name: sub.name,
+          slug: sub.slug,
+          description: sub.description,
+          imageUrl: sub.imageUrl || firstImage,
+          productCount: count,
+        };
+      })
+    );
 
     return res.json({
       success: true,
@@ -216,6 +362,7 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
         slug: category.slug,
         description: category.description,
       },
+      subcategories,
       data: products,
       pagination: page > 0 && limit > 0 ? {
         page,
@@ -231,37 +378,83 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
   }
 });
 
-// Deterministic baseline generator matching the client implementation
-const getProductRatingBaseline = (productId: string) => {
-  const hash = productId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const baseAvg = parseFloat((4.3 + (hash % 7) * 0.1).toFixed(1));
-  const baseCount = 120 + (hash % 73) * 8;
-  return { baseAvg, baseCount };
-};
-
-// Calculate combined rating (baseline + real votes)
+// Calculate effective rating based on Product configuration (Manual vs Auto)
 const getCombinedRating = async (productId: string) => {
-  const { baseAvg, baseCount } = getProductRatingBaseline(productId);
+  try {
+    const pId = new mongoose.Types.ObjectId(productId);
+    const product = await Product.findById(pId).select('ratingMode manualRating manualRatingCount autoRatingAverage autoRatingCount');
+    
+    // Fetch live user submissions from database
+    const realRatings = await Rating.find({ productId: pId });
+    const realCount = realRatings.length;
+    let autoAvg = 5.0;
+    
+    const starCounts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    if (realCount > 0) {
+      const sum = realRatings.reduce((acc, curr) => acc + curr.rating, 0);
+      autoAvg = parseFloat((sum / realCount).toFixed(1));
+      realRatings.forEach((r) => {
+        const s = Math.min(5, Math.max(1, Math.round(r.rating)));
+        starCounts[s] = (starCounts[s] || 0) + 1;
+      });
+    }
 
-  const realRatings = await Rating.find({ productId: new mongoose.Types.ObjectId(productId) });
-  const realCount = realRatings.length;
+    const mode = product?.ratingMode || 'manual';
 
-  if (realCount === 0) {
+    if (mode === 'auto') {
+      const breakdown = realCount > 0 ? {
+        5: Math.round(((starCounts[5] || 0) / realCount) * 100),
+        4: Math.round(((starCounts[4] || 0) / realCount) * 100),
+        3: Math.round(((starCounts[3] || 0) / realCount) * 100),
+        2: Math.round(((starCounts[2] || 0) / realCount) * 100),
+        1: Math.round(((starCounts[1] || 0) / realCount) * 100),
+      } : { 5: 100, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+      return {
+        ratingAverage: realCount > 0 ? autoAvg : 5.0,
+        ratingCount: realCount,
+        ratingMode: 'auto',
+        breakdown,
+        autoStats: {
+          average: autoAvg,
+          count: realCount,
+        },
+      };
+    }
+
+    // Default: 'manual' mode configured by Admin
+    const manualScore = typeof product?.manualRating === 'number' ? product.manualRating : 5.0;
+    const manualCount = typeof product?.manualRatingCount === 'number' ? product.manualRatingCount : 25;
+
+    // Generate realistic high-trust breakdown based on manual score
+    let breakdown = { 5: 88, 4: 12, 3: 0, 2: 0, 1: 0 };
+    if (manualScore >= 4.9) {
+      breakdown = { 5: 92, 4: 8, 3: 0, 2: 0, 1: 0 };
+    } else if (manualScore >= 4.5) {
+      breakdown = { 5: 80, 4: 18, 3: 2, 2: 0, 1: 0 };
+    } else if (manualScore >= 4.0) {
+      breakdown = { 5: 65, 4: 25, 3: 10, 2: 0, 1: 0 };
+    }
+
     return {
-      ratingAverage: baseAvg,
-      ratingCount: baseCount,
+      ratingAverage: manualScore,
+      ratingCount: manualCount,
+      ratingMode: 'manual',
+      breakdown,
+      autoStats: {
+        average: autoAvg,
+        count: realCount,
+      },
+    };
+  } catch (err) {
+    return {
+      ratingAverage: 5.0,
+      ratingCount: 25,
+      ratingMode: 'manual',
+      breakdown: { 5: 90, 4: 10, 3: 0, 2: 0, 1: 0 },
+      autoStats: { average: 5.0, count: 0 },
     };
   }
-
-  const realSum = realRatings.reduce((sum, r) => sum + r.rating, 0);
-  const totalCount = baseCount + realCount;
-  const totalSum = (baseAvg * baseCount) + realSum;
-  const ratingAverage = parseFloat((totalSum / totalCount).toFixed(1));
-
-  return {
-    ratingAverage,
-    ratingCount: totalCount,
-  };
 };
 
 // 4. Get product details by productSlug
@@ -270,7 +463,8 @@ router.get('/products/:productSlug', async (req, res) => {
 
   try {
     const product = await Product.findOne({ slug: productSlug.toLowerCase().trim(), isActive: true })
-      .populate('category', 'name slug description');
+      .populate('category', 'name slug description')
+      .populate('subcategory', 'name slug description');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -280,6 +474,8 @@ router.get('/products/:productSlug', async (req, res) => {
     const info = await getCombinedRating(product._id.toString());
     productData.ratingAverage = info.ratingAverage;
     productData.ratingCount = info.ratingCount;
+    productData.ratingMode = info.ratingMode;
+    productData.breakdown = info.breakdown;
 
     return res.json({ success: true, data: productData });
   } catch (error: any) {
@@ -324,6 +520,9 @@ router.get('/products/:productId/rating-info', async (req, res) => {
       success: true,
       ratingAverage: info.ratingAverage,
       ratingCount: info.ratingCount,
+      ratingMode: info.ratingMode,
+      breakdown: info.breakdown,
+      autoStats: info.autoStats,
       userRating,
     });
   } catch (error: any) {
@@ -338,18 +537,33 @@ router.post('/products/:productId/rate', async (req, res) => {
   const { visitorId, rating } = req.body;
 
   if (!visitorId || typeof rating !== 'number' || rating < 1 || rating > 5) {
-    return res.status(400).json({ message: 'Invalid rating parameters' });
+    return res.status(400).json({ message: 'Invalid rating parameters. Star rating must be between 1 and 5.' });
   }
 
   try {
+    const pId = new mongoose.Types.ObjectId(productId);
+
+    // Save individual visitor vote
     await Rating.findOneAndUpdate(
       { 
-        productId: new mongoose.Types.ObjectId(productId), 
+        productId: pId, 
         visitorId: String(visitorId) 
       },
       { rating },
       { upsert: true, new: true }
     );
+
+    // Recalculate auto rating stats
+    const allProductRatings = await Rating.find({ productId: pId });
+    const count = allProductRatings.length;
+    const sum = allProductRatings.reduce((acc, curr) => acc + curr.rating, 0);
+    const autoAvg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 5.0;
+
+    // Cache updated auto stats on Product
+    await Product.findByIdAndUpdate(pId, {
+      autoRatingAverage: autoAvg,
+      autoRatingCount: count,
+    });
 
     const info = await getCombinedRating(productId);
 
@@ -357,10 +571,79 @@ router.post('/products/:productId/rate', async (req, res) => {
       success: true,
       ratingAverage: info.ratingAverage,
       ratingCount: info.ratingCount,
+      ratingMode: info.ratingMode,
       userRating: rating,
     });
   } catch (error: any) {
     console.error('Submit rating error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// 8. Get product reviews + overall rating summary
+router.get('/products/:productId/reviews', async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const pId = new mongoose.Types.ObjectId(productId);
+    const info = await getCombinedRating(productId);
+    const reviews = await Review.find({ productId: pId, status: 'approved' }).sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      ratingAverage: info.ratingAverage,
+      ratingCount: info.ratingCount,
+      breakdown: info.breakdown,
+      reviews,
+    });
+  } catch (error: any) {
+    console.error('Fetch reviews error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// 9. Submit a written product review + rating
+router.post('/products/:productId/reviews', async (req, res) => {
+  const { productId } = req.params;
+  const { reviewerName, reviewerEmail, rating, title, comment, visitorId } = req.body;
+
+  if (!reviewerName || !reviewerEmail || !comment || typeof rating !== 'number' || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'Please provide name, email, star rating (1-5), and review comment.' });
+  }
+
+  try {
+    const pId = new mongoose.Types.ObjectId(productId);
+
+    const newReview = await Review.create({
+      productId: pId,
+      reviewerName: String(reviewerName).trim(),
+      reviewerEmail: String(reviewerEmail).trim().toLowerCase(),
+      rating: Number(rating),
+      title: title ? String(title).trim() : '',
+      comment: String(comment).trim(),
+      status: 'approved',
+    });
+
+    if (visitorId) {
+      await Rating.findOneAndUpdate(
+        { productId: pId, visitorId: String(visitorId) },
+        { rating: Number(rating) },
+        { upsert: true, new: true }
+      );
+    }
+
+    const info = await getCombinedRating(productId);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Thank you! Your review has been submitted.',
+      data: newReview,
+      ratingAverage: info.ratingAverage,
+      ratingCount: info.ratingCount,
+      breakdown: info.breakdown,
+    });
+  } catch (error: any) {
+    console.error('Submit review error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

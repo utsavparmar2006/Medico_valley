@@ -8,20 +8,75 @@ import styles from '../products.module.css';
 
 interface Props {
   params: Promise<{ categorySlug: string }>;
+  searchParams?: Promise<{ sub?: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
+  const { sub } = (await (searchParams || {})) || {};
 
   try {
     const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}`);
     const data = await res.json();
 
     if (res.ok && data.success) {
+      const category = data.data;
+
+      // If a subcategory filter is requested, fetch subcategories to generate targeted SEO metadata
+      if (sub) {
+        const prodRes = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=1&sub=${sub}`).catch(() => null);
+        const prodData = prodRes && prodRes.ok ? await prodRes.json().catch(() => null) : null;
+        const matchingSub = prodData?.subcategories?.find((s: any) => s.slug === sub);
+
+        const subName = matchingSub?.name || sub.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const subDesc = matchingSub?.description || `Explore ${subName} in our ${category.name} range. Precision medical models and simulators for clinical training.`;
+
+        const title = `${subName} - ${category.name} | Medico Valley`;
+        const canonicalUrl = `http://localhost:3000/products/${categorySlug}?sub=${sub}`;
+
+        return {
+          title,
+          description: subDesc,
+          keywords: [
+            subName.toLowerCase(),
+            category.name.toLowerCase(),
+            'medical models India',
+            'clinical training simulators',
+            'medical education equipment',
+          ],
+          alternates: {
+            canonical: canonicalUrl,
+          },
+          openGraph: {
+            title,
+            description: subDesc,
+            url: canonicalUrl,
+            type: 'website',
+          },
+        };
+      }
+
+      const title = `${category.name} | Medico Valley`;
+      const canonicalUrl = `http://localhost:3000/products/${categorySlug}`;
+
       return {
-        title: `${data.data.name} | Medico Valley`,
-        description: data.data.description,
-        keywords: [data.data.name.toLowerCase(), 'medical education', 'clinical training models'],
+        title,
+        description: category.description,
+        keywords: [
+          category.name.toLowerCase(),
+          'medical education',
+          'clinical training models',
+          'medical simulation India',
+        ],
+        alternates: {
+          canonical: canonicalUrl,
+        },
+        openGraph: {
+          title,
+          description: category.description,
+          url: canonicalUrl,
+          type: 'website',
+        },
       };
     }
   } catch (err) {
@@ -49,9 +104,22 @@ interface CategoryItem {
   imageUrl: string;
 }
 
-async function getCategoryProducts(categorySlug: string) {
+interface SubcategoryItem {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  productCount?: number;
+}
+
+async function getCategoryProducts(categorySlug: string, subSlug?: string) {
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`, {
+    const url = subSlug
+      ? `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subSlug}`
+      : `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`;
+
+    const res = await fetch(url, {
       cache: 'no-store',
     });
 
@@ -84,10 +152,12 @@ async function getCategories() {
   }
 }
 
-export default async function CategoryProductsPage({ params }: Props) {
+export default async function CategoryProductsPage({ params, searchParams }: Props) {
   const { categorySlug } = await params;
+  const { sub } = (await (searchParams || {})) || {};
+
   const [result, categories] = await Promise.all([
-    getCategoryProducts(categorySlug),
+    getCategoryProducts(categorySlug, sub),
     getCategories(),
   ]);
 
@@ -105,15 +175,67 @@ export default async function CategoryProductsPage({ params }: Props) {
     );
   }
 
-  const { category, data: products } = result;
+  const { category, data: products, subcategories = [] } = result;
   const activeCategory = categories.find((item: CategoryItem) => item.slug === category.slug);
+
+  // Active subcategory resolution
+  const activeSubObj: SubcategoryItem | undefined = sub
+    ? subcategories.find((s: SubcategoryItem) => s.slug === sub)
+    : undefined;
+
+  const displayTitle = activeSubObj ? activeSubObj.name : category.name;
+  const displaySubtitle = activeSubObj?.description || category.description;
+
   const heroImage =
+    activeSubObj?.imageUrl ||
     activeCategory?.imageUrl ||
     products.find((prod: ProductItem) => prod.mediaUrls?.[0] && !prod.mediaUrls[0].endsWith('.mp4'))?.mediaUrls?.[0] ||
     '';
 
+  // Google SEO BreadcrumbList JSON-LD Schema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'http://localhost:3000',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Products',
+        item: 'http://localhost:3000/products',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: category.name,
+        item: `http://localhost:3000/products/${categorySlug}`,
+      },
+      ...(activeSubObj
+        ? [
+            {
+              '@type': 'ListItem',
+              position: 4,
+              name: activeSubObj.name,
+              item: `http://localhost:3000/products/${categorySlug}?sub=${activeSubObj.slug}`,
+            },
+          ]
+        : []),
+    ],
+  };
+
   return (
     <div className={`${styles.categoryPage} animate-fade-in`}>
+      {/* Google SEO Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       <CategoryNavigation
         categories={categories}
         activeSlug={category.slug}
@@ -127,7 +249,7 @@ export default async function CategoryProductsPage({ params }: Props) {
           {heroImage ? (
             <Image
               src={heroImage}
-              alt={category.name}
+              alt={displayTitle}
               fill
               priority
               sizes="100vw"
@@ -140,36 +262,46 @@ export default async function CategoryProductsPage({ params }: Props) {
         </div>
 
         <div className={styles.categoryHeroContent}>
-          {/* Breadcrumb: Home / Products / [Category Name] */}
+          {/* Dynamic Breadcrumb with Subcategory Support */}
           <div className={styles.categoryBreadcrumb}>
             <Link href="/">Home</Link>
             <span className={styles.breadcrumbSeparator}>/</span>
             <Link href="/products">Products</Link>
             <span className={styles.breadcrumbSeparator}>/</span>
-            <span className={styles.breadcrumbCurrent}>{category.name}</span>
+            {activeSubObj ? (
+              <>
+                <Link href={`/products/${categorySlug}`}>{category.name}</Link>
+                <span className={styles.breadcrumbSeparator}>/</span>
+                <span className={styles.breadcrumbCurrent}>{activeSubObj.name}</span>
+              </>
+            ) : (
+              <span className={styles.breadcrumbCurrent}>{category.name}</span>
+            )}
           </div>
 
-          {/* Category Title: Last word in teal, small accent underline below */}
+          {/* Dynamic Category / Subcategory Title */}
           <h1 className={styles.categoryHeroTitle}>
-            {category.name}
+            {displayTitle}
           </h1>
           <div className={styles.categoryHeroTitleRule} />
 
-          {/* Category Description */}
-          {category.description && (
+          {/* Dynamic Description */}
+          {displaySubtitle && (
             <p className={styles.categoryHeroSubtitle}>
-              {category.description}
+              {displaySubtitle}
             </p>
           )}
         </div>
       </section>
 
       <div className={styles.categoryContentWrapper}>
-        {products.length > 0 ? (
+        {products.length > 0 || subcategories.length > 0 ? (
           <ProductInfiniteGrid
             categorySlug={categorySlug}
             initialProducts={products}
             initialHasMore={Boolean(result.pagination?.hasMore)}
+            subcategories={subcategories}
+            initialSub={sub || 'all'}
           />
         ) : (
           <div className={styles.emptyState}>

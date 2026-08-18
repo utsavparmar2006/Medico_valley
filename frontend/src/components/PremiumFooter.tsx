@@ -33,7 +33,7 @@ const LINKS = {
 const SOCIALS = [
   {
     label: 'LinkedIn',
-    href: '#',
+    href: 'https://www.linkedin.com/company/medicovalley-enterprises/',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" />
@@ -42,17 +42,17 @@ const SOCIALS = [
     ),
   },
   {
-    label: 'Twitter',
-    href: '#',
+    label: 'Facebook',
+    href: 'https://www.facebook.com/share/1DEYDgF49w/',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
       </svg>
     ),
   },
   {
     label: 'YouTube',
-    href: '#',
+    href: 'https://youtube.com/@medicovalley?si=ThjyaYHFMSzfwEsJ',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
         <path d="M22.54 6.42a2.78 2.78 0 00-1.94-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.54C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 001.94-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z" />
@@ -62,7 +62,7 @@ const SOCIALS = [
   },
   {
     label: 'Instagram',
-    href: '#',
+    href: 'https://www.instagram.com/_medicovalley?igsh=MWRnam80N2l1dGsybw==',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -81,7 +81,10 @@ export default function PremiumFooter() {
 
   useEffect(() => {
     fetch(getBackendUrl('http://localhost:5000/api/public/categories'))
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         if (data && data.success && Array.isArray(data.data)) {
           const items = data.data.map((cat: any) => ({
@@ -93,7 +96,9 @@ export default function PremiumFooter() {
           }
         }
       })
-      .catch((err) => console.error('Error loading footer categories:', err));
+      .catch(() => {
+        // Silently retain hardcoded fallback links when backend server is offline or loading
+      });
   }, []);
 
   const colVariants: Variants = {
@@ -111,10 +116,6 @@ export default function PremiumFooter() {
 
   return (
     <footer ref={ref} className={styles.footer}>
-      {/* Glow accents */}
-      <div className={styles.glowLeft} />
-      <div className={styles.glowRight} />
-
       <div className={styles.container}>
         {/* ── MAIN ROW: 4 Column Layout ── */}
         <div className={styles.mainRow}>
@@ -144,7 +145,9 @@ export default function PremiumFooter() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.35 6.35l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
                 </svg>
-                <span>+91 98765 43210</span>
+                <a href="tel:+919768156266" style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <span>+91 97681 56266</span>
+                </a>
               </div>
               <div className={styles.contactItem}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -168,6 +171,8 @@ export default function PremiumFooter() {
                 <motion.a
                   key={s.label}
                   href={s.href}
+                  target={s.href !== '#' ? '_blank' : undefined}
+                  rel={s.href !== '#' ? 'noopener noreferrer' : undefined}
                   aria-label={s.label}
                   className={styles.socialIcon}
                   whileHover={{ scale: 1.15, y: -2 }}
@@ -224,8 +229,6 @@ export default function PremiumFooter() {
             <a href="#" className={styles.bottomLink}>Privacy Policy</a>
             <span className={styles.bottomSep}>·</span>
             <a href="#" className={styles.bottomLink}>Terms of Service</a>
-            <span className={styles.bottomSep}>·</span>
-            <a href="#" className={styles.bottomLink}>Sitemap</a>
           </div>
         </div>
       </div>

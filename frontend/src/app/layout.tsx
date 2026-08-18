@@ -7,6 +7,7 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
+  fallback: ['system-ui', 'monospace'],
 });
 
 export const metadata: Metadata = {

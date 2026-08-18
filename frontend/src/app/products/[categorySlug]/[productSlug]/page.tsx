@@ -3,9 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import ProductMediaGallery from '@/components/ProductMediaGallery';
-import ProductRatingWidget from '@/components/ProductRatingWidget';
 import ProductDetailsTabs from '@/components/ProductDetailsTabs';
 import ProductActionButtons from '@/components/ProductActionButtons';
+import ProductRatingWidget from '@/components/ProductRatingWidget';
 import styles from '../../products.module.css';
 
 interface Props {
@@ -101,19 +101,45 @@ interface RelatedProduct {
   mediaUrls: string[];
 }
 
-async function getRelatedProducts(categorySlug: string, productSlug: string): Promise<RelatedProduct[]> {
+async function getRelatedProducts(categorySlug: string, productSlug: string, subcategorySlug?: string): Promise<RelatedProduct[]> {
   try {
+    let subProducts: RelatedProduct[] = [];
+
+    // Fetch products matching subcategory if subcategory is present
+    if (subcategorySlug) {
+      const subRes = await fetch(
+        `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subcategorySlug}`,
+        { cache: 'no-store' }
+      );
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        if (subData.success && Array.isArray(subData.data)) {
+          subProducts = subData.data.filter((item: RelatedProduct) => item.slug !== productSlug);
+        }
+      }
+    }
+
+    if (subProducts.length >= 4) {
+      return subProducts.slice(0, 4);
+    }
+
+    // Fallback/Supplement with parent category products
     const res = await fetch(
-      `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=8`,
+      `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`,
       { cache: 'no-store' }
     );
 
-    if (!res.ok) return [];
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && Array.isArray(result.data)) {
+        const catProducts = result.data.filter(
+          (item: RelatedProduct) => item.slug !== productSlug && !subProducts.some((sf) => sf._id === item._id)
+        );
+        return [...subProducts, ...catProducts].slice(0, 4);
+      }
+    }
 
-    const result = await res.json();
-    return result.success
-      ? result.data.filter((item: RelatedProduct) => item.slug !== productSlug).slice(0, 4)
-      : [];
+    return subProducts.slice(0, 4);
   } catch (error) {
     console.error('Error fetching related products:', error);
     return [];
@@ -122,10 +148,7 @@ async function getRelatedProducts(categorySlug: string, productSlug: string): Pr
 
 export default async function ProductDetailPage({ params }: Props) {
   const { categorySlug, productSlug } = await params;
-  const [result, relatedProducts] = await Promise.all([
-    getProductDetail(productSlug),
-    getRelatedProducts(categorySlug, productSlug),
-  ]);
+  const result = await getProductDetail(productSlug);
 
   if (!result || !result.success) {
     return (
@@ -142,15 +165,19 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   const product = result.data;
+  const relatedProducts = await getRelatedProducts(categorySlug, productSlug, product.subcategory?.slug);
 
   return (
     <div className={`${styles.productDetailPage} animate-fade-in`}>
       <div className={styles.productDetailShell}>
-        <Link href={`/products/${categorySlug}`} className={styles.productBreadcrumb}>
+        <Link
+          href={product.subcategory?.slug ? `/products/${categorySlug}?sub=${product.subcategory.slug}` : `/products/${categorySlug}`}
+          className={styles.productBreadcrumb}
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(180deg)' }}>
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
-          <span>Back to {product.category?.name} List</span>
+          <span>Back to {product.subcategory?.name || product.category?.name} List</span>
         </Link>
 
         <div className={styles.detailGrid}>
@@ -158,17 +185,19 @@ export default async function ProductDetailPage({ params }: Props) {
 
           <aside className={styles.infoSection}>
             <div className={styles.productHeadingBlock}>
-              <span className={styles.categoryTag}>{product.category?.name}</span>
+              <span className={styles.categoryTag}>
+                {product.category?.name} {product.subcategory?.name ? `• ${product.subcategory.name}` : ''}
+              </span>
               <h1 className={styles.productTitle}>{product.name}</h1>
             </div>
 
-            <ProductRatingWidget 
-              productId={product._id} 
-              productSlug={productSlug} 
-              categorySlug={categorySlug} 
+            <ProductRatingWidget
+              productId={product._id}
+              productSlug={productSlug}
+              categorySlug={categorySlug}
             />
 
-            <div className={styles.divider} style={{ margin: '16px 0 8px 0' }} />
+            <div className={styles.divider} style={{ margin: '12px 0 8px 0' }} />
 
             <ProductActionButtons
               productId={product._id}
@@ -192,7 +221,9 @@ export default async function ProductDetailPage({ params }: Props) {
             <div className={styles.relatedHeading}>
               <div>
                 <span>Explore More</span>
-                <h2 id="related-products-title">Related {product.category?.name}</h2>
+                <h2 id="related-products-title">
+                  Related {product.subcategory?.name || product.category?.name}
+                </h2>
               </div>
               <Link href={`/products/${categorySlug}`}>
                 View All

@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';
@@ -10,8 +10,7 @@ import { connectDB } from './config/db';
 import adminRouter from './routes/admin';
 import publicRouter from './routes/public';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables via import 'dotenv/config' at top of file
 
 const app = express();
 const PORT = process.env.PORT || 5000;

@@ -340,15 +340,15 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(10, 141, 147, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(10, 141, 147, 0.3);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 99;
-  box-shadow: 0 8px 30px rgba(10, 141, 147, 0.15);
+  box-shadow: none;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -359,7 +359,7 @@
   background: var(--primary);
   color: var(--sterile-white);
   transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(10, 141, 147, 0.3);
+  box-shadow: none;
 }
 
 @keyframes slideUpIn {

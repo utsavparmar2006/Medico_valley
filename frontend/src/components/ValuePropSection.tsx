@@ -24,32 +24,52 @@ interface CollegeSector {
 
 const FALLBACK_SECTORS: CollegeSector[] = [
   {
-    id: 'medical',
-    title: 'Anatomy\nLab',
-    desc: 'Advanced human anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and MD labs.',
+    id: 'medical-colleges',
+    title: 'Medical Colleges & Universities',
+    desc: 'Foundational anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and postgraduate training.',
     defaultImg: '/labs/anatomy_default.png',
     hoverImg: '/labs/anatomy_hover.png',
+    linkUrl: '/simulation-centre',
   },
   {
-    id: 'homeopathy',
-    title: 'Homeopathy\nLab',
-    desc: 'Specialized embryology models, pathology charts, and organ-specific physiology units designed for BHMS student labs.',
-    defaultImg: '/labs/homeopathy_default.png',
-    hoverImg: '/labs/homeopathy_hover.png',
-  },
-  {
-    id: 'nursing',
-    title: 'Nursing\nSkills Lab',
-    desc: 'Comprehensive patient care mannequins, injection simulators, and practical competency kits for nursing curriculum skills.',
+    id: 'nursing-colleges',
+    title: 'Nursing Colleges & Schools',
+    desc: 'Comprehensive patient care mannequins, maternal/child simulators, and practical competency kits for nursing skills labs.',
     defaultImg: '/labs/nursing_default.png',
     hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/simulation-centre',
   },
   {
-    id: 'ayurvedic',
-    title: 'Ayurvedic\nLab',
-    desc: 'Traditional anatomical representations, core model structures, and specialized teaching frameworks.',
+    id: 'hospitals-clinical',
+    title: 'Hospitals & Clinical Training Centres',
+    desc: 'High-fidelity simulation equipment, debriefing systems, and acute care scenarios for resident training and team assessment.',
+    defaultImg: '/labs/anatomy_default.png',
+    hoverImg: '/labs/anatomy_hover.png',
+    linkUrl: '/simulation-centre',
+  },
+  {
+    id: 'dental-allied',
+    title: 'Dental, Physiotherapy & Allied Health',
+    desc: 'Specialized phantom heads, physical therapy trainers, and procedural skill kits for allied healthcare education.',
+    defaultImg: '/labs/homeopathy_default.png',
+    hoverImg: '/labs/homeopathy_hover.png',
+    linkUrl: '/simulation-centre',
+  },
+  {
+    id: 'ayurveda-homeopathy',
+    title: 'Ayurveda & Homeopathy Colleges',
+    desc: 'Anatomical representations, embryology models, and physiological teaching aids designed for BAMS and BHMS curricula.',
     defaultImg: '/labs/ayurvedic_default.png',
     hoverImg: '/labs/ayurvedic_hover.png',
+    linkUrl: '/simulation-centre',
+  },
+  {
+    id: 'independent-centres',
+    title: 'Independent Simulation Centres',
+    desc: 'Turnkey room planning, AV debriefing systems, and multi-specialty simulator suites for professional clinical training.',
+    defaultImg: '/labs/nursing_default.png',
+    hoverImg: '/labs/nursing_hover.png',
+    linkUrl: '/simulation-centre',
   },
 ];
 
@@ -222,13 +242,12 @@ export default function ValuePropSection() {
       <div className={styles.collegesContainer}>
         {/* Section Header */}
         <div className={styles.collegesHeader}>
-          <span className={styles.collegesLabel}>Our Sectors</span>
+          <span className={styles.collegesLabel}>INSTITUTIONS SERVED</span>
           <h2 className={styles.collegesTitle}>
-            Equipping Medical &amp; Allied Institutions
+            Solutions for Every Healthcare Education Environment
           </h2>
           <p className={styles.collegesDesc}>
-            We provide a comprehensive range of international-standard anatomical models, simulators, 
-            and task trainers designed specifically for medical colleges, homeopathy institutes, nursing, and ayurvedic academies.
+            We tailor technology, room planning and implementation to the learning goals of each institution - from foundational skills practice to high-fidelity team training and assessment.
           </p>
         </div>
 

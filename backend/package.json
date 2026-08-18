@@ -23,7 +23,8 @@
     "multer": "^2.2.0",
     "multer-s3": "^3.0.1",
     "nodemailer": "^9.0.1",
-    "slugify": "^1.6.9"
+    "slugify": "^1.6.9",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

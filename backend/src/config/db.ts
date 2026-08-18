@@ -1,5 +1,14 @@
+import 'dotenv/config';
+import dns from 'dns';
 import mongoose from 'mongoose';
 import DeltaDifferenceCard from '../models/DeltaDifferenceCard';
+
+// Force Node to use Google Public DNS for SRV queries on Windows
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (err) {
+  // Ignore fallback
+}
 
 export const seedDeltaDifferenceCards = async () => {
   try {

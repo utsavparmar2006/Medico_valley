@@ -13,6 +13,33 @@ interface Client {
   logoUrl: string;
 }
 
+const FALLBACK_CLIENTS: Client[] = [
+  {
+    _id: 'client-1',
+    name: 'Academia Medica University of Health & Science',
+    location: 'India',
+    testimonial: 'Empowering our clinical students and medical staff with standard clinical simulators. The educational impact is highly quantifiable.',
+    type: 'Medical University',
+    logoUrl: '/uploads/client_logo_1.png',
+  },
+  {
+    _id: 'client-2',
+    name: 'Royal Medical College',
+    location: 'India',
+    testimonial: 'The turnkey simulation lab planning and high-fidelity task trainers transformed our practical clinical training curriculum.',
+    type: 'Medical College',
+    logoUrl: '/uploads/client_logo_2.png',
+  },
+  {
+    _id: 'client-3',
+    name: 'Apollo Healthcare & Hospitals Group',
+    location: 'India',
+    testimonial: 'Empowering our clinical students and medical staff with standard clinical simulators. The educational impact is highly quantifiable.',
+    type: 'Healthcare Institution',
+    logoUrl: '/uploads/client_logo_3.png',
+  },
+];
+
 export default function InstitutionTrustSection() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +55,7 @@ export default function InstitutionTrustSection() {
       }).catch(() => null);
       if (response && response.ok) {
         const data = await response.json().catch(() => null);
-        if (data && data.success) {
+        if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
           setClients(data.data);
         }
       }
@@ -38,44 +65,22 @@ export default function InstitutionTrustSection() {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchClients().finally(() => setLoading(false));
-
   }, []);
 
-  if (loading) {
-    return (
-      <section className={styles.clientSection}>
-        <div className={styles.clientContainer}>
-          <div className={styles.clientHeader}>
-            <h2 className={styles.clientTitle}>Top clients</h2>
-            <p className={styles.clientDesc}>Loading clients showcase...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (clients.length === 0) {
-    return null; // Don't render empty section
-  }
+  const displayClients = clients.length > 0 ? clients : FALLBACK_CLIENTS;
 
   // Duplicate the list to support seamless infinite auto-scrolling loop
-  // Render at least twice, or more if clients list is small
-  const listToRender = clients.length < 5 
-    ? [...clients, ...clients, ...clients, ...clients] 
-    : [...clients, ...clients];
+  const listToRender = [...displayClients, ...displayClients, ...displayClients, ...displayClients];
 
   return (
     <section className={styles.clientSection}>
       <div className={styles.clientContainer}>
         {/* Header content */}
         <div className={styles.clientHeader}>
-          <h2 className={styles.clientTitle}>Top clients</h2>
+          <h2 className={styles.clientTitle}>Trusted by Healthcare Education Institutions Across India</h2>
           <p className={styles.clientDesc}>
-            We partner with a diverse spectrum of clients, from prestigious healthcare institutions and 
-            associations to safety organizations, schools, and even airlines. Each collaboration is a step 
-            towards advancing education, safety, and patient care.
+            Supporting medical colleges, universities, hospitals, nursing institutions and training centres with practical, high-quality simulation solutions.
           </p>
         </div>
 

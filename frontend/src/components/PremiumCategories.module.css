@@ -11,6 +11,11 @@
   position: relative;
   overflow: hidden;
 }
+@media (max-width: 1023px) {
+  .section {
+    overflow: visible;
+  }
+}
 
 @media (max-width: 1023px) {
   .section {
@@ -119,6 +124,7 @@
   position: relative;
   perspective: 1200px;
   cursor: pointer;
+  touch-action: pan-y;
 
   /* White background */
   background: #ffffff;

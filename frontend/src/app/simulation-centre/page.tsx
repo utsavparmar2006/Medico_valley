@@ -205,7 +205,7 @@ export default function SimulationCentrePage() {
   const workflowSteps = [
     { step: '01', title: 'Need Assessment', desc: 'Analyzing curriculum goals, space dimensions, and target student capacity.', icon: '🔍' },
     { step: '02', title: '3D Blueprinting', desc: 'Designing 3D floor plans, electrical networks, and AV camera line-of-sights.', icon: '📐' },
-    { step: '03', title: 'Equipment Curation', desc: 'Selecting high-fidelity simulators, task trainers, and medical furniture.', icon: '🔬' },
+    { step: '03', title: 'Equipment Curation', desc: 'Providing insights in selecting high-fidelity simulators, task trainers and anatomy models.', icon: '🔬' },
     { step: '04', title: 'Execution & Handover', desc: 'Turnkey installation, AV calibration, and faculty operational training.', icon: '🏆' },
   ];
 
@@ -462,12 +462,14 @@ export default function SimulationCentrePage() {
                 <div className={styles.targetBadge}>🎯 Avoid Costly Redesigns &amp; Maximize Space</div>
                 <h2 className={styles.finalCtaTitle}>Ready To Build Your World-Class Simulation Center?</h2>
                 <p className={styles.finalCtaDesc}>
-                  Schedule a free consultation with our planning experts today. Receive customized spatial recommendations, equipment curation, and practical design insights with zero obligation.
+                  Schedule your first <span className={styles.highlightFree}>FREE</span> consultation with our planning experts today. Receive customized spatial recommendations, equipment curation, and practical design insights with zero obligation.
                 </p>
                 <div className={styles.contactChips}>
                   <span>🌐 medicovalley.in</span>
                   <span>✉️ info@medicovalley.in</span>
-                  <span>📞 +91 98209 39391</span>
+                  <a href="tel:+919820939291" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <span>📞 +91 98209 39291</span>
+                  </a>
                 </div>
               </div>
               <div className={styles.finalCtaRight}>

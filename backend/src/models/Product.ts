@@ -5,10 +5,16 @@ export interface IProduct extends Document {
   slug: string;
   description: string;
   category: mongoose.Types.ObjectId;
+  subcategory?: mongoose.Types.ObjectId;
   mediaUrls: string[];
   catalogUrl?: string;
   keyFeatures?: string[];
   isActive: boolean;
+  ratingMode?: 'manual' | 'auto';
+  manualRating?: number;
+  manualRatingCount?: number;
+  autoRatingAverage?: number;
+  autoRatingCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,10 +25,16 @@ const ProductSchema: Schema = new Schema(
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     description: { type: String, required: true },
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
+    subcategory: { type: Schema.Types.ObjectId, ref: 'Subcategory', index: true },
     mediaUrls: { type: [String], default: [] },
     catalogUrl: { type: String },
     keyFeatures: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    ratingMode: { type: String, enum: ['manual', 'auto'], default: 'manual' },
+    manualRating: { type: Number, min: 1, max: 5, default: 5.0 },
+    manualRatingCount: { type: Number, min: 0, default: 25 },
+    autoRatingAverage: { type: Number, min: 1, max: 5, default: 5.0 },
+    autoRatingCount: { type: Number, min: 0, default: 0 },
   },
   { timestamps: true }
 );

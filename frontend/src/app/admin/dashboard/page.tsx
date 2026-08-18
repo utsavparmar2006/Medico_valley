@@ -15,6 +15,19 @@ interface CategoryObj {
   imageUrl: string;
 }
 
+interface SubcategoryObj {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  category?: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+}
+
 interface ProductObj {
   _id: string;
   name: string;
@@ -25,9 +38,19 @@ interface ProductObj {
     name: string;
     slug: string;
   };
+  subcategory?: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
   mediaUrls: string[];
   catalogUrl?: string;
   keyFeatures?: string[];
+  ratingMode?: 'manual' | 'auto';
+  manualRating?: number;
+  manualRatingCount?: number;
+  autoRatingAverage?: number;
+  autoRatingCount?: number;
 }
 
 interface DeltaDifferenceCardObj {
@@ -47,9 +70,10 @@ export default function AdminDashboard() {
 
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'subcategories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors' | 'solutions'>('overview');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
+  const [subcategoriesList, setSubcategoriesList] = useState<SubcategoryObj[]>([]);
   const [productsList, setProductsList] = useState<ProductObj[]>([]);
   const [inquiriesList, setInquiriesList] = useState<any[]>([]);
   const [inquirySearchQuery, setInquirySearchQuery] = useState('');
@@ -61,7 +85,9 @@ export default function AdminDashboard() {
   const TABS_CONFIG = [
     { id: 'overview', label: 'Dashboard', icon: 'dashboard' },
     { id: 'manage', label: 'Catalog Listings', icon: 'manage_search' },
+    { id: 'solutions', label: 'Tailored Solutions', icon: 'grid_view' },
     { id: 'categories', label: 'New Category', icon: 'category' },
+    { id: 'subcategories', label: 'New Subcategory', icon: 'account_tree' },
     { id: 'products', label: 'New Product', icon: 'inventory' },
     { id: 'inquiries', label: 'Inquiries', icon: 'mail' },
     { id: 'blogs', label: 'Blogs', icon: 'article' },
@@ -101,6 +127,23 @@ export default function AdminDashboard() {
   const [sectorUploadingDefault, setSectorUploadingDefault] = useState(false);
   const [sectorUploadingHover, setSectorUploadingHover] = useState(false);
 
+
+
+  // Tailored Solutions States
+  const [solutionsList, setSolutionsList] = useState<any[]>([]);
+  const [solutionTitle, setSolutionTitle] = useState('');
+  const [solutionCategory, setSolutionCategory] = useState('');
+  const [solutionDesc, setSolutionDesc] = useState('');
+  const [solutionInitials, setSolutionInitials] = useState('');
+  const [solutionCtaText, setSolutionCtaText] = useState('');
+  const [solutionHref, setSolutionHref] = useState('');
+  const [solutionImgUrl, setSolutionImgUrl] = useState('');
+  const [solutionDisplayOrder, setSolutionDisplayOrder] = useState<number>(0);
+  const [solutionIsActive, setSolutionIsActive] = useState<boolean>(true);
+  const [editingSolution, setEditingSolution] = useState<any | null>(null);
+  const [isCreatingSolution, setIsCreatingSolution] = useState(false);
+  const [showConfirmDeleteSolutionModal, setShowConfirmDeleteSolutionModal] = useState<string | null>(null);
+
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
   const [blogSubject, setBlogSubject] = useState('');
@@ -118,14 +161,29 @@ export default function AdminDashboard() {
   const [editProductName, setEditProductName] = useState('');
   const [editProductDesc, setEditProductDesc] = useState('');
   const [editProductCategoryId, setEditProductCategoryId] = useState('');
+  const [editProductSubcategoryId, setEditProductSubcategoryId] = useState('');
   const [editProductMedia, setEditProductMedia] = useState<string[]>([]);
   const [editProductCatalog, setEditProductCatalog] = useState('');
   const [editProductKeyFeatures, setEditProductKeyFeatures] = useState('');
+  const [editProductRatingMode, setEditProductRatingMode] = useState<'manual' | 'auto'>('manual');
+  const [editProductManualRating, setEditProductManualRating] = useState<number>(5.0);
+  const [editProductManualRatingCount, setEditProductManualRatingCount] = useState<number>(25);
+  const [editProductAutoAvg, setEditProductAutoAvg] = useState<number>(5.0);
+  const [editProductAutoCount, setEditProductAutoCount] = useState<number>(0);
+
+  // Subcategory Editing & Deleting States
+  const [editingSubcategory, setEditingSubcategory] = useState<SubcategoryObj | null>(null);
+  const [editSubCategoryName, setEditSubCategoryName] = useState('');
+  const [editSubCategoryCategoryId, setEditSubCategoryCategoryId] = useState('');
+  const [editSubCategoryDesc, setEditSubCategoryDesc] = useState('');
+  const [editSubCategoryImgUrl, setEditSubCategoryImgUrl] = useState('');
+  const [showConfirmDeleteSubcategoryModal, setShowConfirmDeleteSubcategoryModal] = useState<string | null>(null);
 
   // Search & Filtering states for Listings Tab
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
-  const [manageView, setManageView] = useState<'categories' | 'products'>('products');
+  const [selectedSubcategoryFilter, setSelectedSubcategoryFilter] = useState('');
+  const [manageView, setManageView] = useState<'products' | 'categories' | 'subcategories'>('products');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Search & Filtering calculations for Inquiries Tab
@@ -181,25 +239,51 @@ export default function AdminDashboard() {
 
   // Reset pagination lists when filters or views change
   useEffect(() => {
-    setVisibleProductsCount(8);
+    setVisibleProductsCount(24);
     setVisibleInquiriesCount(10);
   }, [searchQuery, selectedCategoryFilter, manageView, activeTab]);
 
   useEffect(() => {
+    const handleScroll = () => {
+      const loader = productLoaderRef.current;
+      if (!loader) return;
+      const rect = loader.getBoundingClientRect();
+      if (rect.top <= window.innerHeight + 400) {
+        setVisibleProductsCount((prev) => {
+          if (prev < productsList.length) {
+            return Math.min(prev + 16, productsList.length);
+          }
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
     const loader = productLoaderRef.current;
-    if (!loader) return;
+    if (!loader) return () => window.removeEventListener('scroll', handleScroll);
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisibleProductsCount((prev) => prev + 8);
+          setVisibleProductsCount((prev) => {
+            if (prev < productsList.length) {
+              return Math.min(prev + 16, productsList.length);
+            }
+            return prev;
+          });
         }
       },
-      { rootMargin: '120px 0px' }
+      { rootMargin: '400px 0px' }
     );
+
     observer.observe(loader);
-    return () => observer.disconnect();
-  }, [productsList.length]);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, [visibleProductsCount, productsList.length]);
 
   useEffect(() => {
     const loader = inquiryLoaderRef.current;
@@ -226,13 +310,23 @@ export default function AdminDashboard() {
   const [categoryDesc, setCategoryDesc] = useState('');
   const [categoryImgUrl, setCategoryImgUrl] = useState('');
 
+  // Form State: Subcategories
+  const [subCategoryName, setSubCategoryName] = useState('');
+  const [subCategoryCategoryId, setSubCategoryCategoryId] = useState('');
+  const [subCategoryDesc, setSubCategoryDesc] = useState('');
+  const [subCategoryImgUrl, setSubCategoryImgUrl] = useState('');
+
   // Form State: Products
   const [productName, setProductName] = useState('');
   const [productDesc, setProductDesc] = useState('');
   const [productCategoryId, setProductCategoryId] = useState('');
+  const [productSubcategoryId, setProductSubcategoryId] = useState('');
   const [productMediaUrls, setProductMediaUrls] = useState<string[]>([]);
   const [productCatalogUrl, setProductCatalogUrl] = useState('');
   const [productKeyFeatures, setProductKeyFeatures] = useState('');
+  const [productRatingMode, setProductRatingMode] = useState<'manual' | 'auto'>('manual');
+  const [productManualRating, setProductManualRating] = useState<number>(5.0);
+  const [productManualRatingCount, setProductManualRatingCount] = useState<number>(25);
 
   // Delta Difference Cards states
   const [deltaCardsList, setDeltaCardsList] = useState<DeltaDifferenceCardObj[]>([]);
@@ -373,6 +467,13 @@ export default function AdminDashboard() {
         setCategoriesList(catData.data);
       }
 
+      // Fetch Subcategories
+      const subRes = await authFetch('http://localhost:5000/api/admin/subcategories');
+      const subData = await subRes.json();
+      if (subRes.ok && subData.success) {
+        setSubcategoriesList(subData.data);
+      }
+
       // Fetch Products
       const prodRes = await fetch(getBackendUrl('http://localhost:5000/api/public/products'));
       const prodData = await prodRes.json();
@@ -426,6 +527,15 @@ export default function AdminDashboard() {
       if (sectorRes.ok && sectorData.success) {
         setSectorsList(sectorData.data);
       }
+
+
+
+      // Fetch Tailored Solutions
+      const solutionRes = await authFetch('http://localhost:5000/api/admin/solutions');
+      const solutionData = await solutionRes.json();
+      if (solutionRes.ok && solutionData.success) {
+        setSolutionsList(solutionData.data);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -434,6 +544,8 @@ export default function AdminDashboard() {
       }
     }
   };
+
+
 
   // General single-file uploader calling Multer upload
   const handleFileUpload = async (file: File): Promise<string | null> => {
@@ -605,6 +717,50 @@ export default function AdminDashboard() {
     });
   };
 
+  // Subcategory Submit
+  const handleSubCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!subCategoryName.trim() || !subCategoryCategoryId) {
+      setStatusMessage({ type: 'error', text: 'Subcategory Name and Parent Category are required.' });
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const response = await authFetch('http://localhost:5000/api/admin/subcategories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: subCategoryName,
+            categoryId: subCategoryCategoryId,
+            description: subCategoryDesc,
+            imageUrl: subCategoryImgUrl,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStatusMessage({ type: 'success', text: 'Subcategory created successfully!' });
+          setSubCategoryName('');
+          setSubCategoryCategoryId('');
+          setSubCategoryDesc('');
+          setSubCategoryImgUrl('');
+          loadDashboardData();
+          setActiveTab('overview');
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Subcategory creation failed.' });
+        }
+      } catch (err) {
+        setStatusMessage({ type: 'error', text: 'Could not connect to database.' });
+      }
+    });
+  };
+
   // Product Submit
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -636,9 +792,13 @@ export default function AdminDashboard() {
             name: productName,
             description: productDesc,
             categoryId: productCategoryId,
+            subcategoryId: productSubcategoryId || undefined,
             mediaUrls: productMediaUrls,
             catalogUrl: productCatalogUrl || undefined,
             keyFeatures: keyFeaturesArray,
+            ratingMode: productRatingMode,
+            manualRating: productManualRating,
+            manualRatingCount: productManualRatingCount,
           }),
         });
 
@@ -649,9 +809,13 @@ export default function AdminDashboard() {
           setProductName('');
           setProductDesc('');
           setProductCategoryId('');
+          setProductSubcategoryId('');
           setProductMediaUrls([]);
           setProductCatalogUrl('');
           setProductKeyFeatures('');
+          setProductRatingMode('manual');
+          setProductManualRating(5.0);
+          setProductManualRatingCount(25);
           loadDashboardData();
           setActiveTab('overview');
         } else {
@@ -680,9 +844,16 @@ export default function AdminDashboard() {
     setEditProductName(product.name);
     setEditProductDesc(product.description);
     setEditProductCategoryId(product.category?._id || '');
+    const subId = typeof product.subcategory === 'object' ? product.subcategory?._id : (typeof product.subcategory === 'string' ? product.subcategory : '');
+    setEditProductSubcategoryId(subId || '');
     setEditProductMedia(product.mediaUrls);
     setEditProductCatalog(product.catalogUrl || '');
     setEditProductKeyFeatures(product.keyFeatures ? product.keyFeatures.join('\n') : '');
+    setEditProductRatingMode(product.ratingMode || 'manual');
+    setEditProductManualRating(typeof product.manualRating === 'number' ? product.manualRating : 5.0);
+    setEditProductManualRatingCount(typeof product.manualRatingCount === 'number' ? product.manualRatingCount : 25);
+    setEditProductAutoAvg(typeof product.autoRatingAverage === 'number' ? product.autoRatingAverage : 5.0);
+    setEditProductAutoCount(typeof product.autoRatingCount === 'number' ? product.autoRatingCount : 0);
     setStatusMessage(null);
     setActiveTab('productDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -748,9 +919,13 @@ export default function AdminDashboard() {
             name: editProductName,
             description: editProductDesc,
             categoryId: editProductCategoryId,
+            subcategoryId: editProductSubcategoryId || null,
             mediaUrls: editProductMedia,
             catalogUrl: editProductCatalog || undefined,
             keyFeatures: keyFeaturesArray,
+            ratingMode: editProductRatingMode,
+            manualRating: editProductManualRating,
+            manualRatingCount: editProductManualRatingCount,
           }),
         });
         const data = await response.json();
@@ -797,6 +972,75 @@ export default function AdminDashboard() {
     } catch (err) {
       setStatusMessage({ type: 'error', text: 'Could not delete product.' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Subcategory Edit & Delete Handlers
+  const openSubCategoryEdit = (sub: SubcategoryObj) => {
+    setEditingSubcategory(sub);
+    setEditSubCategoryName(sub.name);
+    const parentId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+    setEditSubCategoryCategoryId(parentId || '');
+    setEditSubCategoryDesc(sub.description || '');
+    setEditSubCategoryImgUrl(sub.imageUrl || '');
+    setStatusMessage(null);
+  };
+
+  const handleSubCategoryUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSubcategory) return;
+    setStatusMessage(null);
+
+    if (!editSubCategoryName.trim() || !editSubCategoryCategoryId) {
+      setStatusMessage({ type: 'error', text: 'Subcategory Name and Parent Category are required.' });
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const response = await authFetch(`http://localhost:5000/api/admin/subcategories/${editingSubcategory._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: editSubCategoryName,
+            categoryId: editSubCategoryCategoryId,
+            description: editSubCategoryDesc,
+            imageUrl: editSubCategoryImgUrl,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStatusMessage({ type: 'success', text: 'Subcategory updated successfully!' });
+          setEditingSubcategory(null);
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Subcategory update failed.' });
+        }
+      } catch {
+        setStatusMessage({ type: 'error', text: 'Could not update subcategory.' });
+      }
+    });
+  };
+
+  const confirmDeleteSubcategory = async (id: string) => {
+    setShowConfirmDeleteSubcategoryModal(null);
+    setStatusMessage(null);
+    try {
+      const response = await authFetch(`http://localhost:5000/api/admin/subcategories/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStatusMessage({ type: 'success', text: 'Subcategory deleted successfully!' });
+        await loadDashboardData();
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Subcategory deletion failed.' });
+      }
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Could not delete subcategory.' });
     }
   };
 
@@ -1266,12 +1510,105 @@ export default function AdminDashboard() {
         if (editingSector?._id === id) {
           resetSectorForm();
         }
-      } else {
-        setStatusMessage({ type: 'error', text: data.message || 'Deletion failed.' });
       }
     } catch (err) {
       console.error('Delete sector error:', err);
       setStatusMessage({ type: 'error', text: 'Could not delete sector.' });
+    }
+  };
+
+  // Tailored Solutions Handlers
+  const resetSolutionForm = () => {
+    setSolutionTitle('');
+    setSolutionCategory('');
+    setSolutionDesc('');
+    setSolutionInitials('');
+    setSolutionCtaText('');
+    setSolutionHref('');
+    setSolutionImgUrl('');
+    setSolutionDisplayOrder(0);
+    setSolutionIsActive(true);
+    setEditingSolution(null);
+    setIsCreatingSolution(false);
+  };
+
+  const openSolutionEdit = (item: any) => {
+    setEditingSolution(item);
+    setIsCreatingSolution(true);
+    setSolutionTitle(item.title);
+    setSolutionCategory(item.category);
+    setSolutionDesc(item.description);
+    setSolutionInitials(item.initials);
+    setSolutionCtaText(item.ctaText);
+    setSolutionHref(item.href);
+    setSolutionImgUrl(item.imageUrl);
+    setSolutionDisplayOrder(item.displayOrder || 0);
+    setSolutionIsActive(item.isActive !== false);
+  };
+
+  const handleSaveSolution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!solutionTitle.trim() || !solutionCategory.trim() || !solutionDesc.trim() || !solutionCtaText.trim() || !solutionHref.trim()) {
+      setStatusMessage({ type: 'error', text: 'Title, Category Badge, Description, CTA text, and Link Href are required.' });
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const url = editingSolution
+          ? `http://localhost:5000/api/admin/solutions/${editingSolution._id}`
+          : 'http://localhost:5000/api/admin/solutions';
+        const method = editingSolution ? 'PUT' : 'POST';
+
+        const res = await authFetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: solutionTitle,
+            category: solutionCategory,
+            description: solutionDesc,
+            initials: solutionInitials,
+            ctaText: solutionCtaText,
+            href: solutionHref,
+            imageUrl: solutionImgUrl,
+            displayOrder: Number(solutionDisplayOrder) || 0,
+            isActive: solutionIsActive,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setStatusMessage({ type: 'success', text: `Solution card ${editingSolution ? 'updated' : 'created'} successfully!` });
+          resetSolutionForm();
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Saving solution card failed.' });
+        }
+      } catch {
+        setStatusMessage({ type: 'error', text: 'An error occurred while saving solution card.' });
+      }
+    });
+  };
+
+  const confirmDeleteSolution = async (id: string) => {
+    setShowConfirmDeleteSolutionModal(null);
+    setStatusMessage(null);
+    try {
+      const res = await authFetch(`http://localhost:5000/api/admin/solutions/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatusMessage({ type: 'success', text: 'Solution card deleted successfully!' });
+        await loadDashboardData();
+        if (editingSolution?._id === id) {
+          resetSolutionForm();
+        }
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Deletion failed.' });
+      }
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Failed to delete solution card.' });
     }
   };
 
@@ -1701,12 +2038,43 @@ export default function AdminDashboard() {
                     <input id="edit-product-name" className={styles.input} value={editProductName} onChange={(e) => setEditProductName(e.target.value)} required />
                   </div>
                   <div className={styles.inputGroup}>
-                    <label className={styles.label} htmlFor="edit-product-category">Category</label>
-                    <select id="edit-product-category" className={styles.input} value={editProductCategoryId} onChange={(e) => setEditProductCategoryId(e.target.value)} required>
+                    <label className={styles.label} htmlFor="edit-product-category">Category *</label>
+                    <select
+                      id="edit-product-category"
+                      className={styles.input}
+                      value={editProductCategoryId}
+                      onChange={(e) => {
+                        setEditProductCategoryId(e.target.value);
+                        setEditProductSubcategoryId('');
+                      }}
+                      required
+                    >
                       <option value="">Select Category</option>
                       {categoriesList.map((category) => (
                         <option key={category._id} value={category._id}>{category.name}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} htmlFor="edit-product-subcategory">
+                      Subcategory <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span>
+                    </label>
+                    <select
+                      id="edit-product-subcategory"
+                      className={styles.input}
+                      value={editProductSubcategoryId}
+                      onChange={(e) => setEditProductSubcategoryId(e.target.value)}
+                      disabled={!editProductCategoryId}
+                    >
+                      <option value="">Select Subcategory (Optional)</option>
+                      {subcategoriesList
+                        .filter((sub) => {
+                          const parentId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+                          return parentId === editProductCategoryId;
+                        })
+                        .map((sub) => (
+                          <option key={sub._id} value={sub._id}>{sub.name}</option>
+                        ))}
                     </select>
                   </div>
                   <div className={styles.inputGroup}>
@@ -1747,6 +2115,109 @@ export default function AdminDashboard() {
                       />
                     </label>
                   </div>
+                  {/* ⭐ Star Rating & Manual Override Card */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '18px', marginTop: '16px', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                        <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                          Star Rating &amp; Manual Override
+                        </h4>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 650, background: editProductRatingMode === 'manual' ? '#e0f2fe' : '#f0fdf4', color: editProductRatingMode === 'manual' ? '#0369a1' : '#15803d', padding: '3px 10px', borderRadius: '20px' }}>
+                        {editProductRatingMode === 'manual' ? 'Manual Active' : 'Automatic Active'}
+                      </span>
+                    </div>
+
+                    {/* Mode Selector Toggle */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditProductRatingMode('manual')}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: editProductRatingMode === 'manual' ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                          background: editProductRatingMode === 'manual' ? '#f0f9ff' : '#ffffff',
+                          fontWeight: 650,
+                          fontSize: '0.85rem',
+                          color: editProductRatingMode === 'manual' ? '#0369a1' : '#64748b',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span>🔘 Manual Override</span>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 400 }}>Custom score &amp; count</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEditProductRatingMode('auto')}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: editProductRatingMode === 'auto' ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                          background: editProductRatingMode === 'auto' ? '#f0fdf4' : '#ffffff',
+                          fontWeight: 650,
+                          fontSize: '0.85rem',
+                          color: editProductRatingMode === 'auto' ? '#15803d' : '#64748b',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span>⚡ Automatic Mode</span>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 400 }}>Real visitor average</span>
+                      </button>
+                    </div>
+
+                    {/* Inputs when manual mode is selected */}
+                    {editProductRatingMode === 'manual' ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                            Display Rating Score (1.0 to 5.0)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="1.0"
+                            max="5.0"
+                            className={styles.input}
+                            value={editProductManualRating}
+                            onChange={(e) => setEditProductManualRating(parseFloat(e.target.value) || 5.0)}
+                            style={{ width: '100%' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                            Display Total Ratings Count
+                          </label>
+                          <input
+                            type="number"
+                            step="1"
+                            min="0"
+                            className={styles.input}
+                            value={editProductManualRatingCount}
+                            onChange={(e) => setEditProductManualRatingCount(parseInt(e.target.value, 10) || 0)}
+                            style={{ width: '100%' }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.82rem', color: '#475569' }}>
+                        📊 <strong>Live User Stats:</strong> {editProductAutoAvg.toFixed(1)} ★ based on {editProductAutoCount} real visitor star submissions.
+                      </div>
+                    )}
+                  </div>
+
                   <div className={styles.detailActions}>
                     <button type="button" className={styles.secondaryButton} onClick={() => setActiveTab(detailReturnTab)}>Cancel</button>
                     <button type="submit" className={styles.primaryButton} disabled={isPending || uploadingFile}>
@@ -1827,15 +2298,33 @@ export default function AdminDashboard() {
                     )}
                     <span style={{ position: 'relative', zIndex: 2 }}>Categories</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => { setManageView('subcategories'); setSearchQuery(''); setSelectedCategoryFilter(''); }}
+                    className={`${styles.toggleBtn} ${manageView === 'subcategories' ? styles.toggleBtnActive : ''}`}
+                    style={{ position: 'relative' }}
+                  >
+                    {manageView === 'subcategories' && (
+                      <motion.div
+                        layoutId="toggleActive"
+                        className={styles.toggleActiveBg}
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span style={{ position: 'relative', zIndex: 2 }}>Subcategories</span>
+                  </button>
                 </div>
               </div>
 
               {/* Interactive Category Filter Bar */}
-              {manageView === 'products' && (
+              {(manageView === 'products' || manageView === 'subcategories') && (
                 <div className={`${styles.categoryFilterBar} no-scrollbar`}>
                   <button
                     type="button"
-                    onClick={() => setSelectedCategoryFilter('')}
+                    onClick={() => {
+                      setSelectedCategoryFilter('');
+                      setSelectedSubcategoryFilter('');
+                    }}
                     className={`${styles.filterPill} ${selectedCategoryFilter === '' ? styles.filterPillActive : ''}`}
                     style={{ position: 'relative' }}
                   >
@@ -1846,18 +2335,29 @@ export default function AdminDashboard() {
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
-                    <span style={{ position: 'relative', zIndex: 2 }}>All Products</span>
+                    <span style={{ position: 'relative', zIndex: 2 }}>
+                      {manageView === 'subcategories' ? 'All Subcategories' : 'All Products'}
+                    </span>
                     <span className={`${styles.pillCount} ${selectedCategoryFilter === '' ? styles.pillCountActive : ''}`} style={{ position: 'relative', zIndex: 2 }}>
-                      {productsList.length}
+                      {manageView === 'subcategories' ? subcategoriesList.length : productsList.length}
                     </span>
                   </button>
                   {categoriesList.map((cat) => {
-                    const count = productsList.filter(p => p.category?._id === cat._id).length;
+                    const count = manageView === 'subcategories'
+                      ? subcategoriesList.filter((s) => {
+                          const parentId = typeof s.category === 'object' ? s.category?._id : s.category;
+                          return parentId === cat._id;
+                        }).length
+                      : productsList.filter((p) => p.category?._id === cat._id).length;
+
                     return (
                       <button
                         key={cat._id}
                         type="button"
-                        onClick={() => setSelectedCategoryFilter(cat._id)}
+                        onClick={() => {
+                          setSelectedCategoryFilter(cat._id);
+                          setSelectedSubcategoryFilter('');
+                        }}
                         className={`${styles.filterPill} ${selectedCategoryFilter === cat._id ? styles.filterPillActive : ''}`}
                         style={{ position: 'relative' }}
                       >
@@ -1878,6 +2378,140 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {/* 🌿 User-Friendly Nested Subcategory Filter Bar (Products View) */}
+              {manageView === 'products' && (() => {
+                const availableSubs = subcategoriesList.filter((sub) => {
+                  if (!selectedCategoryFilter) return true;
+                  const parentId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+                  return parentId === selectedCategoryFilter;
+                });
+
+                if (availableSubs.length === 0) return null;
+
+                const parentCatName = categoriesList.find(c => c._id === selectedCategoryFilter)?.name;
+
+                return (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    marginBottom: '24px',
+                    padding: '12px 18px',
+                    background: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px solid #cbd5e1',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', marginRight: '6px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '19px', color: '#0a8d93' }}>account_tree</span>
+                      <span>{parentCatName ? `${parentCatName} Subcategories:` : 'Subcategories:'}</span>
+                    </div>
+
+                    {/* All Subcategories Pill */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSubcategoryFilter('')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '0.82rem',
+                        fontWeight: 650,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        border: selectedSubcategoryFilter === '' ? '1.5px solid #0a8d93' : '1px solid #e2e8f0',
+                        background: selectedSubcategoryFilter === '' ? '#e6f7f8' : '#f8fafc',
+                        color: selectedSubcategoryFilter === '' ? '#0a8d93' : '#64748b',
+                      }}
+                    >
+                      <span>All Subcategories</span>
+                      <span style={{
+                        fontSize: '0.72rem',
+                        background: selectedSubcategoryFilter === '' ? '#0a8d93' : '#e2e8f0',
+                        color: selectedSubcategoryFilter === '' ? '#ffffff' : '#64748b',
+                        padding: '1px 7px',
+                        borderRadius: '10px',
+                        fontWeight: 700,
+                      }}>
+                        {selectedCategoryFilter
+                          ? productsList.filter(p => p.category?._id === selectedCategoryFilter).length
+                          : productsList.length}
+                      </span>
+                    </button>
+
+                    {/* Dynamic Subcategory Pills */}
+                    {availableSubs.map((sub) => {
+                      const count = productsList.filter((p) => {
+                        const pSubId = typeof p.subcategory === 'object' ? p.subcategory?._id : (typeof p.subcategory === 'string' ? p.subcategory : '');
+                        return pSubId === sub._id;
+                      }).length;
+
+                      const isSelected = selectedSubcategoryFilter === sub._id;
+
+                      return (
+                        <button
+                          key={sub._id}
+                          type="button"
+                          onClick={() => setSelectedSubcategoryFilter(isSelected ? '' : sub._id)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            fontSize: '0.82rem',
+                            fontWeight: 650,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            border: isSelected ? '1.5px solid #0a8d93' : '1px solid #e2e8f0',
+                            background: isSelected ? '#e6f7f8' : '#f8fafc',
+                            color: isSelected ? '#0a8d93' : '#475569',
+                          }}
+                        >
+                          <span>{sub.name}</span>
+                          <span style={{
+                            fontSize: '0.72rem',
+                            background: isSelected ? '#0a8d93' : '#e2e8f0',
+                            color: isSelected ? '#ffffff' : '#64748b',
+                            padding: '1px 7px',
+                            borderRadius: '10px',
+                            fontWeight: 700,
+                          }}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+
+                    {/* Quick Clear Filter Link */}
+                    {selectedSubcategoryFilter && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSubcategoryFilter('')}
+                        style={{
+                          marginLeft: 'auto',
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>close</span>
+                        Clear Subcategory Filter
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+
               {manageView === 'categories' && (
                 <div className={styles.categoryFilterBar}>
                   <div className={styles.filterPillActive} style={{ cursor: 'default', position: 'relative' }}>
@@ -1892,7 +2526,94 @@ export default function AdminDashboard() {
                 <p>Loading database assets...</p>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  {manageView === 'categories' ? (
+                  {manageView === 'subcategories' ? (
+                    // Filtered Subcategories
+                    (() => {
+                      const filteredSubs = subcategoriesList.filter((sub) => {
+                        const matchesSearch =
+                          sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (sub.description && sub.description.toLowerCase().includes(searchQuery.toLowerCase()));
+                        
+                        const parentId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+                        const matchesCategory = !selectedCategoryFilter || parentId === selectedCategoryFilter;
+
+                        return matchesSearch && matchesCategory;
+                      });
+
+                      return filteredSubs.length > 0 ? (
+                        <motion.div layout className={styles.categoryOverviewGrid} key="subs-grid">
+                          <AnimatePresence mode="popLayout">
+                            {filteredSubs.map((sub) => {
+                              const parentName = typeof sub.category === 'object' ? sub.category?.name : 'Category';
+                              const prodCount = productsList.filter(p => p.subcategory?._id === sub._id || (p.subcategory as any) === sub._id).length;
+
+                              return (
+                                <motion.div
+                                  layout
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                                  key={sub._id}
+                                  className={styles.categoryOverviewCard}
+                                  style={{ position: 'relative', cursor: 'default', textDecoration: 'none' }}
+                                >
+                                  <div className={styles.categoryOverviewImage}>
+                                    {sub.imageUrl ? (
+                                      <Image src={sub.imageUrl} alt={sub.name} fill sizes="(max-width: 900px) 100vw, 33vw" />
+                                    ) : (
+                                      <div className={styles.mediaFallback}>
+                                        <span className="material-symbols-outlined">account_tree</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className={styles.categoryOverviewName} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                      <h3 style={{ fontSize: '1.05rem', margin: 0 }}>{sub.name}</h3>
+                                      <span style={{ fontSize: '0.75rem', background: 'rgba(10, 141, 147, 0.1)', color: '#0A8D93', padding: '3px 8px', borderRadius: '6px', fontWeight: 'bold' }}>
+                                        {parentName}
+                                      </span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginTop: '4px' }}>
+                                      <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{prodCount} {prodCount === 1 ? 'Product' : 'Products'}</span>
+                                      <div style={{ display: 'flex', gap: '6px' }}>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); openSubCategoryEdit(sub); }}
+                                          style={{ background: '#0a8d93', color: '#ffffff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                          <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); setShowConfirmDeleteSubcategoryModal(sub._id); }}
+                                          style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                          <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
+                          </AnimatePresence>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className={styles.emptyState}
+                          key="subs-empty"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>search_off</span>
+                          <p>No subcategories match your search query: "{searchQuery}"</p>
+                        </motion.div>
+                      );
+                    })()
+                  ) : manageView === 'categories' ? (
                     // Filtered Categories
                     (() => {
                       const filteredCats = categoriesList.filter(cat =>
@@ -1946,13 +2667,19 @@ export default function AdminDashboard() {
                         const matchesSearch =
                           prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           prod.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (prod.category?.name && prod.category.name.toLowerCase().includes(searchQuery.toLowerCase()));
+                          (prod.category?.name && prod.category.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (prod.subcategory?.name && prod.subcategory.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
                         const matchesCategory =
                           !selectedCategoryFilter ||
                           prod.category?._id === selectedCategoryFilter;
 
-                        return matchesSearch && matchesCategory;
+                        const prodSubId = typeof prod.subcategory === 'object' ? prod.subcategory?._id : (typeof prod.subcategory === 'string' ? prod.subcategory : '');
+                        const matchesSubcategory =
+                          !selectedSubcategoryFilter ||
+                          prodSubId === selectedSubcategoryFilter;
+
+                        return matchesSearch && matchesCategory && matchesSubcategory;
                       });
 
                       return filteredProds.length > 0 ? (
@@ -1980,18 +2707,31 @@ export default function AdminDashboard() {
                                       </div>
                                     )}
                                   </div>
-                                  <div className={styles.productOverviewName}>
-                                    <h3>{prod.name}</h3>
-                                    <span aria-hidden="true">-&gt;</span>
+                                  <div className={styles.productOverviewName} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                      <h3>{prod.name}</h3>
+                                      <span aria-hidden="true">-&gt;</span>
+                                    </div>
+                                    {/* Subcategory & Category Badge */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 650, color: '#0a8d93', background: '#e6f7f8', padding: '2px 7px', borderRadius: '4px' }}>
+                                        {prod.category?.name || 'Category'}
+                                      </span>
+                                      {prod.subcategory && (
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#475569', background: '#f1f5f9', padding: '2px 7px', borderRadius: '4px' }}>
+                                          {typeof prod.subcategory === 'object' ? prod.subcategory.name : ''}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 </motion.button>
                               ))}
                             </AnimatePresence>
                           </motion.div>
                           {filteredProds.length > visibleProductsCount && (
-                            <div ref={productLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.6)', gap: '8px' }}>
-                              <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                              <span>Loading more products...</span>
+                            <div ref={productLoaderRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '36px 0', color: '#64748b', gap: '10px' }}>
+                              <div style={{ width: '20px', height: '20px', border: '2px solid #cbd5e1', borderTopColor: '#0a8d93', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Loading more products ({Math.min(visibleProductsCount, filteredProds.length)} of {filteredProds.length})...</span>
                             </div>
                           )}
                         </>
@@ -2101,6 +2841,106 @@ export default function AdminDashboard() {
             </motion.form>
           )}
 
+          {/* CREATE SUBCATEGORY FORM */}
+          {activeTab === 'subcategories' && (
+            <motion.form
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onSubmit={handleSubCategorySubmit}
+              className={styles.formCard}
+            >
+              <h2 className={styles.sectionTitle}>New Product Subcategory</h2>
+
+              <div className={styles.grid}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="subcategory-name">
+                    Subcategory Name *
+                  </label>
+                  <input
+                    id="subcategory-name"
+                    type="text"
+                    placeholder="e.g. Human Skeleton Models"
+                    className={styles.input}
+                    value={subCategoryName}
+                    onChange={(e) => setSubCategoryName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="subcategory-parent">Parent Category *</label>
+                  <select
+                    id="subcategory-parent"
+                    className={styles.input}
+                    value={subCategoryCategoryId}
+                    onChange={(e) => setSubCategoryCategoryId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Parent Category</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <label className={styles.label} htmlFor="subcategory-desc">
+                    Description <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span>
+                  </label>
+                  <input
+                    id="subcategory-desc"
+                    type="text"
+                    placeholder="Brief summary of subcategory range"
+                    className={styles.input}
+                    value={subCategoryDesc}
+                    onChange={(e) => setSubCategoryDesc(e.target.value)}
+                  />
+                </div>
+
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <label className={styles.label}>Subcategory Image <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span></label>
+                  <label className={styles.uploadBox}>
+                    <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                    </svg>
+                    <span className={styles.uploadText}>Click to upload Subcategory Image</span>
+                    <span className={styles.uploadSubtext}>Supports JPG, PNG (Max 5MB)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          if (url) setSubCategoryImgUrl(url);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {subCategoryImgUrl && (
+                    <div className={styles.previewList}>
+                      <div className={styles.previewItem}>
+                        <img src={subCategoryImgUrl} alt="Subcategory Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button type="button" className={styles.removePreviewBtn} onClick={() => setSubCategoryImgUrl('')}>✕</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="ctaButton"
+                style={{ width: '220px', marginTop: '16px', background: 'var(--primary)', border: 'none', padding: '14px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                disabled={isPending || uploadingFile}
+              >
+                Create Subcategory
+              </button>
+            </motion.form>
+          )}
+
           {/* CREATE PRODUCT FORM */}
           {activeTab === 'products' && (
             <motion.form
@@ -2123,24 +2963,49 @@ export default function AdminDashboard() {
                     className={styles.input}
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-
                     required
                   />
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label className={styles.label} htmlFor="product-category">Category</label>
+                  <label className={styles.label} htmlFor="product-category">Category *</label>
                   <select
                     id="product-category"
                     className={styles.input}
                     value={productCategoryId}
-                    onChange={(e) => setProductCategoryId(e.target.value)}
+                    onChange={(e) => {
+                      setProductCategoryId(e.target.value);
+                      setProductSubcategoryId('');
+                    }}
                     required
                   >
                     <option value="">Select Category</option>
                     {categoriesList.map((cat) => (
                       <option key={cat._id} value={cat._id}>{cat.name}</option>
                     ))}
+                  </select>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="product-subcategory">
+                    Subcategory <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span>
+                  </label>
+                  <select
+                    id="product-subcategory"
+                    className={styles.input}
+                    value={productSubcategoryId}
+                    onChange={(e) => setProductSubcategoryId(e.target.value)}
+                    disabled={!productCategoryId}
+                  >
+                    <option value="">Select Subcategory (Optional)</option>
+                    {subcategoriesList
+                      .filter((sub) => {
+                        const parentId = typeof sub.category === 'object' ? sub.category?._id : sub.category;
+                        return parentId === productCategoryId;
+                      })
+                      .map((sub) => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      ))}
                   </select>
                 </div>
 
@@ -2251,6 +3116,84 @@ export default function AdminDashboard() {
                     <div className={styles.pdfBadge}>
                       <span>📄 {productCatalogUrl.split('/').pop()}</span>
                       <button type="button" onClick={() => setProductCatalogUrl('')}>Delete PDF</button>
+                    </div>
+                  )}
+                </div>
+                {/* ⭐ Star Rating & Manual Override in New Product Form */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '18px', margin: '8px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                      <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                        Initial Star Rating Configuration
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setProductRatingMode('manual')}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: productRatingMode === 'manual' ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                        background: productRatingMode === 'manual' ? '#f0f9ff' : '#ffffff',
+                        fontWeight: 650,
+                        fontSize: '0.85rem',
+                        color: productRatingMode === 'manual' ? '#0369a1' : '#64748b',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔘 Manual Override
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProductRatingMode('auto')}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: productRatingMode === 'auto' ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                        background: productRatingMode === 'auto' ? '#f0fdf4' : '#ffffff',
+                        fontWeight: 650,
+                        fontSize: '0.85rem',
+                        color: productRatingMode === 'auto' ? '#15803d' : '#64748b',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ⚡ Automatic (Calculated)
+                    </button>
+                  </div>
+
+                  {productRatingMode === 'manual' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                          Initial Rating Score (1.0 to 5.0)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="1.0"
+                          max="5.0"
+                          className={styles.input}
+                          value={productManualRating}
+                          onChange={(e) => setProductManualRating(parseFloat(e.target.value) || 5.0)}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                          Initial Ratings Count
+                        </label>
+                        <input
+                          type="number"
+                          step="1"
+                          min="0"
+                          className={styles.input}
+                          value={productManualRatingCount}
+                          onChange={(e) => setProductManualRatingCount(parseInt(e.target.value, 10) || 0)}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -3338,50 +4281,30 @@ export default function AdminDashboard() {
                     Our Sectors (Lab Cards)
                   </h2>
                   <p style={{ fontSize: '0.88rem', color: '#475569', margin: '4px 0 0 0' }}>
-                    Manage the sector lab cards displayed under "Our Sectors" on the home page (Maximum 4 cards limit).
+                    Manage the sector lab cards displayed under "Our Sectors" on the home page.
                   </p>
                 </div>
                 {!isCreatingSector && (
-                  sectorsList.length >= 4 ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        background: '#f1f5f9',
-                        border: '1px solid #cbd5e1',
-                        color: '#475569',
-                        padding: '10px 18px',
-                        borderRadius: '8px',
-                        fontWeight: 'bold',
-                        fontSize: '0.85rem',
-                      }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#0a8d93' }}>lock</span>
-                      Max 4 Cards Reached ({sectorsList.length}/4)
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => { resetSectorForm(); setIsCreatingSector(true); }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        background: '#0a8d93',
-                        color: '#ffffff',
-                        border: 'none',
-                        padding: '10px 18px',
-                        borderRadius: '8px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)',
-                      }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-                      Add New Sector ({sectorsList.length}/4)
-                    </button>
-                  )
+                  <button
+                    type="button"
+                    onClick={() => { resetSectorForm(); setIsCreatingSector(true); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: '#0a8d93',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                    Add New Sector
+                  </button>
                 )}
               </div>
 
@@ -3594,6 +4517,300 @@ export default function AdminDashboard() {
               )}
             </motion.div>
           )}
+
+          {/* ========================================== */}
+          {/* TAILORED SOLUTIONS TAB                     */}
+          {/* ========================================== */}
+          {activeTab === 'solutions' && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+            >
+              <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 className={styles.listSectionTitle}>
+                  <span className="material-symbols-outlined">grid_view</span>
+                  <span>Tailored Training Solutions Cards</span>
+                </h2>
+                {!isCreatingSolution && (
+                  <button
+                    type="button"
+                    onClick={() => { resetSolutionForm(); setIsCreatingSolution(true); }}
+                    style={{
+                      background: '#0a8d93',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <span className="material-symbols-outlined">add</span>
+                    Add Solution Card
+                  </button>
+                )}
+              </div>
+
+              {/* Solution Card Create/Edit Form */}
+              {isCreatingSolution && (
+                <motion.form
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onSubmit={handleSaveSolution}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '16px',
+                    padding: '32px',
+                    boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.08)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '24px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+                      {editingSolution ? 'Edit Solution Card' : 'Create New Solution Card'}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={resetSolutionForm}
+                      style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.25rem' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Card Title *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        placeholder="e.g. Anatomy Models"
+                        value={solutionTitle}
+                        onChange={(e) => setSolutionTitle(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Category Badge Label *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        placeholder="e.g. ANATOMY, FLAGSHIP SERVICE, SIMULATORS"
+                        value={solutionCategory}
+                        onChange={(e) => setSolutionCategory(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Initials Badge (2-3 chars) *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        placeholder="e.g. AM, MS, TT, PS, VR"
+                        value={solutionInitials}
+                        onChange={(e) => setSolutionInitials(e.target.value)}
+                        maxLength={4}
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Button Text (CTA) *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        placeholder="e.g. Explore Anatomy Models"
+                        value={solutionCtaText}
+                        onChange={(e) => setSolutionCtaText(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Link Href *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        placeholder="e.g. /products/anatomy-models or /simulation-centre"
+                        value={solutionHref}
+                        onChange={(e) => setSolutionHref(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Display Order</label>
+                      <input
+                        type="number"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        value={solutionDisplayOrder}
+                        onChange={(e) => setSolutionDisplayOrder(Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Description *</label>
+                    <textarea
+                      className={styles.input}
+                      style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                      rows={3}
+                      placeholder="Brief description of this training solution..."
+                      value={solutionDesc}
+                      onChange={(e) => setSolutionDesc(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Card Banner Image</label>
+                    <label className={styles.uploadBox} style={{ padding: '20px', background: '#f8fafc', border: '2px dashed #cbd5e1' }}>
+                      <span className={styles.uploadText} style={{ color: '#475569', fontWeight: '500' }}>Click to upload Solution Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className={styles.fileInput}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = await handleFileUpload(file);
+                            if (url) setSolutionImgUrl(url);
+                          }
+                        }}
+                      />
+                    </label>
+                    {solutionImgUrl && (
+                      <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <img src={solutionImgUrl} alt="Preview" style={{ width: '90px', height: '65px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #cbd5e1' }} />
+                        <button type="button" onClick={() => setSolutionImgUrl('')} style={{ color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                          Remove Image
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+                    <button
+                      type="button"
+                      onClick={resetSolutionForm}
+                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', padding: '10px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPending || uploadingFile}
+                      style={{ background: '#0a8d93', color: '#ffffff', border: 'none', padding: '10px 28px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      {isPending ? 'Saving...' : editingSolution ? 'Update Solution Card' : 'Create Solution Card'}
+                    </button>
+                  </div>
+                </motion.form>
+              )}
+
+              {/* Solutions Grid */}
+              {loadingData ? (
+                <p>Loading solutions...</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {solutionsList.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                      {solutionsList.map((sol) => (
+                        <div
+                          key={sol._id}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            position: 'relative'
+                          }}
+                        >
+                          <div style={{ position: 'relative', height: '160px', background: '#0f172a', overflow: 'hidden' }}>
+                            <img
+                              src={sol.imageUrl}
+                              alt={sol.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(10, 141, 147, 0.95)', padding: '4px 10px', borderRadius: '20px', color: '#ffffff', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                              Order: {sol.displayOrder}
+                            </div>
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#0a8d93', padding: '4px 10px', borderRadius: '6px', color: '#ffffff', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                              {sol.category} ({sol.initials})
+                            </div>
+                          </div>
+
+                          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+                              {sol.title}
+                            </h4>
+                            <p style={{ fontSize: '0.85rem', color: '#475569', margin: 0, lineHeight: '1.5' }}>
+                              {sol.description}
+                            </p>
+                            <div style={{ fontSize: '0.8rem', color: '#0a8d93', fontWeight: 'bold', marginTop: '4px' }}>
+                              CTA: {sol.ctaText} → {sol.href}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid #e2e8f0', padding: '14px 20px', gap: '8px', background: '#f8fafc' }}>
+                            <button
+                              type="button"
+                              onClick={() => openSolutionEdit(sol)}
+                              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>edit</span>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmDeleteSolutionModal(sol._id)}
+                              style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '8px 16px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>delete</span>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.emptyState} style={{ padding: '60px 0', background: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#0a8d93', marginBottom: '12px' }}>grid_view</span>
+                      <p style={{ color: '#475569', fontWeight: '500' }}>No solution cards found in database.</p>
+                      <button
+                        type="button"
+                        onClick={() => { resetSolutionForm(); setIsCreatingSolution(true); }}
+                        style={{ marginTop: '16px', background: '#0a8d93', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Add Your First Solution Card
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+
 
         </main>
       </div>
@@ -4090,6 +5307,311 @@ export default function AdminDashboard() {
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#fca5a5'; }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Edit Subcategory Modal */}
+      <AnimatePresence>
+        {editingSubcategory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.75)',
+              backdropFilter: 'blur(6px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.form
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              onSubmit={handleSubCategoryUpdate}
+              style={{
+                background: '#ffffff',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '560px',
+                padding: '32px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                color: '#0f172a'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+                  Edit Subcategory
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingSubcategory(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.25rem', color: '#64748b' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                    Subcategory Name *
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={editSubCategoryName}
+                    onChange={(e) => setEditSubCategoryName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                    Parent Category *
+                  </label>
+                  <select
+                    className={styles.input}
+                    value={editSubCategoryCategoryId}
+                    onChange={(e) => setEditSubCategoryCategoryId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Parent Category</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    value={editSubCategoryDesc}
+                    onChange={(e) => setEditSubCategoryDesc(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                    Cover Image
+                  </label>
+                  <label className={styles.uploadBox} style={{ padding: '16px' }}>
+                    <span className={styles.uploadText}>Click to replace Subcategory Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          if (url) setEditSubCategoryImgUrl(url);
+                        }
+                      }}
+                    />
+                  </label>
+                  {editSubCategoryImgUrl && (
+                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src={editSubCategoryImgUrl} alt="Preview" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                      <button type="button" onClick={() => setEditSubCategoryImgUrl('')} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                        Remove Image
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '28px' }}>
+                <button
+                  type="submit"
+                  disabled={isPending || uploadingFile}
+                  style={{ flex: 1, background: '#0a8d93', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  {isPending ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingSubcategory(null)}
+                  style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', padding: '12px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirm Delete Subcategory Modal */}
+      <AnimatePresence>
+        {showConfirmDeleteSubcategoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this subcategory? Products in this subcategory will remain in their parent category.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteSubcategoryModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteSubcategory(showConfirmDeleteSubcategoryModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Confirm Delete Solution Modal */}
+      <AnimatePresence>
+        {showConfirmDeleteSolutionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              style={{
+                background: 'linear-gradient(135deg, #0b1f3a 0%, #050b14 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.1)',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '480px',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this solution card? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteSolutionModal(null)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94A3B8',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteSolution(showConfirmDeleteSolutionModal)}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: '#fca5a5',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontFamily: 'var(--font-sans)'
+                  }}
                 >
                   Delete
                 </button>

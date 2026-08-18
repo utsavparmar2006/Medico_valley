@@ -14,7 +14,9 @@ import Lenis from "lenis";
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-import DifferenceSection from "@/components/DifferenceSection";
+import ProcessFlowSection from "@/components/ProcessFlowSection";
+import SolutionsSection from "@/components/SolutionsSection";
+import ConsultationBannerSection from "@/components/ConsultationBannerSection";
 import ValuePropSection from "@/components/ValuePropSection";
 import InstitutionTrustSection from "@/components/InstitutionTrustSection";
 import PremiumFooter from "@/components/PremiumFooter";
@@ -626,10 +628,7 @@ export default function Home() {
         {/* Hero Section - Rebuilt with premium interactions */}
         <section
           ref={heroSectionRef}
-          className={`${styles.heroSection} ${isHovered ? styles.heroSectionActive : ""}`}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onMouseEnter={handleMouseEnter}
+          className={styles.heroSection}
         >
           {/* Background Hero Media Container */}
           <div ref={mediaWrapperRef} className={styles.heroVideo}>
@@ -739,52 +738,28 @@ export default function Home() {
             </svg>
           </motion.div>
 
-          {/* Spring-Loaded Parallax Glass Card */}
-          <motion.div
+          {/* Static Clean Card Panel */}
+          <div
             ref={heroGlassPanelRef}
-            style={{
-              x: cardTranslateX,
-              y: cardTranslateY,
-              rotateX: cardRotateX,
-              rotateY: cardRotateY,
-              transformStyle: "preserve-3d",
-            }}
             className={styles.heroGlassPanel}
           >
-            {/* Ambient light sweep effect */}
-            <div className={styles.glassCardLightSweep} />
-
-
             {/* Word-by-word headline layout */}
-            <h1 className={styles.heroTitle} style={{ transform: "translateZ(50px)" }}>
-              {"MEDICAL EDUCATION SOLUTIONS".split(" ").map((word, i) => (
-                <span
-                  key={`hero-title-${i}`}
-                  className="hero-word"
-                  style={{ display: "inline-block", marginRight: "0.25em" }}
-                >
-                  {word}
-                </span>
-              ))}
+            <h1 className={styles.heroTitle}>
+              Medical Simulation &amp; Skills Lab Solutions for Better Clinical Training
             </h1>
 
-            <p ref={heroSubtitleRef} className={styles.heroSubtitle} style={{ transform: "translateZ(40px)" }}>
-              Premium anatomy models, medical simulators, task trainers, VR learning systems, and laboratory solutions designed for modern medical education.
+            <p ref={heroSubtitleRef} className={styles.heroSubtitle}>
+              MedicoValley plans, designs, equips and supports future-ready simulation centres and skills labs with advanced simulators, task trainers, anatomy models, immersive learning technology and faculty development.
             </p>
 
-            {/* Magnetic Button + secondary CTA */}
-            <div ref={heroCtaWrapperRef} className={styles.heroCtaWrapper} style={{ transform: "translateZ(45px)" }}>
-              <Link href="/contact-us" style={{ textDecoration: 'none' }}>
-                <motion.button
+            {/* CTAs */}
+            <div ref={heroCtaWrapperRef} className={styles.heroCtaWrapper}>
+              <Link href="/simulation-centre" style={{ textDecoration: 'none' }}>
+                <button
                   ref={btnRef}
-                  onMouseMove={handleBtnMouseMove}
-                  onMouseLeave={handleBtnMouseLeave}
-                  style={{ x: springBtnX, y: springBtnY }}
                   className={styles.ctaButton}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  <span>Request Quote</span>
+                  <span>Plan Your Simulation Centre</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -798,13 +773,13 @@ export default function Home() {
                   >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
-                </motion.button>
+                </button>
               </Link>
               <Link href="/products" className={styles.secondaryCtaButton}>
                 Explore Products
               </Link>
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* Category Section — 3D Drum Wheel Carousel */}
@@ -872,10 +847,20 @@ export default function Home() {
           {/* Drum Wheel Progress Indicator Removed */}
         </section>
 
-        {/* Heavy content sections loaded dynamically on client-side to improve loading speeds */}
-        {/* <DifferenceSection /> */}
+        {/* New Section 1: "From an Empty Space to a Faculty-Ready Simulation Centre" */}
+        <ProcessFlowSection />
+
+        {/* SOLUTIONS Section & 5 Cards with Premium Difference UI */}
+        <SolutionsSection />
+
+        {/* Trust Banner & Logos */}
         <InstitutionTrustSection />
+
+        {/* INSTITUTIONS SERVED — 6 Target Sectors */}
         <ValuePropSection />
+
+        {/* New Section 2: "Planning a Simulation Centre or Skills Lab?" Consultation Banner */}
+        <ConsultationBannerSection />
       </main>
 
       <PremiumFooter />

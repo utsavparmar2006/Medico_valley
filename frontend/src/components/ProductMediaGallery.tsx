@@ -23,10 +23,20 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
   const activeUrl = mediaUrls[activeIndex];
   const isActiveVideo = activeUrl.endsWith('.mp4');
 
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveIndex((prev) => (prev === 0 ? mediaUrls.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveIndex((prev) => (prev === mediaUrls.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className={styles.gallerySection}>
       {/* Main Display Pane */}
-      <div className={styles.mainMediaWrapper}>
+      <div className={styles.mainMediaWrapper} style={{ position: 'relative' }}>
         {isActiveVideo ? (
           <video
             src={activeUrl}
@@ -43,6 +53,34 @@ export default function ProductMediaGallery({ mediaUrls, productName }: Props) {
             style={{ objectFit: 'contain' }}
             className={styles.mainMedia}
           />
+        )}
+
+        {/* Gallery Navigation Arrows on Hero Image */}
+        {mediaUrls.length > 1 && (
+          <>
+            <button
+              type="button"
+              className={styles.galleryArrowLeft}
+              onClick={handlePrev}
+              aria-label="Previous image"
+              title="Previous image"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className={styles.galleryArrowRight}
+              onClick={handleNext}
+              aria-label="Next image"
+              title="Next image"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </>
         )}
       </div>
 
