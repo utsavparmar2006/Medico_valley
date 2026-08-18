@@ -714,21 +714,115 @@
   gap: 28px;
   font-family: var(--font-sans);
   white-space: nowrap;
+  position: relative;
+}
+
+.categoryTabWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 0;
 }
 
 .categoryTabs a {
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--secondary-text);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
   letter-spacing: normal;
+  position: relative;
 }
 
 .categoryTabs a:hover,
-.categoryTabActive {
-  color: var(--primary);
+.categoryTabActive,
+.categoryTabHovered {
+  color: var(--primary) !important;
+}
+
+/* Floating Subcategories Mega Menu Dropdown Popover */
+.categoryMegaMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 880px;
+  max-width: calc(100vw - 48px);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.16), 0 4px 16px rgba(0, 0, 0, 0.04);
+  padding: 32px 36px;
+  z-index: 999;
+  animation: megaMenuFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes megaMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.subcategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 24px;
+  align-items: start;
+}
+
+.subcategoryItem {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1e293b !important;
+  text-decoration: none;
+  line-height: 1.35;
+  transition: all 0.2s ease;
+  display: block;
+  word-break: break-word;
+  white-space: normal;
+  text-align: left;
+}
+
+.subcategoryItem:hover {
+  color: var(--primary, #0a8d93) !important;
+  transform: translateX(4px);
+}
+
+/* Mobile subcategories inside accordion */
+.mobileCategoryGroup {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobileCategoryGroup:last-child {
+  border-bottom: none;
+}
+
+.mobileSubcategoryList {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 12px 28px;
+  gap: 8px;
+  background: #f8fafc;
+}
+
+.mobileSubcategoryItem {
+  font-size: 0.84rem;
+  font-weight: 550;
+  color: #64748b !important;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+
+.mobileSubcategoryItem:hover,
+.mobileSubcategoryItem:active {
+  color: #0a8d93 !important;
 }
 
 /* Integrated Pure White Mobile Bar (Matches Navbar) */

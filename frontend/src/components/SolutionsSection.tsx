@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { getBackendUrl } from '@/utils/api';
 import styles from './SolutionsSection.module.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface SolutionItem {
   title: string;
@@ -70,10 +66,15 @@ const SOLUTIONS: SolutionItem[] = [
 ];
 
 export default function SolutionsSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [solutionsList, setSolutionsList] = useState<SolutionItem[]>(SOLUTIONS);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const isInteractingRef = useRef(false);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Mouse Drag State
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftStartRef = useRef(0);
 
   useEffect(() => {
     async function fetchSolutions() {
@@ -93,90 +94,84 @@ export default function SolutionsSection() {
     fetchSolutions();
   }, []);
 
+  // Continuous Auto-Scroll Engine with seamless wrapping
   useEffect(() => {
-    const section = sectionRef.current;
     const track = trackRef.current;
-    if (!section || !track) return;
+    if (!track) return;
 
-    // Only apply GSAP scroll pinning on screens >= 1024px
-    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-    if (!isDesktop) return;
+    let animationFrameId: number;
 
-    const getScrollAmount = () => -(track.scrollWidth - window.innerWidth);
+    const autoScroll = () => {
+      if (!isInteractingRef.current && track) {
+        track.scrollLeft += 0.8;
+        if (track.scrollLeft >= track.scrollWidth / 2) {
+          track.scrollLeft -= track.scrollWidth / 2;
+        }
+      }
+      animationFrameId = requestAnimationFrame(autoScroll);
+    };
 
-    const ctx = gsap.context(() => {
-      gsap.to(track, {
-        x: getScrollAmount,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          pin: true,
-          scrub: 0.8,
-          start: 'top 95px',
-          end: () => `+=${Math.abs(getScrollAmount())}`,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const index = Math.min(
-              Math.floor(self.progress * solutionsList.length),
-              solutionsList.length - 1
-            );
-            setActiveCardIndex(index);
-          },
-        },
-      });
-    }, section);
+    animationFrameId = requestAnimationFrame(autoScroll);
 
-    return () => ctx.revert();
+    return () => cancelAnimationFrame(animationFrameId);
   }, [solutionsList]);
 
-  const scrollToCard = (index: number) => {
-    setActiveCardIndex(index);
-    if (trackRef.current) {
-      const cardElements = trackRef.current.children;
-      if (cardElements[index]) {
-        cardElements[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
+  // Pause auto-scroll on interaction, then auto-resume smoothly after 3s
+  const pauseAndAutoResume = useCallback(() => {
+    isInteractingRef.current = true;
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      isInteractingRef.current = false;
+    }, 3000);
+  }, []);
+
+  // Manual Arrow Navigation
+  const handleScroll = (direction: 'left' | 'right') => {
+    const track = trackRef.current;
+    if (!track) return;
+    pauseAndAutoResume();
+    const cardStep = 410; // Card width (385px) + gap (25px)
+    track.scrollBy({
+      left: direction === 'right' ? cardStep : -cardStep,
+      behavior: 'smooth',
+    });
+  };
+
+  // Mouse Drag Handlers for Desktop Drag-to-Scroll
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const track = trackRef.current;
+    if (!track) return;
+    isDraggingRef.current = true;
+    isInteractingRef.current = true;
+    startXRef.current = e.pageX - track.offsetLeft;
+    scrollLeftStartRef.current = track.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !trackRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - trackRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    trackRef.current.scrollLeft = scrollLeftStartRef.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      pauseAndAutoResume();
     }
   };
 
-  const handleTrackScroll = () => {
-    if (trackRef.current) {
-      const isMobile = window.matchMedia('(max-width: 1023px)').matches;
-      if (!isMobile) return;
-      const scrollLeft = trackRef.current.scrollLeft;
-      const cardWidth = trackRef.current.children[0]?.clientWidth || 300;
-      const newIndex = Math.min(
-        Math.round(scrollLeft / (cardWidth + 16)),
-        solutionsList.length - 1
-      );
-      if (newIndex !== activeCardIndex && newIndex >= 0) {
-        setActiveCardIndex(newIndex);
-      }
-    }
-  };
+  // Duplicate list to support seamless infinite auto-scrolling
+  const listToRender = [...solutionsList, ...solutionsList, ...solutionsList, ...solutionsList];
 
   return (
-    <section
-      ref={sectionRef}
-      className={styles.solutionsSection}
-    >
-      {/* Ambient background light glow */}
+    <section id="solutions" className={styles.solutionsSection}>
+      {/* Section Header (Centered) */}
       <div style={{
-        position: 'absolute',
-        top: '10%',
-        right: '5%',
-        width: '400px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(10, 141, 147, 0.05) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Section Header */}
-      <div style={{
-        maxWidth: '1320px',
-        margin: '0 auto 20px',
-        padding: '0 24px',
-        width: '100%',
+        maxWidth: '900px',
+        margin: '0 auto 32px',
+        padding: '0 20px',
         textAlign: 'center',
         position: 'relative',
         zIndex: 2,
@@ -215,183 +210,150 @@ export default function SolutionsSection() {
         </p>
       </div>
 
-      {/* Horizontal Scroll Track */}
-      <div
-        ref={trackRef}
-        onScroll={handleTrackScroll}
-        className={styles.solutionsTrack}
-      >
-        {solutionsList.map((item, idx) => (
-          <div
-            key={idx}
-            className={`${styles.solutionCard} ${activeCardIndex === idx ? styles.solutionCardActive : ''}`}
-          >
-            {/* Top Crisp Image Header Banner */}
-            <div style={{
-              width: '100%',
-              height: '145px',
-              position: 'relative',
-              overflow: 'hidden',
-              background: '#f8fafc',
-            }}>
-              <Image
-                src={item.imageUrl}
-                alt={item.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 340px"
-                style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                }}
-              />
+      {/* Interactive Auto-Scrolling Slider Track */}
+      <div className={styles.solutionsSliderContainer}>
+        <div
+          ref={trackRef}
+          className={styles.solutionsTrack}
+          onMouseEnter={() => { isInteractingRef.current = true; }}
+          onMouseLeave={() => {
+            handleMouseUpOrLeave();
+            isInteractingRef.current = false;
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onTouchStart={() => { isInteractingRef.current = true; }}
+          onTouchEnd={() => { pauseAndAutoResume(); }}
+        >
+          {listToRender.map((item, idx) => (
+            <div
+              key={`${item.title}-${idx}`}
+              className={styles.solutionCard}
+            >
+              {/* Top Expanded Image Banner */}
               <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.45) 100%)',
-              }} />
-
-              {/* Category Tag & Initials Overlay */}
-              <div style={{
-                position: 'absolute',
-                top: '12px',
-                left: '14px',
-                right: '14px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                zIndex: 2,
+                width: '100%',
+                height: '290px',
+                position: 'relative',
+                overflow: 'hidden',
+                background: '#f8fafc',
+                borderBottom: '1px solid #e2e8f0',
               }}>
-                <span style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 800,
-                  letterSpacing: '1.2px',
-                  color: '#ffffff',
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  backdropFilter: 'blur(8px)',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  textTransform: 'uppercase',
-                }}>
-                  {item.category}
-                </span>
-
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    pointerEvents: 'none',
+                  }}
+                />
                 <div style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '8px',
-                  background: 'rgba(255, 255, 255, 0.92)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0) 45%, rgba(15, 23, 42, 0.15) 100%)',
+                }} />
+
+                {/* Category Tag & Initials Overlay */}
+                <div style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '14px',
+                  right: '14px',
                   display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#0a8d93',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                  fontFamily: 'var(--font-display)',
-                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.12)',
+                  zIndex: 2,
                 }}>
-                  {item.initials}
+                  <span style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    letterSpacing: '1.2px',
+                    color: '#ffffff',
+                    background: 'rgba(15, 23, 42, 0.65)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    textTransform: 'uppercase',
+                  }}>
+                    {item.category}
+                  </span>
+
+                  <div style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '8px',
+                    background: 'rgba(255, 255, 255, 0.92)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#0a8d93',
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    fontFamily: 'var(--font-display)',
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.12)',
+                  }}>
+                    {item.initials}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Bottom Content Body */}
-            <div style={{
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              flex: 1,
-            }}>
-              <div>
-                <h3 style={{
-                  fontSize: '1.12rem',
-                  fontWeight: 800,
-                  color: '#0f172a',
-                  lineHeight: 1.25,
-                  margin: '0 0 6px 0',
-                  fontFamily: 'var(--font-display)',
-                }}>
-                  {item.title}
-                </h3>
-                <p style={{
-                  fontSize: '0.84rem',
-                  color: '#475569',
-                  lineHeight: 1.45,
-                  margin: 0,
-                }}>
-                  {item.description}
-                </p>
+              {/* Bottom Content Body (Title & CTA Button) */}
+              <div style={{
+                padding: '18px 20px 20px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                flex: 1,
+              }}>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.18rem',
+                    fontWeight: 800,
+                    color: '#0f172a',
+                    lineHeight: 1.25,
+                    margin: 0,
+                    fontFamily: 'var(--font-display)',
+                  }}>
+                    {item.title}
+                  </h3>
+                </div>
+
+                <Link
+                  href={item.href}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '0.84rem',
+                    fontWeight: 750,
+                    color: '#0a8d93',
+                    background: 'rgba(10, 141, 147, 0.08)',
+                    border: '1px solid rgba(10, 141, 147, 0.25)',
+                    textDecoration: 'none',
+                    transition: 'all 0.25s ease',
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    width: 'fit-content',
+                    marginTop: '14px',
+                  }}
+                >
+                  <span>{item.ctaText}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
-
-              <Link
-                href={item.href}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '0.82rem',
-                  fontWeight: 750,
-                  color: '#0a8d93',
-                  background: 'rgba(10, 141, 147, 0.08)',
-                  border: '1px solid rgba(10, 141, 147, 0.25)',
-                  textDecoration: 'none',
-                  transition: 'all 0.25s ease',
-                  padding: '9px 16px',
-                  borderRadius: '10px',
-                  width: 'fit-content',
-                  marginTop: '14px',
-                }}
-              >
-                <span>{item.ctaText}</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Mobile Controls Row */}
-      <div className={styles.mobileNavRow}>
-        <div className={styles.mobileDots}>
-          {solutionsList.map((_, idx) => (
-            <div
-              key={idx}
-              onClick={() => scrollToCard(idx)}
-              className={`${styles.mobileDot} ${activeCardIndex === idx ? styles.mobileDotActive : ''}`}
-            />
           ))}
-        </div>
-
-        <div className={styles.mobileCounter}>
-          0{activeCardIndex + 1} / 0{solutionsList.length}
-        </div>
-
-        <div className={styles.mobileArrows}>
-          <button
-            onClick={() => scrollToCard(Math.max(0, activeCardIndex - 1))}
-            className={styles.mobileArrowBtn}
-            disabled={activeCardIndex === 0}
-            style={{ opacity: activeCardIndex === 0 ? 0.35 : 1 }}
-            aria-label="Previous card"
-          >
-            ‹
-          </button>
-          <button
-            onClick={() => scrollToCard(Math.min(solutionsList.length - 1, activeCardIndex + 1))}
-            className={styles.mobileArrowBtn}
-            disabled={activeCardIndex === solutionsList.length - 1}
-            style={{ opacity: activeCardIndex === solutionsList.length - 1 ? 0.35 : 1 }}
-            aria-label="Next card"
-          >
-            ›
-          </button>
         </div>
       </div>
     </section>
