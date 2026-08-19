@@ -1,31 +1,42 @@
-/* Desktop (Earlier Floating Liquid Glass UI) */
+/* Unified Card Container with Border */
 .cardContainer {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   text-decoration: none;
   position: relative;
-  border-radius: 18px;
-  background: transparent;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
   transform: translateY(0);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   height: 100%;
+  overflow: hidden;
   touch-action: pan-y;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .cardContainer:hover,
 .cardContainerHovered {
   transform: translateY(-8px);
+  border-color: #0a8d93;
+  box-shadow: 0 16px 36px rgba(10, 141, 147, 0.14);
 }
 
 .imageWrap {
   position: relative;
-  height: 380px;
+  height: 330px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .imageInner {
@@ -36,34 +47,36 @@
   justify-content: center;
   transform: scale(1) translateY(0);
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .cardContainer:hover .imageInner,
 .cardContainerHovered .imageInner {
-  transform: scale(1.1) translateY(-6px);
+  transform: scale(1.08) translateY(-4px);
 }
 
 .infoBanner {
-  height: 135px;
+  height: 130px;
   padding: 20px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(10, 141, 147, 0.78) 0%, rgba(8, 109, 113, 0.55) 100%);
-  border-radius: 18px;
-  margin-top: 16px;
-  backdrop-filter: blur(20px) saturate(2);
-  -webkit-backdrop-filter: blur(20px) saturate(2);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), inset 0 10px 20px rgba(255, 255, 255, 0.08), 0 8px 24px rgba(10, 141, 147, 0.15);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(135deg, rgba(10, 141, 147, 0.88) 0%, rgba(8, 109, 113, 0.75) 100%);
+  border-radius: 14px;
+  margin-top: 14px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(10, 141, 147, 0.12);
+  transition: all 0.35s ease;
 }
 
 .cardContainer:hover .infoBanner,
 .cardContainerHovered .infoBanner {
-  background: linear-gradient(135deg, rgba(10, 141, 147, 0.92) 0%, rgba(8, 109, 113, 0.8) 100%);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), inset 0 10px 20px rgba(255, 255, 255, 0.15), 0 12px 36px rgba(10, 141, 147, 0.25);
+  background: linear-gradient(135deg, #0a8d93 0%, #087d83 100%);
+  box-shadow: 0 8px 24px rgba(10, 141, 147, 0.25);
 }
 
 .title {
@@ -112,7 +125,7 @@
 
   .imageWrap {
     height: 220px;
-    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    background: transparent;
     padding: 16px;
     box-sizing: border-box;
     overflow: hidden;
