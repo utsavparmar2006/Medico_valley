@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import RequestQuoteModal from './RequestQuoteModal';
 import ShareProductButton from './ShareProductButton';
 
+import styles from './ProductActionButtons.module.css';
+
 interface Props {
   productId: string;
   productName: string;
@@ -23,51 +25,13 @@ export default function ProductActionButtons({
 
   return (
     <>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        marginTop: '22px',
-        width: '100%',
-      }}>
+      <div className={styles.actionButtonsContainer}>
         {/* Row 1: Primary CTA (Request Quote & Pricing) + Share Button side-by-side */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          width: '100%',
-        }}>
+        <div className={styles.primaryRow}>
           <button
             type="button"
             onClick={() => setIsQuoteOpen(true)}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: '48px',
-              background: 'linear-gradient(135deg, #0a8d93 0%, #00BFA6 100%)',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0 20px',
-              borderRadius: '12px',
-              fontWeight: 750,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(10, 141, 147, 0.3)',
-              transition: 'all 0.22s ease',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 10px 28px rgba(10, 141, 147, 0.45)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'none';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(10, 141, 147, 0.3)';
-            }}
+            className={styles.quoteBtn}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -76,11 +40,11 @@ export default function ProductActionButtons({
               <line x1="9" y1="16" x2="15" y2="16" />
               <line x1="9" y1="8" x2="13" y2="8" />
             </svg>
-            <span>Request Quote &amp; Pricing</span>
-            <span style={{ fontSize: '1.1rem', transition: 'transform 0.2s ease' }}>→</span>
+            <span className={styles.quoteBtnText}>Request Quote &amp; Pricing</span>
+            <span className={styles.quoteArrow}>&rarr;</span>
           </button>
 
-          <div style={{ flexShrink: 0 }}>
+          <div className={styles.shareBtnWrap}>
             <ShareProductButton productName={productName} />
           </div>
         </div>
@@ -92,34 +56,7 @@ export default function ProductActionButtons({
             download
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              width: '100%',
-              height: '46px',
-              background: 'transparent',
-              border: '1.5px solid #0a8d93',
-              color: '#0a8d93',
-              padding: '0 16px',
-              borderRadius: '12px',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease',
-              whiteSpace: 'nowrap',
-              boxSizing: 'border-box',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(10, 141, 147, 0.08)';
-              e.currentTarget.style.color = '#0b6f78';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = '#0a8d93';
-            }}
+            className={styles.catalogBtn}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12" />

@@ -34,9 +34,21 @@ export default function CategoryNavigation({
   showBackLink = true,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(activeSlug || (categories[0]?.slug || null));
   const [hoveredCategorySlug, setHoveredCategorySlug] = useState<string | null>(null);
   const [subcategoriesMap, setSubcategoriesMap] = useState<Record<string, SubcategoryItem[]>>({});
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync expanded category when activeSlug changes
+  useEffect(() => {
+    if (activeSlug) {
+      setExpandedCategorySlug(activeSlug);
+    }
+  }, [activeSlug]);
+
+  const handleCategoryHeaderToggle = (slug: string) => {
+    setExpandedCategorySlug((prev) => (prev === slug ? null : slug));
+  };
 
   // Find active category name
   const activeCategory = categories.find((c) => c.slug === activeSlug);
@@ -201,33 +213,43 @@ export default function CategoryNavigation({
           </button>
         </div>
 
-        {/* Collapsible Dropdown Menu Card */}
+        {/* Collapsible Dropdown Menu Card — Accordion Drilldown */}
         {isOpen && (
           <div className={styles.mobileCategoryDropdownMenu}>
             {categories.map((item) => {
-              const isActive = item.slug === activeSlug;
+              const isSelectedCategory = item.slug === activeSlug;
+              const isExpanded = expandedCategorySlug === item.slug;
               const subs = subcategoriesMap[item.slug] || [];
 
               return (
                 <div key={item._id} className={styles.mobileCategoryGroup}>
-                  <Link
-                    href={`/products/${item.slug}`}
-                    className={`${styles.mobileDropdownItem} ${
-                      isActive ? styles.mobileDropdownItemActive : ''
-                    }`}
-                    onClick={() => setIsOpen(false)}
+                  {/* Category Header Row (Accordion Click Trigger) */}
+                  <div
+                    className={`${styles.mobileCategoryHeaderBtn} ${isExpanded ? styles.mobileCategoryHeaderBtnExpanded : ''}`}
+                    onClick={() => handleCategoryHeaderToggle(item.slug)}
+                    role="button"
+                    tabIndex={0}
                   >
-                    <span>{item.name}</span>
-                    {isActive && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a8d93" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </Link>
+                    <span className={styles.mobileCategoryTitle}>{item.name}</span>
+                    <svg
+                      className={`${styles.mobileCategoryChevron} ${isExpanded ? styles.mobileCategoryChevronOpen : ''}`}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
 
-                  {/* Subcategories list on mobile inside accordion */}
-                  {subs.length > 0 && (
-                    <div className={styles.mobileSubcategoryList}>
+                  {/* Subcategories list on mobile inside smooth scrollable accordion */}
+                  {isExpanded && (
+                    <div className={styles.mobileSubcategoryScrollContainer}>
+                      {/* Subcategories items */}
                       {subs.map((sub) => (
                         <Link
                           key={sub._id}

@@ -43,21 +43,21 @@
   width: 385px;
   height: 440px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1.5px solid #e2e8f0;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
   flex-shrink: 0;
 }
 
 .solutionCard:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 36px rgba(10, 141, 147, 0.14);
+  box-shadow: none;
   border-color: #0a8d93;
 }
 
