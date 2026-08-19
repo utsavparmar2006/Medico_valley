@@ -68,6 +68,7 @@ const SOLUTIONS: SolutionItem[] = [
 export default function SolutionsSection() {
   const [solutionsList, setSolutionsList] = useState<SolutionItem[]>(SOLUTIONS);
   const trackRef = useRef<HTMLDivElement>(null);
+  const scrollPosRef = useRef(0);
   const isInteractingRef = useRef(false);
   const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -94,19 +95,23 @@ export default function SolutionsSection() {
     fetchSolutions();
   }, []);
 
-  // Continuous Auto-Scroll Engine with seamless wrapping
+  // Continuous Auto-Scroll Engine with seamless wrapping & mobile subpixel accumulator
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
+
+    scrollPosRef.current = track.scrollLeft;
 
     let animationFrameId: number;
 
     const autoScroll = () => {
       if (!isInteractingRef.current && track) {
-        track.scrollLeft += 0.8;
-        if (track.scrollLeft >= track.scrollWidth / 2) {
-          track.scrollLeft -= track.scrollWidth / 2;
+        scrollPosRef.current += 1.0;
+        const halfWidth = track.scrollWidth / 2;
+        if (halfWidth > 0 && scrollPosRef.current >= halfWidth) {
+          scrollPosRef.current -= halfWidth;
         }
+        track.scrollLeft = scrollPosRef.current;
       }
       animationFrameId = requestAnimationFrame(autoScroll);
     };
@@ -116,13 +121,16 @@ export default function SolutionsSection() {
     return () => cancelAnimationFrame(animationFrameId);
   }, [solutionsList]);
 
-  // Pause auto-scroll on interaction, then auto-resume smoothly after 3s
+  // Pause auto-scroll on interaction, then auto-resume smoothly after 2.5s
   const pauseAndAutoResume = useCallback(() => {
     isInteractingRef.current = true;
     if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     resumeTimeoutRef.current = setTimeout(() => {
+      if (trackRef.current) {
+        scrollPosRef.current = trackRef.current.scrollLeft;
+      }
       isInteractingRef.current = false;
-    }, 3000);
+    }, 2500);
   }, []);
 
   // Manual Arrow Navigation
@@ -135,6 +143,11 @@ export default function SolutionsSection() {
       left: direction === 'right' ? cardStep : -cardStep,
       behavior: 'smooth',
     });
+    setTimeout(() => {
+      if (trackRef.current) {
+        scrollPosRef.current = trackRef.current.scrollLeft;
+      }
+    }, 350);
   };
 
   // Mouse Drag Handlers for Desktop Drag-to-Scroll
@@ -153,12 +166,19 @@ export default function SolutionsSection() {
     const x = e.pageX - trackRef.current.offsetLeft;
     const walk = (x - startXRef.current) * 1.5;
     trackRef.current.scrollLeft = scrollLeftStartRef.current - walk;
+    scrollPosRef.current = trackRef.current.scrollLeft;
   };
 
   const handleMouseUpOrLeave = () => {
     if (isDraggingRef.current) {
       isDraggingRef.current = false;
       pauseAndAutoResume();
+    }
+  };
+
+  const handleTrackScroll = () => {
+    if (isInteractingRef.current && trackRef.current) {
+      scrollPosRef.current = trackRef.current.scrollLeft;
     }
   };
 
@@ -223,8 +243,11 @@ export default function SolutionsSection() {
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUpOrLeave}
+          onScroll={handleTrackScroll}
           onTouchStart={() => { isInteractingRef.current = true; }}
-          onTouchEnd={() => { pauseAndAutoResume(); }}
+          onTouchMove={() => { isInteractingRef.current = true; }}
+          onTouchEnd={pauseAndAutoResume}
+          onTouchCancel={pauseAndAutoResume}
         >
           {listToRender.map((item, idx) => (
             <div
