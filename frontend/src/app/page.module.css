@@ -539,16 +539,6 @@
   will-change: transform, opacity; /* GPU acceleration for zoom/fade */
 }
 
-/* Active slide title animation on arrival */
-.categorySwipeSlideActive .swipeSlideTitle {
-  animation: slideTitleFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes slideTitleFadeIn {
-  from { transform: scale(0.95) translateY(10px); opacity: 0; }
-  to   { transform: scale(1) translateY(0);   opacity: 1;   }
-}
-
 /* --- Drum Wheel Progress Indicator --- */
 .drumProgressBar {
   position: absolute;

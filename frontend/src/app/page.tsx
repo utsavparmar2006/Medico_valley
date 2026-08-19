@@ -807,7 +807,7 @@ export default function Home() {
               categories.map((cat, index) => (
                 <div
                   key={cat._id}
-                  className={`${styles.categorySwipeSlide} ${index === activeSlideIndex ? styles.categorySwipeSlideActive : ''}`}
+                  className={styles.categorySwipeSlide}
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   <div className={styles.swipeSlideLeft}>
