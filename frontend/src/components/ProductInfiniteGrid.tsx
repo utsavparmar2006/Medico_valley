@@ -130,37 +130,12 @@ export default function ProductInfiniteGrid({
     }
   }, [initialSub]);
 
-  const handleSubChange = async (slug: string) => {
-    if (slug === activeSub || subLoading) return;
-    setActiveSub(slug);
-    setSubLoading(true);
-    setPage(1);
-
-    // Sync browser URL cleanly for user navigation & SEO
-    if (typeof window !== 'undefined') {
-      const nextUrl = slug === 'all'
-        ? `/products/${categorySlug}`
-        : `/products/${categorySlug}?sub=${slug}`;
-      window.history.pushState(null, '', nextUrl);
-    }
-
-    try {
-      const url = slug === 'all'
-        ? `http://localhost:5000/api/public/categories/${categorySlug}/products?page=1&limit=${PAGE_SIZE}`
-        : `http://localhost:5000/api/public/categories/${categorySlug}/products?page=1&limit=${PAGE_SIZE}&sub=${slug}`;
-
-      const res = await fetch(getBackendUrl(url));
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        setProducts(result.data);
-        setHasMore(Boolean(result.pagination?.hasMore));
-      }
-    } catch (err) {
-      console.error('Error fetching subcategory products:', err);
-    } finally {
-      setSubLoading(false);
-    }
+  const handleSubChange = (slug: string) => {
+    if (slug === activeSub) return;
+    const nextUrl = slug === 'all'
+      ? `/products/${categorySlug}`
+      : `/products/${categorySlug}?sub=${slug}`;
+    router.push(nextUrl);
   };
 
   useEffect(() => {
@@ -210,11 +185,10 @@ export default function ProductInfiniteGrid({
         <div style={{ marginBottom: '48px' }}>
           <div className={`${styles.grid} ${styles.categoryProductGrid}`}>
             {subcategories.map((sub) => (
-              <div
+              <Link
                 key={sub._id}
+                href={`/products/${categorySlug}?sub=${sub.slug}`}
                 className={styles.productImageCard}
-                style={{ cursor: 'pointer' }}
-                onClick={() => handleSubChange(sub.slug)}
               >
                 <div className={styles.productImageOnlyBox}>
                   {sub.imageUrl ? (
@@ -242,7 +216,7 @@ export default function ProductInfiniteGrid({
                   </div>
                   <span aria-hidden="true">-&gt;</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -261,14 +235,13 @@ export default function ProductInfiniteGrid({
                   Showing all products in {activeSubObj ? activeSubObj.name : 'subcategory'}
                 </p>
               </div>
-              <button
-                type="button"
+              <Link
+                href={`/products/${categorySlug}`}
                 className="btn btn-secondary"
-                style={{ padding: '8px 16px', fontSize: '0.85rem', cursor: 'pointer' }}
-                onClick={() => handleSubChange('all')}
+                style={{ padding: '8px 16px', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
               >
                 ← View All Subcategories
-              </button>
+              </Link>
             </div>
           )}
 
