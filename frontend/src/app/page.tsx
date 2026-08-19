@@ -569,18 +569,21 @@ export default function Home() {
             }
           });
 
-          // Build timeline — each step fades one slide out and the next one in
+          // Build timeline — sequential fade so previous slide fades to 0 BEFORE next slide fades in (zero overlap)
           const fadeTl = gsap.timeline({
             scrollTrigger: {
               trigger: catalogSectionRef.current,
               start: "top top",
-              end: `+=${(slides.length - 1) * 100}%`,
-              scrub: 1.0,
+              end: `+=${(slides.length - 1) * 110}%`,
+              scrub: 0.8,
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
               onUpdate: (self) => {
-                const newIdx = Math.round(self.progress * (slides.length - 1));
+                const newIdx = Math.min(
+                  Math.floor(self.progress * slides.length),
+                  slides.length - 1
+                );
                 setActiveSlideIndex(newIdx);
               },
             },
@@ -590,30 +593,31 @@ export default function Home() {
             if (idx === 0) return;
             const prevSlide = slides[idx - 1];
 
-            fadeTl
-              // Outgoing: fade out + subtle zoom out (feels like it recedes)
-              .to(
-                prevSlide,
-                {
-                  opacity: 0,
-                  scale: 1.06,
-                  duration: 1,
-                  ease: "power2.inOut",
-                },
-                `step${idx}`
-              )
-              // Incoming: fade in + zoom from slightly small to full (feels like it arrives)
-              .fromTo(
-                slide,
-                { opacity: 0, scale: 0.94 },
-                {
-                  opacity: 1,
-                  scale: 1,
-                  duration: 1,
-                  ease: "power2.inOut",
-                },
-                `step${idx}`
-              );
+            // 1. Outgoing slide fades completely to 0
+            fadeTl.to(
+              prevSlide,
+              {
+                opacity: 0,
+                scale: 1.04,
+                duration: 0.45,
+                ease: "power2.in",
+              }
+            );
+
+            // 2. Incoming slide fades in from 0 to 1 AFTER outgoing slide has vanished
+            fadeTl.fromTo(
+              slide,
+              {
+                opacity: 0,
+                scale: 0.96,
+              },
+              {
+                opacity: 1,
+                scale: 1,
+                duration: 0.55,
+                ease: "power2.out",
+              }
+            );
           });
         }
       }
