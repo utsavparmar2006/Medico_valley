@@ -255,14 +255,7 @@ export default function SolutionsSection() {
               className={styles.solutionCard}
             >
               {/* Top Expanded Image Banner */}
-              <div style={{
-                width: '100%',
-                height: '290px',
-                position: 'relative',
-                overflow: 'hidden',
-                background: '#f8fafc',
-                borderBottom: '1px solid #e2e8f0',
-              }}>
+              <div className={styles.cardImageWrap}>
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
@@ -274,100 +267,31 @@ export default function SolutionsSection() {
                     pointerEvents: 'none',
                   }}
                 />
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0) 45%, rgba(15, 23, 42, 0.15) 100%)',
-                }} />
+                <div className={styles.cardImageOverlay} />
 
                 {/* Category Tag & Initials Overlay */}
-                <div style={{
-                  position: 'absolute',
-                  top: '12px',
-                  left: '14px',
-                  right: '14px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  zIndex: 2,
-                }}>
-                  <span style={{
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    letterSpacing: '1.2px',
-                    color: '#ffffff',
-                    background: 'rgba(15, 23, 42, 0.65)',
-                    backdropFilter: 'blur(8px)',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    textTransform: 'uppercase',
-                  }}>
+                <div className={styles.cardHeaderOverlay}>
+                  <span className={styles.categoryTag}>
                     {item.category}
                   </span>
 
-                  <div style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '8px',
-                    background: 'rgba(255, 255, 255, 0.92)',
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255, 255, 255, 0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#0a8d93',
-                    fontWeight: 800,
-                    fontSize: '0.85rem',
-                    fontFamily: 'var(--font-display)',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.12)',
-                  }}>
+                  <div className={styles.initialsBadge}>
                     {item.initials}
                   </div>
                 </div>
               </div>
 
               {/* Bottom Content Body (Title & CTA Button) */}
-              <div style={{
-                padding: '18px 20px 20px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                flex: 1,
-              }}>
+              <div className={styles.cardContent}>
                 <div>
-                  <h3 style={{
-                    fontSize: '1.18rem',
-                    fontWeight: 800,
-                    color: '#0f172a',
-                    lineHeight: 1.25,
-                    margin: 0,
-                    fontFamily: 'var(--font-display)',
-                  }}>
+                  <h3 className={styles.cardTitle}>
                     {item.title}
                   </h3>
                 </div>
 
                 <Link
                   href={item.href}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '0.84rem',
-                    fontWeight: 750,
-                    color: '#0a8d93',
-                    background: 'rgba(10, 141, 147, 0.08)',
-                    border: '1px solid rgba(10, 141, 147, 0.25)',
-                    textDecoration: 'none',
-                    transition: 'all 0.25s ease',
-                    padding: '9px 18px',
-                    borderRadius: '10px',
-                    width: 'fit-content',
-                    marginTop: '14px',
-                  }}
+                  className={styles.cardCtaBtn}
                 >
                   <span>{item.ctaText}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
