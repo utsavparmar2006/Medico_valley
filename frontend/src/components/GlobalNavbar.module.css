@@ -176,12 +176,26 @@
 @media (max-width: 767px) {
   .navbar {
     height: 68px;
-    padding: 0 20px;
+    padding: 0 16px;
     flex-wrap: nowrap;
+    justify-content: space-between;
   }
 
-  .logo {
-    font-size: 1.1rem;
+  .logoContainer {
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 8px;
+  }
+
+  .logoIconWrap {
+    height: 38px;
+    width: auto;
+  }
+
+  .logoBrandName {
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
   }
 
   .mobileBackBtn {
@@ -202,22 +216,24 @@
     font-size: 20px;
   }
 
-  .logoContainer {
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  .logoContainer img {
-    max-width: 128px;
-  }
-
   /* Hide desktop nav on mobile */
   .navLinks {
     display: none;
   }
 
+  .navRight {
+    gap: 0;
+    flex-shrink: 0;
+  }
+
   .navActions {
-    gap: 8px;
+    gap: 12px;
+    margin-left: 16px;
+  }
+
+  .iconBtn {
+    padding: 6px;
+    font-size: 22px;
   }
 
   .loginBtn {
