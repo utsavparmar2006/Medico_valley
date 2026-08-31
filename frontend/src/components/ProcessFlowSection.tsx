@@ -240,7 +240,8 @@ export default function ProcessFlowSection() {
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover',
+                        objectFit: 'contain',
+                        background: '#ffffff',
                       }}
                     />
                   </div>
@@ -325,17 +326,20 @@ export default function ProcessFlowSection() {
                   {/* Mobile Image Display (Only visible on mobile screens) */}
                   <div className="mobile-step-img" style={{
                     width: '100%',
-                    aspectRatio: '16 / 9',
-                    borderRadius: '16px',
+                    maxWidth: '420px',
+                    aspectRatio: '1 / 1',
+                    borderRadius: '20px',
                     overflow: 'hidden',
-                    marginTop: '8px',
-                    marginBottom: '8px',
+                    marginTop: '12px',
+                    marginBottom: '12px',
                     border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 18px rgba(15, 23, 42, 0.05)',
+                    background: '#ffffff',
                   }}>
                     <img
                       src={step.bgImage}
                       alt={step.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                     />
                   </div>
 
@@ -373,7 +377,9 @@ export default function ProcessFlowSection() {
             padding-bottom: 0 !important;
           }
           .mobile-step-img {
-            display: block !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
         }
         @media (min-width: 869px) {
