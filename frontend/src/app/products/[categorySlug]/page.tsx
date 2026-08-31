@@ -294,6 +294,20 @@ export default async function CategoryProductsPage({ params, searchParams }: Pro
               {displaySubtitle}
             </p>
           )}
+
+          {/* Dedicated Responsive Banner for Mobile/Tablet to prevent panoramic image cropping */}
+          {heroImage && (
+            <div className={styles.categoryHeroBannerMobileCard}>
+              <Image
+                src={heroImage}
+                alt={displayTitle}
+                width={768}
+                height={230}
+                priority
+                className={styles.categoryHeroBannerMobileImg}
+              />
+            </div>
+          )}
         </div>
       </section>
 

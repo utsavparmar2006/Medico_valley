@@ -1227,6 +1227,26 @@
   text-align: center;
 }
 
+.categoryHeroBannerMobileCard {
+  display: none;
+  width: 100%;
+  max-width: 580px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(12, 143, 151, 0.2);
+  box-shadow: 0 8px 24px rgba(12, 143, 151, 0.1);
+  background: #ffffff;
+  margin-top: 20px;
+  position: relative;
+}
+
+.categoryHeroBannerMobileImg {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: contain !important;
+}
+
 .productsDirectoryGrid {
   max-width: 1320px;
   margin: 0 auto;
@@ -1372,9 +1392,17 @@
     display: block;
   }
 
+  .categoryHeroBgWrapper {
+    display: none !important;
+  }
+
+  .categoryHeroBannerMobileCard {
+    display: block !important;
+  }
+
   .categoryHero {
-    padding: 100px 20px 65px;
-    margin-bottom: 40px;
+    padding: 95px 16px 36px !important;
+    margin-bottom: 30px !important;
   }
 
   .productImageOnlyBox {
@@ -1388,7 +1416,12 @@
 
 @media (max-width: 560px) {
   .categoryHero {
-    padding: 85px 16px 50px;
+    padding: 85px 14px 28px !important;
+  }
+
+  .categoryHeroBannerMobileCard {
+    border-radius: 14px;
+    margin-top: 14px;
   }
 
   .categoryBackLink span {
