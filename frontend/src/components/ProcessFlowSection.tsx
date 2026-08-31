@@ -29,14 +29,14 @@ const PROCESS_STEPS = [
     title: 'TRAIN',
     subTitle: 'Faculty Preparation',
     description: 'Prepare faculty with system orientation, scenario delivery and debriefing support.',
-    bgImage: '/solutions/solution_task_trainers.png',
+    bgImage: '/solutions/train_image_website_homepage.png',
   },
   {
     stepNumber: '5',
     title: 'SUPPORT',
     subTitle: 'Long-Term Assistance',
     description: 'Protect utilisation through responsive service, maintenance and ongoing guidance.',
-    bgImage: '/solutions/solution_av_debriefing.png',
+    bgImage: '/solutions/support_image_website_homepage.png',
   },
 ];
 
