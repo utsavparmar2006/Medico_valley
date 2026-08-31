@@ -106,7 +106,7 @@ const DEFAULT_CLIENTS = [
 // Get all sectors sorted by displayOrder
 router.get('/sectors', async (req, res) => {
   try {
-    const sectors = await Sector.find({}).sort({ displayOrder: 1 });
+    const sectors = await Sector.find({}).sort({ displayOrder: 1 }).lean();
     return res.json({ success: true, data: sectors });
   } catch (error: any) {
     console.error('Fetch sectors error:', error);
@@ -117,7 +117,7 @@ router.get('/sectors', async (req, res) => {
 // Get active Delta Difference cards sorted by displayOrder
 router.get('/delta-difference', async (req, res) => {
   try {
-    const cards = await DeltaDifferenceCard.find({ isActive: true }).sort({ displayOrder: 1 });
+    const cards = await DeltaDifferenceCard.find({ isActive: true }).sort({ displayOrder: 1 }).lean();
     return res.json({ success: true, data: cards });
   } catch (error: any) {
     console.error('Fetch delta difference cards error:', error);
@@ -132,7 +132,7 @@ router.get('/categories', async (req, res) => {
 
   try {
     const query = {};
-    const categoriesQuery = Category.find(query).sort({ name: 1 });
+    const categoriesQuery = Category.find(query).sort({ name: 1 }).lean();
 
     if (page > 0 && limit > 0) {
       categoriesQuery.skip((page - 1) * limit).limit(limit);
@@ -145,13 +145,14 @@ router.get('/categories', async (req, res) => {
 
     // Fetch the first active product's image for each category to display on category cards
     const data = await Promise.all(
-      categories.map(async (cat) => {
+      categories.map(async (cat: any) => {
         const firstProd = await Product.findOne({ category: cat._id, isActive: true })
           .select('mediaUrls')
-          .sort({ name: 1 });
+          .sort({ name: 1 })
+          .lean();
         const productImage = firstProd?.mediaUrls?.[0] || cat.imageUrl || '';
         return {
-          ...cat.toObject(),
+          ...cat,
           productImage,
         };
       })
@@ -179,7 +180,7 @@ router.get('/categories/:slug', async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const category = await Category.findOne({ slug: slug.toLowerCase().trim() });
+    const category = await Category.findOne({ slug: slug.toLowerCase().trim() }).lean();
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
@@ -264,11 +265,11 @@ const DEFAULT_SOLUTIONS = [
 // Get tailored solution cards (public)
 router.get('/solutions', async (req, res) => {
   try {
-    let solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 });
+    let solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 }).lean();
 
     if (solutions.length === 0) {
       await SolutionCard.insertMany(DEFAULT_SOLUTIONS);
-      solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 });
+      solutions = await SolutionCard.find({ isActive: true }).sort({ displayOrder: 1, createdAt: -1 }).lean();
     }
 
     return res.json({ success: true, data: solutions });
@@ -283,12 +284,12 @@ router.get('/categories/:categorySlug/subcategories', async (req, res) => {
   const { categorySlug } = req.params;
 
   try {
-    const category = await Category.findOne({ slug: categorySlug.toLowerCase().trim() });
+    const category = await Category.findOne({ slug: categorySlug.toLowerCase().trim() }).lean();
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    const subcategories = await Subcategory.find({ category: category._id }).sort({ name: 1 });
+    const subcategories = await Subcategory.find({ category: category._id }).sort({ name: 1 }).lean();
     return res.json({ success: true, data: subcategories });
   } catch (error: any) {
     console.error('Fetch subcategories error:', error);
@@ -304,7 +305,7 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 48);
 
   try {
-    const category = await Category.findOne({ slug: categorySlug.toLowerCase().trim() });
+    const category = await Category.findOne({ slug: categorySlug.toLowerCase().trim() }).lean();
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
     }
@@ -312,7 +313,7 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
     const query: any = { category: category._id, isActive: true };
 
     if (subSlug) {
-      const subcategoryDoc = await Subcategory.findOne({ category: category._id, slug: subSlug });
+      const subcategoryDoc = await Subcategory.findOne({ category: category._id, slug: subSlug }).lean();
       if (subcategoryDoc) {
         query.subcategory = subcategoryDoc._id;
       }
@@ -371,7 +372,7 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
     const [products, total, rawSubcategories] = await Promise.all([
       Product.aggregate(pipeline),
       Product.countDocuments(query),
-      Subcategory.find({ category: category._id }).sort({ name: 1 }),
+      Subcategory.find({ category: category._id }).sort({ name: 1 }).lean(),
     ]);
 
     const subcategories = await Promise.all(
@@ -380,7 +381,7 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
           subcategory: sub._id,
           isActive: true,
           mediaUrls: { $exists: true, $not: { $size: 0 } },
-        }).select('mediaUrls');
+        }).select('mediaUrls').lean();
         const count = await Product.countDocuments({ subcategory: sub._id, isActive: true });
 
         const firstImage = sampleProd?.mediaUrls?.find((url: string) => !url.endsWith('.mp4')) || sampleProd?.mediaUrls?.[0] || '';
@@ -423,10 +424,10 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
 const getCombinedRating = async (productId: string) => {
   try {
     const pId = new mongoose.Types.ObjectId(productId);
-    const product = await Product.findById(pId).select('ratingMode manualRating manualRatingCount autoRatingAverage autoRatingCount');
+    const product = await Product.findById(pId).select('ratingMode manualRating manualRatingCount autoRatingAverage autoRatingCount').lean();
     
     // Fetch live user submissions from database
-    const realRatings = await Rating.find({ productId: pId });
+    const realRatings = await Rating.find({ productId: pId }).lean();
     const realCount = realRatings.length;
     let autoAvg = 5.0;
     
@@ -503,16 +504,16 @@ router.get('/products/:productSlug', async (req, res) => {
   const { productSlug } = req.params;
 
   try {
-    const product = await Product.findOne({ slug: productSlug.toLowerCase().trim(), isActive: true })
+    const productData = await Product.findOne({ slug: productSlug.toLowerCase().trim(), isActive: true })
       .populate('category', 'name slug description')
-      .populate('subcategory', 'name slug description');
+      .populate('subcategory', 'name slug description')
+      .lean() as any;
 
-    if (!product) {
+    if (!productData) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    const productData = product.toObject() as any;
-    const info = await getCombinedRating(product._id.toString());
+    const info = await getCombinedRating(productData._id.toString());
     productData.ratingAverage = info.ratingAverage;
     productData.ratingCount = info.ratingCount;
     productData.ratingMode = info.ratingMode;
@@ -591,7 +592,7 @@ router.get('/products/:productId/rating-info', async (req, res) => {
       const ratingDoc = await Rating.findOne({ 
         productId: new mongoose.Types.ObjectId(productId), 
         visitorId: String(visitorId) 
-      });
+      }).lean();
       if (ratingDoc) {
         userRating = ratingDoc.rating;
       }
@@ -635,7 +636,7 @@ router.post('/products/:productId/rate', async (req, res) => {
     );
 
     // Recalculate auto rating stats
-    const allProductRatings = await Rating.find({ productId: pId });
+    const allProductRatings = await Rating.find({ productId: pId }).lean();
     const count = allProductRatings.length;
     const sum = allProductRatings.reduce((acc, curr) => acc + curr.rating, 0);
     const autoAvg = count > 0 ? parseFloat((sum / count).toFixed(1)) : 5.0;
@@ -668,7 +669,7 @@ router.get('/products/:productId/reviews', async (req, res) => {
   try {
     const pId = new mongoose.Types.ObjectId(productId);
     const info = await getCombinedRating(productId);
-    const reviews = await Review.find({ productId: pId, status: 'approved' }).sort({ createdAt: -1 });
+    const reviews = await Review.find({ productId: pId, status: 'approved' }).sort({ createdAt: -1 }).lean();
 
     return res.json({
       success: true,
@@ -1601,7 +1602,7 @@ This inquiry was submitted through the MedicoValley website. Reply directly to t
 // Get all blogs (newest first)
 router.get('/blogs', async (req, res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const blogs = await Blog.find().sort({ createdAt: -1 }).lean();
     return res.json({ success: true, data: blogs });
   } catch (error: any) {
     console.error('Fetch blogs error:', error);
@@ -1614,7 +1615,7 @@ router.get('/blogs/:slug', async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const blog = await Blog.findOne({ slug: slug.toLowerCase().trim() });
+    const blog = await Blog.findOne({ slug: slug.toLowerCase().trim() }).lean();
     if (!blog) {
       return res.status(404).json({ message: 'Blog article not found' });
     }
@@ -1630,7 +1631,7 @@ router.get('/blogs/:slug', async (req, res) => {
 // ==========================================
 router.get('/clients', async (req, res) => {
   try {
-    let clients = await Client.find({}).sort({ displayOrder: 1 });
+    let clients = await Client.find({}).sort({ displayOrder: 1 }).lean();
     
     if (clients.length === 0) {
       const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -1782,7 +1783,7 @@ router.get('/clients', async (req, res) => {
       });
 
       await Promise.all(seedPromises);
-      clients = await Client.find({}).sort({ displayOrder: 1 });
+      clients = await Client.find({}).sort({ displayOrder: 1 }).lean();
     }
 
     return res.json({ success: true, data: clients });

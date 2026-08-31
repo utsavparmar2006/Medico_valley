@@ -197,7 +197,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
     const slug = slugify(name, { lower: true, strict: true });
     
     // Check if category slug already exists
-    const existing = await Category.findOne({ slug });
+    const existing = await Category.findOne({ slug }).lean();
     if (existing) {
       return res.status(400).json({ message: 'A category with this name or slug already exists' });
     }
@@ -231,7 +231,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
 
   try {
     // Verify Category exists
-    const categoryExists = await Category.findById(categoryId);
+    const categoryExists = await Category.findById(categoryId).lean();
     if (!categoryExists) {
       return res.status(400).json({ message: 'Target category does not exist' });
     }
@@ -284,7 +284,7 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
 
   try {
     const slug = slugify(name, { lower: true, strict: true });
-    const duplicate = await Category.findOne({ slug, _id: { $ne: id } });
+    const duplicate = await Category.findOne({ slug, _id: { $ne: id } }).lean();
     if (duplicate) {
       return res.status(400).json({ message: 'A category with this name or slug already exists' });
     }
@@ -335,11 +335,11 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
 
   try {
     const [categoryExists, duplicate] = await Promise.all([
-      Category.findById(categoryId),
+      Category.findById(categoryId).lean(),
       Product.findOne({
         slug: slugify(name, { lower: true, strict: true }),
         _id: { $ne: id },
-      }),
+      }).lean(),
     ]);
 
     if (!categoryExists) {
@@ -622,7 +622,7 @@ router.post('/blogs', authMiddleware, async (req: AuthenticatedRequest, res: Res
     const slug = slugify(title, { lower: true, strict: true });
     
     // Check for duplicate slug
-    const existing = await Blog.findOne({ slug });
+    const existing = await Blog.findOne({ slug }).lean();
     if (existing) {
       return res.status(400).json({ message: 'A blog post with this title or slug already exists' });
     }
@@ -656,7 +656,7 @@ router.put('/blogs/:id', authMiddleware, async (req: AuthenticatedRequest, res: 
   }
 
   try {
-    const blog = await Blog.findById(id);
+    const blog = await Blog.findById(id).lean();
     if (!blog) {
       return res.status(404).json({ message: 'Blog article not found' });
     }
@@ -667,7 +667,7 @@ router.put('/blogs/:id', authMiddleware, async (req: AuthenticatedRequest, res: 
       updateFields.slug = slugify(title, { lower: true, strict: true });
       // Verify slug uniqueness if it changed
       if (updateFields.slug !== blog.slug) {
-        const existing = await Blog.findOne({ slug: updateFields.slug });
+        const existing = await Blog.findOne({ slug: updateFields.slug }).lean();
         if (existing) {
           return res.status(400).json({ message: 'A blog post with this title or slug already exists' });
         }
@@ -1013,13 +1013,13 @@ router.post('/subcategories', authMiddleware, async (req: AuthenticatedRequest, 
   }
 
   try {
-    const categoryExists = await Category.findById(categoryId);
+    const categoryExists = await Category.findById(categoryId).lean();
     if (!categoryExists) {
       return res.status(400).json({ message: 'Parent category does not exist' });
     }
 
     const slug = slugify(name, { lower: true, strict: true });
-    const duplicate = await Subcategory.findOne({ category: categoryId, slug });
+    const duplicate = await Subcategory.findOne({ category: categoryId, slug }).lean();
     if (duplicate) {
       return res.status(400).json({ message: 'A subcategory with this name already exists under this category' });
     }
@@ -1060,7 +1060,7 @@ router.put('/subcategories/:id', authMiddleware, async (req: AuthenticatedReques
 
   try {
     const slug = slugify(name, { lower: true, strict: true });
-    const duplicate = await Subcategory.findOne({ category: categoryId, slug, _id: { $ne: id } });
+    const duplicate = await Subcategory.findOne({ category: categoryId, slug, _id: { $ne: id } }).lean();
     if (duplicate) {
       return res.status(400).json({ message: 'A subcategory with this name already exists under this category' });
     }

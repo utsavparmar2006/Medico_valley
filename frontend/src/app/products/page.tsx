@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import CategoryInfiniteGrid from '@/components/CategoryInfiniteGrid';
 import CategoryNavigation from '@/components/CategoryNavigation';
+import { getBackendUrl } from '@/utils/api';
 import styles from './products.module.css';
 
 interface Category {
@@ -20,7 +21,7 @@ const PAGE_SIZE = 6;
 
 async function getAllCategories(): Promise<Category[]> {
   try {
-    const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
+    const res = await fetch(getBackendUrl('http://127.0.0.1:5000/api/public/categories'), {
       cache: 'no-store'
     });
     if (!res.ok) return [];
@@ -34,7 +35,7 @@ async function getAllCategories(): Promise<Category[]> {
 
 async function getPaginatedCategories(page: number, limit: number) {
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/public/categories?page=${page}&limit=${limit}`, {
+    const res = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/categories?page=${page}&limit=${limit}`), {
       cache: 'no-store'
     });
     if (!res.ok) return { data: [], hasMore: false };
