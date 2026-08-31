@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { JetBrains_Mono } from 'next/font/google';
 import GlobalNavbar from "@/components/GlobalNavbar";
+import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -27,6 +29,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
         <GlobalNavbar />
         {children}
       </body>

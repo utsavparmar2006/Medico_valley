@@ -5,6 +5,7 @@ export interface ICategory extends Document {
   slug: string;
   description: string;
   imageUrl: string;
+  heroBannerUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +16,7 @@ const CategorySchema: Schema = new Schema(
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
+    heroBannerUrl: { type: String, default: '' },
   },
   { timestamps: true }
 );

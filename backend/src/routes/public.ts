@@ -318,17 +318,58 @@ router.get('/categories/:categorySlug/products', async (req, res) => {
       }
     }
 
-    const productsQuery = Product.find(query)
-      .populate('category', 'name slug')
-      .populate('subcategory', 'name slug')
-      .sort({ name: 1 });
+    const pipeline: any[] = [
+      { $match: query },
+      {
+        $addFields: {
+          effectiveOrder: {
+            $cond: {
+              if: {
+                $and: [
+                  { $ne: ["$displayOrder", null] },
+                  { $gt: ["$displayOrder", 0] }
+                ]
+              },
+              then: "$displayOrder",
+              else: 999999
+            }
+          }
+        }
+      },
+      { $sort: { effectiveOrder: 1, name: 1 } },
+    ];
 
     if (page > 0 && limit > 0) {
-      productsQuery.skip((page - 1) * limit).limit(limit);
+      pipeline.push({ $skip: (page - 1) * limit });
+      pipeline.push({ $limit: limit });
     }
 
+    pipeline.push(
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category',
+          pipeline: [{ $project: { name: 1, slug: 1 } }]
+        }
+      },
+      { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: 'subcategory',
+          foreignField: '_id',
+          as: 'subcategory',
+          pipeline: [{ $project: { name: 1, slug: 1 } }]
+        }
+      },
+      { $unwind: { path: '$subcategory', preserveNullAndEmptyArrays: true } },
+      { $project: { effectiveOrder: 0 } }
+    );
+
     const [products, total, rawSubcategories] = await Promise.all([
-      productsQuery,
+      Product.aggregate(pipeline),
       Product.countDocuments(query),
       Subcategory.find({ category: category._id }).sort({ name: 1 }),
     ]);
@@ -487,9 +528,49 @@ router.get('/products/:productSlug', async (req, res) => {
 // 5. Get all products
 router.get('/products', async (req, res) => {
   try {
-    const products = await Product.find({ isActive: true })
-      .populate('category', 'name slug')
-      .sort({ createdAt: 1 });
+    const pipeline: any[] = [
+      { $match: { isActive: true } },
+      {
+        $addFields: {
+          effectiveOrder: {
+            $cond: {
+              if: {
+                $and: [
+                  { $ne: ["$displayOrder", null] },
+                  { $gt: ["$displayOrder", 0] }
+                ]
+              },
+              then: "$displayOrder",
+              else: 999999
+            }
+          }
+        }
+      },
+      { $sort: { effectiveOrder: 1, name: 1 } },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category',
+          pipeline: [{ $project: { name: 1, slug: 1 } }]
+        }
+      },
+      { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: 'subcategory',
+          foreignField: '_id',
+          as: 'subcategory',
+          pipeline: [{ $project: { name: 1, slug: 1 } }]
+        }
+      },
+      { $unwind: { path: '$subcategory', preserveNullAndEmptyArrays: true } },
+      { $project: { effectiveOrder: 0 } }
+    ];
+
+    const products = await Product.aggregate(pipeline);
     return res.json({ success: true, data: products });
   } catch (error: any) {
     console.error('Fetch all products error:', error);

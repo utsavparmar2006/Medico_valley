@@ -219,11 +219,6 @@ export default function PremiumFooter() {
             <p className={styles.copyright}>
               © {new Date().getFullYear()} Medico Valley Pvt. Ltd. All rights reserved.
             </p>
-            <div className={styles.certBadges}>
-              {['ISO 9001', 'CE Marked', 'FDA Approved', 'WHO Listed'].map((cert) => (
-                <span key={cert} className={styles.certBadge}>{cert}</span>
-              ))}
-            </div>
           </div>
           <div className={styles.bottomLinks}>
             <a href="#" className={styles.bottomLink}>Privacy Policy</a>

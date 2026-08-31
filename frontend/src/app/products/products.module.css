@@ -1097,21 +1097,21 @@
   padding: 130px 24px 85px;
   text-align: center;
   overflow: hidden;
-  background: #0f172a;
-  border-bottom: 1px solid rgba(10, 141, 147, 0.15);
+  background: #F4FAFA;
+  border-bottom: 1px solid rgba(12, 143, 151, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 50px;
 }
 
-/* Subtle dot-mesh texture overlay matching blog */
+/* Subtle dot-mesh texture overlay matching theme */
 .categoryHero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(10, 141, 147, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(circle, rgba(12, 143, 151, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
   pointer-events: none;
   z-index: 2;
 }
@@ -1126,22 +1126,23 @@
 .categoryHeroImage {
   object-fit: cover;
   object-position: center;
-  filter: brightness(0.65) blur(1.5px);
+  filter: brightness(0.98) saturate(1.05) blur(1px);
   transform: scale(1.02);
+  opacity: 0.55;
 }
 
 .categoryHeroFallback {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 26% 28%, rgba(10, 141, 147, 0.35), transparent 45%),
-    linear-gradient(135deg, #0f172a 0%, #03484d 100%);
+    radial-gradient(circle at 26% 28%, rgba(12, 143, 151, 0.16), transparent 50%),
+    linear-gradient(135deg, #F4FAFA 0%, #e6f6f7 100%);
 }
 
 .categoryHeroOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(10, 141, 147, 0.45) 0%, rgba(15, 23, 42, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(235, 248, 248, 0.78) 0%, rgba(244, 250, 250, 0.85) 100%);
   z-index: 1;
 }
 
@@ -1165,51 +1166,51 @@
   font-family: var(--font-sans), sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: #536177;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .categoryBreadcrumb a {
-  color: rgba(255, 255, 255, 0.7);
+  color: #536177;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .categoryBreadcrumb a:hover {
-  color: #ffffff;
+  color: #0C8F97;
 }
 
 .breadcrumbSeparator {
-  color: rgba(10, 141, 147, 0.6);
+  color: #0C8F97;
   font-weight: 600;
 }
 
 .breadcrumbCurrent {
-  color: #ffffff;
-  font-weight: 600;
+  color: #111B32;
+  font-weight: 700;
 }
 
 /* Title Styles */
 .categoryHeroTitle {
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(2.4rem, 5.2vw, 3.8rem);
+  font-size: clamp(2.2rem, 4.8vw, 3.4rem);
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: #111B32;
   margin: 0;
 }
 
 .tealAccentText {
-  color: #0a8d93;
-  text-shadow: 0 0 15px rgba(10, 141, 147, 0.15);
+  color: #0C8F97;
+  text-shadow: 0 0 15px rgba(12, 143, 151, 0.15);
 }
 
 .categoryHeroTitleRule {
   width: 60px;
   height: 3px;
-  background: #0a8d93;
+  background: #0C8F97;
   border-radius: 2px;
   margin-top: 4px;
 }
@@ -1217,12 +1218,12 @@
 /* Subtitle / Description Styles */
 .categoryHeroSubtitle {
   font-family: var(--font-sans), sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 400;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.85);
+  color: #536177;
   max-width: 680px;
-  margin: 8px auto 0;
+  margin: 6px auto 0;
   text-align: center;
 }
 

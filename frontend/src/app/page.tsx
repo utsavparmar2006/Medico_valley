@@ -552,19 +552,17 @@ export default function Home() {
 
         if (isDesktop && slides.length > 1) {
 
-          // Initial state: first slide fully visible, rest hidden and slightly scaled down
+          // Initial state: first slide fully visible, rest hidden
           slides.forEach((slide, idx) => {
             if (idx === 0) {
               gsap.set(slide, {
                 opacity: 1,
                 scale: 1,
-                zIndex: slides.length,
               });
             } else {
               gsap.set(slide, {
                 opacity: 0,
                 scale: 0.94,
-                zIndex: slides.length - idx,
               });
             }
           });
@@ -758,12 +756,12 @@ export default function Home() {
 
             {/* CTAs */}
             <div ref={heroCtaWrapperRef} className={styles.heroCtaWrapper}>
-              <Link href="/simulation-centre" style={{ textDecoration: 'none' }}>
+              <Link href="/products" style={{ textDecoration: 'none' }}>
                 <button
                   ref={btnRef}
                   className={styles.ctaButton}
                 >
-                  <span>Plan Your Simulation Centre</span>
+                  <span>Explore Products</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -779,8 +777,8 @@ export default function Home() {
                   </svg>
                 </button>
               </Link>
-              <Link href="/products" className={styles.secondaryCtaButton}>
-                Explore Products
+              <Link href="/simulation-centre" className={styles.secondaryCtaButton}>
+                Plan Your Simulation Centre
               </Link>
             </div>
           </div>
@@ -808,14 +806,23 @@ export default function Home() {
                 <div
                   key={cat._id}
                   className={styles.categorySwipeSlide}
-                  style={{ transformStyle: 'preserve-3d' }}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    pointerEvents: index === activeSlideIndex ? 'auto' : 'none',
+                    zIndex: index === activeSlideIndex ? 20 : 1,
+                  }}
                 >
                   <div className={styles.swipeSlideLeft}>
                     <h2 className={styles.swipeSlideTitle}>{cat.name}</h2>
                     <p className={styles.swipeSlideDescription}>
                       {CATEGORY_DESCRIPTIONS[cat.slug] || cat.description}
                     </p>
-                    <Link href={`/products/${cat.slug}`} className={styles.swipeSlideBtn}>
+                    <Link
+                      href={`/products/${cat.slug}`}
+                      scroll={true}
+                      className={styles.swipeSlideBtn}
+                      style={{ pointerEvents: 'auto', position: 'relative', zIndex: 50 }}
+                    >
                       Explore Now
                     </Link>
                   </div>

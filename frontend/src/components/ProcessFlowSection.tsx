@@ -8,14 +8,14 @@ const PROCESS_STEPS = [
     title: 'PLAN',
     subTitle: 'Strategic Scope & Brief',
     description: 'Align curriculum, learner capacity, available space and budget with a practical implementation brief.',
-    bgImage: '/solutions/solution_centre_planning.png',
+    bgImage: '/solutions/plan_image_website_homepage.jpeg',
   },
   {
     stepNumber: '2',
     title: 'DESIGN',
     subTitle: 'Layout & Zoning',
     description: 'Develop room zoning, workflows, services, AV/debriefing requirements and scalable layouts.',
-    bgImage: '/solutions/solution_vr_immersive.png',
+    bgImage: '/solutions/design_image_website_homepage.png',
   },
   {
     stepNumber: '3',

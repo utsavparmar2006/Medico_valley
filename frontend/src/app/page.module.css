@@ -366,16 +366,16 @@
 .ctaButton {
   position: relative;
   background: var(--primary);
-  color: var(--sterile-white);
+  color: #ffffff;
   border: none;
-  padding: 12px 28px;
+  padding: 14px 32px;
   font-weight: 700;
-  font-size: 0.9rem;
-  border-radius: 10px;
+  font-size: 0.96rem;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(10, 141, 147, 0.4);
+  box-shadow: 0 8px 22px rgba(10, 141, 147, 0.35);
   animation: breathingGlow 3s infinite ease-in-out;
-  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 10;
   display: inline-flex;
   align-items: center;
@@ -385,25 +385,31 @@
 
 .ctaButton:hover {
   animation: none;
-  background: var(--primary-hover); /* Match brand hover style */
-  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.7);
+  background: var(--primary-hover);
+  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.55);
+  transform: translateY(-2px);
 }
 
 .secondaryCtaButton {
-  background: #f8fafc;
+  background: #ffffff;
   color: #0a8d93;
   border: 1.5px solid #0a8d93;
-  padding: 12px 26px;
+  padding: 14px 30px;
   font-weight: 700;
-  font-size: 0.9rem;
-  border-radius: 10px;
+  font-size: 0.96rem;
+  border-radius: 12px;
   text-decoration: none;
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .secondaryCtaButton:hover {
   background: rgba(10, 141, 147, 0.08);
   color: #086d71;
+  border-color: #086d71;
+  transform: translateY(-2px);
 }
 
 /* Floating icons system */
@@ -632,6 +638,9 @@
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
   cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 50;
 }
 
 .swipeSlideBtn::after {
@@ -2655,7 +2664,7 @@
   display: flex;
   width: max-content;
   gap: 32px;
-  animation: marqueeMove 32s linear infinite; /* Smooth slow infinite loop */
+  animation: marqueeMove 48s linear infinite; /* Smooth slow infinite loop */
   will-change: transform;
 }
 

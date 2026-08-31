@@ -102,6 +102,7 @@ interface CategoryItem {
   slug: string;
   description: string;
   imageUrl: string;
+  heroBannerUrl?: string;
 }
 
 interface SubcategoryItem {
@@ -110,6 +111,7 @@ interface SubcategoryItem {
   slug: string;
   description?: string;
   imageUrl?: string;
+  heroBannerUrl?: string;
   productCount?: number;
 }
 
@@ -187,7 +189,9 @@ export default async function CategoryProductsPage({ params, searchParams }: Pro
   const displaySubtitle = activeSubObj?.description || category.description;
 
   const heroImage =
+    activeSubObj?.heroBannerUrl ||
     activeSubObj?.imageUrl ||
+    activeCategory?.heroBannerUrl ||
     activeCategory?.imageUrl ||
     products.find((prod: ProductItem) => prod.mediaUrls?.[0] && !prod.mediaUrls[0].endsWith('.mp4'))?.mediaUrls?.[0] ||
     '';

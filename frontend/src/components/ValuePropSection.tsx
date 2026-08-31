@@ -101,7 +101,7 @@ function SectorCardItem({ sector, index }: SectorCardItemProps) {
       setIsHovered(true);
       return;
     }
-    router.push(sector.linkUrl || '/simulation-centre');
+    router.push('/contact-us');
   };
 
   const hoverImageSrc = sector.hoverImg && sector.hoverImg.trim() !== '' ? sector.hoverImg : sector.defaultImg;
@@ -147,7 +147,7 @@ function SectorCardItem({ sector, index }: SectorCardItemProps) {
                 setIsHovered(true);
                 return;
               }
-              router.push('/simulation-centre');
+              router.push('/contact-us');
             }}
           >
             Build Your Lab

@@ -294,25 +294,6 @@
   margin: 0;
 }
 
-/* Certification Badges in Bottom Bar */
-.certBadges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.certBadge {
-  padding: 3px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  text-transform: uppercase;
-}
-
 .bottomLinks {
   display: flex;
   align-items: center;

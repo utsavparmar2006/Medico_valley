@@ -5,6 +5,7 @@ export interface ISubcategory extends Document {
   slug: string;
   description?: string;
   imageUrl?: string;
+  heroBannerUrl?: string;
   category: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -16,6 +17,7 @@ const SubcategorySchema: Schema = new Schema(
     slug: { type: String, required: true, lowercase: true, trim: true },
     description: { type: String, default: '' },
     imageUrl: { type: String, default: '' },
+    heroBannerUrl: { type: String, default: '' },
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
   },
   { timestamps: true }

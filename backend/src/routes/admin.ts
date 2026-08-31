@@ -187,7 +187,7 @@ router.post('/upload', authMiddleware, upload.single('file'), (req: Authenticate
 
 // Create Category
 router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, imageUrl } = req.body;
+  const { name, description, imageUrl, heroBannerUrl } = req.body;
 
   if (!name || !description || !imageUrl) {
     return res.status(400).json({ message: 'Name, description, and imageUrl are required' });
@@ -207,6 +207,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
       slug,
       description,
       imageUrl,
+      heroBannerUrl: heroBannerUrl || '',
     });
 
     return res.status(201).json({ success: true, data: category });
@@ -218,7 +219,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
 
 // Create Product
 router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, ratingMode, manualRating, manualRatingCount } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount } = req.body;
 
   if (!name || !description || !categoryId || !mediaUrls || !Array.isArray(mediaUrls)) {
     return res.status(400).json({ message: 'Name, description, categoryId, and mediaUrls (array) are required' });
@@ -253,6 +254,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
       catalogUrl,
       keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
       isActive: true,
+      displayOrder: typeof displayOrder === 'number' ? displayOrder : (parseInt(displayOrder) || 0),
       ratingMode: ratingMode === 'auto' ? 'auto' : 'manual',
       manualRating: typeof manualRating === 'number' ? Math.max(1, Math.min(5, manualRating)) : 5.0,
       manualRatingCount: typeof manualRatingCount === 'number' ? Math.max(0, manualRatingCount) : 25,
@@ -270,7 +272,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
 // Update Category
 router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, imageUrl } = req.body;
+  const { name, description, imageUrl, heroBannerUrl } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Category ID format' });
@@ -287,9 +289,19 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
       return res.status(400).json({ message: 'A category with this name or slug already exists' });
     }
 
+    const updateFields: any = {
+      name: name.trim(),
+      slug,
+      description: description.trim(),
+      imageUrl,
+    };
+    if (heroBannerUrl !== undefined) {
+      updateFields.heroBannerUrl = heroBannerUrl;
+    }
+
     const category = await Category.findByIdAndUpdate(
       id,
-      { name: name.trim(), slug, description: description.trim(), imageUrl },
+      updateFields,
       { new: true, runValidators: true }
     );
 
@@ -307,7 +319,7 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
 // Update Product
 router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, ratingMode, manualRating, manualRatingCount } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Product ID format' });
@@ -349,6 +361,9 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
       keyFeatures: Array.isArray(keyFeatures) ? keyFeatures : [],
     };
 
+    if (displayOrder !== undefined) {
+      updatePayload.displayOrder = typeof displayOrder === 'number' ? displayOrder : (parseInt(displayOrder) || 0);
+    }
     if (ratingMode) {
       updatePayload.ratingMode = ratingMode === 'auto' ? 'auto' : 'manual';
     }
@@ -372,6 +387,35 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
     return res.json({ success: true, data: product });
   } catch (error: any) {
     console.error('Update product error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Bulk Reorder Products
+router.put('/products-reorder', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { orders } = req.body;
+
+  if (!Array.isArray(orders)) {
+    return res.status(400).json({ message: 'Orders array is required' });
+  }
+
+  try {
+    const updateOps = orders
+      .filter(item => isValidObjectId(item.id) && typeof item.displayOrder === 'number')
+      .map(item => ({
+        updateOne: {
+          filter: { _id: item.id },
+          update: { $set: { displayOrder: item.displayOrder } }
+        }
+      }));
+
+    if (updateOps.length > 0) {
+      await Product.bulkWrite(updateOps);
+    }
+
+    return res.json({ success: true, message: 'Products reordered successfully' });
+  } catch (error: any) {
+    console.error('Reorder products error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
@@ -958,7 +1002,7 @@ router.get('/subcategories', authMiddleware, async (req: AuthenticatedRequest, r
 
 // Create a new subcategory
 router.post('/subcategories', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, imageUrl, categoryId } = req.body;
+  const { name, description, imageUrl, heroBannerUrl, categoryId } = req.body;
 
   if (!name || !categoryId) {
     return res.status(400).json({ message: 'Name and parent category ID are required' });
@@ -985,10 +1029,11 @@ router.post('/subcategories', authMiddleware, async (req: AuthenticatedRequest, 
       slug,
       description: description ? description.trim() : '',
       imageUrl: imageUrl || '',
+      heroBannerUrl: heroBannerUrl || '',
       category: categoryId,
     });
 
-    const populated = await Subcategory.findById(subcategory._id).populate('category', 'name slug imageUrl');
+    const populated = await Subcategory.findById(subcategory._id).populate('category', 'name slug imageUrl heroBannerUrl');
     return res.status(201).json({ success: true, data: populated });
   } catch (error: any) {
     console.error('Create subcategory error:', error);
@@ -999,7 +1044,7 @@ router.post('/subcategories', authMiddleware, async (req: AuthenticatedRequest, 
 // Update a subcategory
 router.put('/subcategories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, imageUrl, categoryId } = req.body;
+  const { name, description, imageUrl, heroBannerUrl, categoryId } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Subcategory ID format' });
@@ -1020,17 +1065,22 @@ router.put('/subcategories/:id', authMiddleware, async (req: AuthenticatedReques
       return res.status(400).json({ message: 'A subcategory with this name already exists under this category' });
     }
 
+    const updateFields: any = {
+      name: name.trim(),
+      slug,
+      description: description ? description.trim() : '',
+      imageUrl: imageUrl || '',
+      category: categoryId,
+    };
+    if (heroBannerUrl !== undefined) {
+      updateFields.heroBannerUrl = heroBannerUrl;
+    }
+
     const updated = await Subcategory.findByIdAndUpdate(
       id,
-      {
-        name: name.trim(),
-        slug,
-        description: description ? description.trim() : '',
-        imageUrl: imageUrl || '',
-        category: categoryId,
-      },
+      updateFields,
       { new: true, runValidators: true }
-    ).populate('category', 'name slug imageUrl');
+    ).populate('category', 'name slug imageUrl heroBannerUrl');
 
     if (!updated) {
       return res.status(404).json({ message: 'Subcategory not found' });

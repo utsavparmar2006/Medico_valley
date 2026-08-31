@@ -567,28 +567,60 @@
   color: #ef4444;
 }
 
-/* Status Notifications */
+/* Status Toast Notifications (Floating in Viewport) */
+.toastWrapper {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 999999;
+  max-width: 480px;
+  width: calc(100vw - 48px);
+  pointer-events: none;
+}
+
 .statusBanner {
+  pointer-events: auto;
   padding: 16px 20px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  border-radius: 14px;
+  font-size: 0.94rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 14px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .statusSuccess {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #a7f3d0;
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: #ffffff;
 }
 
 .statusError {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
+  background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  color: #ffffff;
+}
+
+.toastCloseBtn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.toastCloseBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .progressBarContainer {

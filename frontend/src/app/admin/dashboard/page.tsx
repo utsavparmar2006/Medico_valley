@@ -13,6 +13,7 @@ interface CategoryObj {
   slug: string;
   description: string;
   imageUrl: string;
+  heroBannerUrl?: string;
 }
 
 interface SubcategoryObj {
@@ -21,6 +22,7 @@ interface SubcategoryObj {
   slug: string;
   description?: string;
   imageUrl?: string;
+  heroBannerUrl?: string;
   category?: {
     _id: string;
     name: string;
@@ -46,6 +48,7 @@ interface ProductObj {
   mediaUrls: string[];
   catalogUrl?: string;
   keyFeatures?: string[];
+  displayOrder?: number;
   ratingMode?: 'manual' | 'auto';
   manualRating?: number;
   manualRatingCount?: number;
@@ -158,6 +161,7 @@ export default function AdminDashboard() {
   const [editCategoryName, setEditCategoryName] = useState('');
   const [editCategoryDesc, setEditCategoryDesc] = useState('');
   const [editCategoryImage, setEditCategoryImage] = useState('');
+  const [editCategoryHeroBanner, setEditCategoryHeroBanner] = useState('');
   const [editProductName, setEditProductName] = useState('');
   const [editProductDesc, setEditProductDesc] = useState('');
   const [editProductCategoryId, setEditProductCategoryId] = useState('');
@@ -165,6 +169,7 @@ export default function AdminDashboard() {
   const [editProductMedia, setEditProductMedia] = useState<string[]>([]);
   const [editProductCatalog, setEditProductCatalog] = useState('');
   const [editProductKeyFeatures, setEditProductKeyFeatures] = useState('');
+  const [editProductDisplayOrder, setEditProductDisplayOrder] = useState<number>(0);
   const [editProductRatingMode, setEditProductRatingMode] = useState<'manual' | 'auto'>('manual');
   const [editProductManualRating, setEditProductManualRating] = useState<number>(5.0);
   const [editProductManualRatingCount, setEditProductManualRatingCount] = useState<number>(25);
@@ -177,6 +182,7 @@ export default function AdminDashboard() {
   const [editSubCategoryCategoryId, setEditSubCategoryCategoryId] = useState('');
   const [editSubCategoryDesc, setEditSubCategoryDesc] = useState('');
   const [editSubCategoryImgUrl, setEditSubCategoryImgUrl] = useState('');
+  const [editSubCategoryHeroBannerUrl, setEditSubCategoryHeroBannerUrl] = useState('');
   const [showConfirmDeleteSubcategoryModal, setShowConfirmDeleteSubcategoryModal] = useState<string | null>(null);
 
   // Search & Filtering states for Listings Tab
@@ -185,6 +191,16 @@ export default function AdminDashboard() {
   const [selectedSubcategoryFilter, setSelectedSubcategoryFilter] = useState('');
   const [manageView, setManageView] = useState<'products' | 'categories' | 'subcategories'>('products');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Auto-dismiss floating status notification toast after 4.5 seconds
+  useEffect(() => {
+    if (statusMessage) {
+      const timer = setTimeout(() => {
+        setStatusMessage(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [statusMessage]);
 
   // Search & Filtering calculations for Inquiries Tab
   const filteredInquiriesList = inquiriesList.filter((inq) => {
@@ -309,12 +325,14 @@ export default function AdminDashboard() {
   const [categoryName, setCategoryName] = useState('');
   const [categoryDesc, setCategoryDesc] = useState('');
   const [categoryImgUrl, setCategoryImgUrl] = useState('');
+  const [categoryHeroBannerUrl, setCategoryHeroBannerUrl] = useState('');
 
   // Form State: Subcategories
   const [subCategoryName, setSubCategoryName] = useState('');
   const [subCategoryCategoryId, setSubCategoryCategoryId] = useState('');
   const [subCategoryDesc, setSubCategoryDesc] = useState('');
   const [subCategoryImgUrl, setSubCategoryImgUrl] = useState('');
+  const [subCategoryHeroBannerUrl, setSubCategoryHeroBannerUrl] = useState('');
 
   // Form State: Products
   const [productName, setProductName] = useState('');
@@ -324,6 +342,7 @@ export default function AdminDashboard() {
   const [productMediaUrls, setProductMediaUrls] = useState<string[]>([]);
   const [productCatalogUrl, setProductCatalogUrl] = useState('');
   const [productKeyFeatures, setProductKeyFeatures] = useState('');
+  const [productDisplayOrder, setProductDisplayOrder] = useState<number>(0);
   const [productRatingMode, setProductRatingMode] = useState<'manual' | 'auto'>('manual');
   const [productManualRating, setProductManualRating] = useState<number>(5.0);
   const [productManualRatingCount, setProductManualRatingCount] = useState<number>(25);
@@ -547,39 +566,63 @@ export default function AdminDashboard() {
 
 
 
-  // General single-file uploader calling Multer upload
-  const handleFileUpload = async (file: File): Promise<string | null> => {
-    setUploadingFile(true);
-    setUploadProgress(10);
-    setStatusMessage(null);
+  // General single-file uploader calling Multer upload to AWS S3 with real progress
+  const handleFileUpload = (file: File): Promise<string | null> => {
+    return new Promise((resolve) => {
+      setUploadingFile(true);
+      setUploadProgress(15);
+      setStatusMessage(null);
 
-    const formData = new FormData();
-    formData.append('file', file);
+      const formData = new FormData();
+      formData.append('file', file);
 
-    try {
-      setUploadProgress(40);
-      const response = await authFetch('http://localhost:5000/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const targetUrl = getBackendUrl('http://localhost:5000/api/admin/upload');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('adminAccessToken') : null;
 
-      setUploadProgress(80);
-      const data = await response.json();
-      setUploadingFile(false);
-      setUploadProgress(100);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', targetUrl);
 
-      if (response.ok && data.success) {
-        return data.url;
-      } else {
-        setStatusMessage({ type: 'error', text: data.message || 'File upload failed.' });
-        return null;
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }
-    } catch (err) {
-      console.error('File upload error:', err);
-      setUploadingFile(false);
-      setStatusMessage({ type: 'error', text: 'Network error occurred during file upload.' });
-      return null;
-    }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 90);
+          setUploadProgress(Math.max(15, Math.min(90, percent)));
+        }
+      };
+
+      xhr.onload = () => {
+        setUploadProgress(100);
+        setTimeout(() => {
+          setUploadingFile(false);
+          setUploadProgress(0);
+        }, 500);
+
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && data.success) {
+            resolve(data.url);
+          } else {
+            setStatusMessage({ type: 'error', text: data.message || 'File upload failed.' });
+            resolve(null);
+          }
+        } catch {
+          setStatusMessage({ type: 'error', text: 'Invalid response from upload server.' });
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => {
+        setUploadingFile(false);
+        setUploadProgress(0);
+        setStatusMessage({ type: 'error', text: 'Network error occurred during file upload.' });
+        resolve(null);
+      };
+
+      xhr.send(formData);
+    });
   };
 
   // Blog Form Submit (Create & Update)
@@ -696,6 +739,7 @@ export default function AdminDashboard() {
             name: categoryName,
             description: categoryDesc,
             imageUrl: categoryImgUrl,
+            heroBannerUrl: categoryHeroBannerUrl,
           }),
         });
 
@@ -706,8 +750,10 @@ export default function AdminDashboard() {
           setCategoryName('');
           setCategoryDesc('');
           setCategoryImgUrl('');
+          setCategoryHeroBannerUrl('');
           loadDashboardData();
           setActiveTab('overview');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           setStatusMessage({ type: 'error', text: data.message || 'Category creation failed.' });
         }
@@ -739,6 +785,7 @@ export default function AdminDashboard() {
             categoryId: subCategoryCategoryId,
             description: subCategoryDesc,
             imageUrl: subCategoryImgUrl,
+            heroBannerUrl: subCategoryHeroBannerUrl,
           }),
         });
 
@@ -750,8 +797,10 @@ export default function AdminDashboard() {
           setSubCategoryCategoryId('');
           setSubCategoryDesc('');
           setSubCategoryImgUrl('');
+          setSubCategoryHeroBannerUrl('');
           loadDashboardData();
           setActiveTab('overview');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           setStatusMessage({ type: 'error', text: data.message || 'Subcategory creation failed.' });
         }
@@ -796,6 +845,7 @@ export default function AdminDashboard() {
             mediaUrls: productMediaUrls,
             catalogUrl: productCatalogUrl || undefined,
             keyFeatures: keyFeaturesArray,
+            displayOrder: Number(productDisplayOrder) || 0,
             ratingMode: productRatingMode,
             manualRating: productManualRating,
             manualRatingCount: productManualRatingCount,
@@ -813,6 +863,7 @@ export default function AdminDashboard() {
           setProductMediaUrls([]);
           setProductCatalogUrl('');
           setProductKeyFeatures('');
+          setProductDisplayOrder(0);
           setProductRatingMode('manual');
           setProductManualRating(5.0);
           setProductManualRatingCount(25);
@@ -833,6 +884,7 @@ export default function AdminDashboard() {
     setEditCategoryName(category.name);
     setEditCategoryDesc(category.description);
     setEditCategoryImage(category.imageUrl);
+    setEditCategoryHeroBanner(category.heroBannerUrl || '');
     setStatusMessage(null);
     setActiveTab('categoryDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -849,6 +901,7 @@ export default function AdminDashboard() {
     setEditProductMedia(product.mediaUrls);
     setEditProductCatalog(product.catalogUrl || '');
     setEditProductKeyFeatures(product.keyFeatures ? product.keyFeatures.join('\n') : '');
+    setEditProductDisplayOrder(typeof product.displayOrder === 'number' ? product.displayOrder : 0);
     setEditProductRatingMode(product.ratingMode || 'manual');
     setEditProductManualRating(typeof product.manualRating === 'number' ? product.manualRating : 5.0);
     setEditProductManualRatingCount(typeof product.manualRatingCount === 'number' ? product.manualRatingCount : 25);
@@ -873,6 +926,7 @@ export default function AdminDashboard() {
             name: editCategoryName,
             description: editCategoryDesc,
             imageUrl: editCategoryImage,
+            heroBannerUrl: editCategoryHeroBanner,
           }),
         });
         const data = await response.json();
@@ -923,6 +977,7 @@ export default function AdminDashboard() {
             mediaUrls: editProductMedia,
             catalogUrl: editProductCatalog || undefined,
             keyFeatures: keyFeaturesArray,
+            displayOrder: Number(editProductDisplayOrder) || 0,
             ratingMode: editProductRatingMode,
             manualRating: editProductManualRating,
             manualRatingCount: editProductManualRatingCount,
@@ -983,6 +1038,7 @@ export default function AdminDashboard() {
     setEditSubCategoryCategoryId(parentId || '');
     setEditSubCategoryDesc(sub.description || '');
     setEditSubCategoryImgUrl(sub.imageUrl || '');
+    setEditSubCategoryHeroBannerUrl(sub.heroBannerUrl || '');
     setStatusMessage(null);
   };
 
@@ -1006,6 +1062,7 @@ export default function AdminDashboard() {
             categoryId: editSubCategoryCategoryId,
             description: editSubCategoryDesc,
             imageUrl: editSubCategoryImgUrl,
+            heroBannerUrl: editSubCategoryHeroBannerUrl,
           }),
         });
 
@@ -1430,11 +1487,6 @@ export default function AdminDashboard() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!editingSector && sectorsList.length >= 4) {
-      setStatusMessage({ type: 'error', text: 'Maximum limit of 4 sector cards reached. Edit or delete an existing card to add a new one.' });
-      return;
-    }
-
     if (!sectorTitle.trim()) {
       setStatusMessage({ type: 'error', text: 'Sector title is required.' });
       return;
@@ -1747,29 +1799,46 @@ export default function AdminDashboard() {
         {/* Dynamic Content Panel */}
         <main className={styles.contentArea}>
 
-          {/* Status Notifications */}
-          <AnimatePresence mode="wait">
-            {statusMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={`${styles.statusBanner} ${statusMessage.type === 'success' ? styles.statusSuccess : styles.statusError}`}
-              >
-                <span className="material-symbols-outlined">
-                  {statusMessage.type === 'success' ? 'check_circle' : 'error'}
-                </span>
-                <span>{statusMessage.text}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Floating Status Toast Notifications (Always visible wherever scrolled) */}
+          <div className={styles.toastWrapper}>
+            <AnimatePresence mode="wait">
+              {statusMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -15, scale: 0.95 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className={`${styles.statusBanner} ${statusMessage.type === 'success' ? styles.statusSuccess : styles.statusError}`}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '24px', flexShrink: 0 }}>
+                    {statusMessage.type === 'success' ? 'check_circle' : 'error'}
+                  </span>
+                  <span style={{ lineHeight: 1.4 }}>{statusMessage.text}</span>
+                  <button
+                    type="button"
+                    className={styles.toastCloseBtn}
+                    onClick={() => setStatusMessage(null)}
+                    aria-label="Dismiss notification"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Uploading Progress */}
           {uploadingFile && (
-            <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>Uploading asset to local disk... {uploadProgress}%</span>
-              <div className={styles.progressBarContainer}>
-                <div className={styles.progressBar} style={{ width: `${uploadProgress}%` }} />
+            <div style={{ marginBottom: '24px', background: 'rgba(10, 141, 147, 0.06)', padding: '14px 18px', borderRadius: '12px', border: '1px solid rgba(10, 141, 147, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.88rem', color: '#0A8D93', fontWeight: 650, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>cloud_upload</span>
+                  Uploading asset to AWS Cloud Storage...
+                </span>
+                <span style={{ fontSize: '0.85rem', color: '#0A8D93', fontWeight: 700 }}>{uploadProgress}%</span>
+              </div>
+              <div className={styles.progressBarContainer} style={{ marginTop: 0 }}>
+                <div className={styles.progressBar} style={{ width: `${uploadProgress}%`, transition: 'width 0.2s ease-out' }} />
               </div>
             </div>
           )}
@@ -1926,25 +1995,83 @@ export default function AdminDashboard() {
 
               <div className={styles.categoryDetailLayout}>
                 <section className={styles.detailMediaPanel}>
-                  <div className={styles.categoryDetailImage}>
-                    <Image src={editCategoryImage} alt={editCategoryName} fill sizes="(max-width: 900px) 100vw, 45vw" />
+                  {/* 1. Card Image (800x800) */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                        Card Image (800 × 800 px) *
+                      </label>
+                      <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Square 1:1</span>
+                    </div>
+                    <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                      Clean square photo for catalog cards, carousels, and navigation menus.
+                    </p>
+                    <div className={styles.categoryDetailImage} style={{ height: '220px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                      <Image src={editCategoryImage} alt={editCategoryName} fill sizes="(max-width: 900px) 100vw, 45vw" style={{ objectFit: 'contain', padding: '8px' }} />
+                    </div>
+                    <label className={styles.detailUploadButton} style={{ marginTop: '8px' }}>
+                      <span className="material-symbols-outlined">upload</span>
+                      Replace Card Image (800 × 800)
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className={styles.fileInput}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = await handleFileUpload(file);
+                            if (url) setEditCategoryImage(url);
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
-                  <label className={styles.detailUploadButton}>
-                    <span className="material-symbols-outlined">upload</span>
-                    Replace Cover Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className={styles.fileInput}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = await handleFileUpload(file);
-                          if (url) setEditCategoryImage(url);
-                        }
-                      }}
-                    />
-                  </label>
+
+                  {/* 2. Hero Banner (2040x600) */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                        Hero Banner (2040 × 600 px)
+                      </label>
+                      <span style={{ fontSize: '0.72rem', background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Panoramic</span>
+                    </div>
+                    <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0', lineHeight: 1.4 }}>
+                      Wide panoramic banner specifically displayed at the top header of this category page.
+                    </p>
+                    {editCategoryHeroBanner ? (
+                      <div style={{ position: 'relative', width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1', marginBottom: '8px' }}>
+                        <Image src={editCategoryHeroBanner} alt="Hero Banner Preview" fill sizes="(max-width: 900px) 100vw, 45vw" style={{ objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => setEditCategoryHeroBanner('')}
+                          style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                          title="Remove Hero Banner"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '20px', textAlign: 'center', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '10px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>No hero banner uploaded (page will smoothly fall back to Card Image)</span>
+                      </div>
+                    )}
+                    <label className={styles.detailUploadButton}>
+                      <span className="material-symbols-outlined">panorama</span>
+                      {editCategoryHeroBanner ? 'Replace Hero Banner (2040 × 600)' : 'Upload Hero Banner (2040 × 600)'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className={styles.fileInput}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = await handleFileUpload(file);
+                            if (url) setEditCategoryHeroBanner(url);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                 </section>
 
                 <section className={styles.detailEditPanel}>
@@ -2076,6 +2203,19 @@ export default function AdminDashboard() {
                           <option key={sub._id} value={sub._id}>{sub.name}</option>
                         ))}
                     </select>
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} htmlFor="edit-product-display-order">
+                      Display Order / Sequence Number <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(e.g. 1 = 1st, 2 = 2nd, 3 = 3rd... 0 = default unranked)</span>
+                    </label>
+                    <input
+                      id="edit-product-display-order"
+                      type="number"
+                      min="0"
+                      className={styles.input}
+                      value={editProductDisplayOrder}
+                      onChange={(e) => setEditProductDisplayOrder(parseInt(e.target.value) || 0)}
+                    />
                   </div>
                   <div className={styles.inputGroup}>
                     <label className={styles.label} htmlFor="edit-product-description">Description</label>
@@ -2722,6 +2862,15 @@ export default function AdminDashboard() {
                                           {typeof prod.subcategory === 'object' ? prod.subcategory.name : ''}
                                         </span>
                                       )}
+                                      {prod.displayOrder && prod.displayOrder > 0 ? (
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0369a1', background: '#e0f2fe', padding: '2px 7px', borderRadius: '4px' }}>
+                                          Order #{prod.displayOrder}
+                                        </span>
+                                      ) : (
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', padding: '2px 7px', borderRadius: '4px' }}>
+                                          Default Order
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 </motion.button>
@@ -2797,13 +2946,20 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                {/* 1. Card Image (800x800) */}
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label}>Category Cover Image *</label>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className={styles.label}>Card Image (800 × 800 px) *</label>
+                    <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Square 1:1</span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                    Clean square photo for catalog cards, carousels, and menus.
+                  </p>
                   <label className={styles.uploadBox}>
                     <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                     </svg>
-                    <span className={styles.uploadText}>Click to upload Category Image</span>
+                    <span className={styles.uploadText}>Click to upload Card Image (800 × 800)</span>
                     <span className={styles.uploadSubtext}>Supports JPG, PNG (Max 5MB)</span>
                     <input
                       type="file"
@@ -2822,9 +2978,54 @@ export default function AdminDashboard() {
                   {categoryImgUrl && (
                     <div className={styles.previewList}>
                       <div className={styles.previewItem}>
-                        <img src={categoryImgUrl} alt="Category Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={categoryImgUrl} alt="Card Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }} />
                         <button type="button" className={styles.removePreviewBtn} onClick={() => setCategoryImgUrl('')}>✕</button>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Hero Banner (2040x600) */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className={styles.label}>Hero Banner (2040 × 600 px) <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span></label>
+                    <span style={{ fontSize: '0.72rem', background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Panoramic</span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                    Wide panoramic banner specifically for the page header. If left blank, it will automatically fall back to Card Image.
+                  </p>
+                  <label className={styles.uploadBox}>
+                    <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="18" height="12" x="3" y="6" rx="2" />
+                      <circle cx="8" cy="11" r="1.5" />
+                      <path d="m21 15-5-5L5 18" />
+                    </svg>
+                    <span className={styles.uploadText}>Click to upload Hero Banner (2040 × 600)</span>
+                    <span className={styles.uploadSubtext}>Wide panoramic format (Max 8MB)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          if (url) setCategoryHeroBannerUrl(url);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {categoryHeroBannerUrl && (
+                    <div style={{ marginTop: '12px', position: 'relative', width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                      <img src={categoryHeroBannerUrl} alt="Hero Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => setCategoryHeroBannerUrl('')}
+                        style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   )}
                 </div>
@@ -2897,13 +3098,20 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                {/* 1. Card Image (800x800) */}
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label className={styles.label}>Subcategory Image <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span></label>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className={styles.label}>Card Image (800 × 800 px) <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span></label>
+                    <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Square 1:1</span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                    Clean square photo for subcategory grid cards and navigation menus.
+                  </p>
                   <label className={styles.uploadBox}>
                     <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                     </svg>
-                    <span className={styles.uploadText}>Click to upload Subcategory Image</span>
+                    <span className={styles.uploadText}>Click to upload Card Image (800 × 800)</span>
                     <span className={styles.uploadSubtext}>Supports JPG, PNG (Max 5MB)</span>
                     <input
                       type="file"
@@ -2922,9 +3130,54 @@ export default function AdminDashboard() {
                   {subCategoryImgUrl && (
                     <div className={styles.previewList}>
                       <div className={styles.previewItem}>
-                        <img src={subCategoryImgUrl} alt="Subcategory Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={subCategoryImgUrl} alt="Subcategory Card Preview" className={styles.previewImage} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }} />
                         <button type="button" className={styles.removePreviewBtn} onClick={() => setSubCategoryImgUrl('')}>✕</button>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Hero Banner (2040x600) */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className={styles.label}>Hero Banner (2040 × 600 px) <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span></label>
+                    <span style={{ fontSize: '0.72rem', background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Panoramic</span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                    Wide panoramic banner specifically for the page header when this subcategory is selected.
+                  </p>
+                  <label className={styles.uploadBox}>
+                    <svg className={styles.uploadIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="18" height="12" x="3" y="6" rx="2" />
+                      <circle cx="8" cy="11" r="1.5" />
+                      <path d="m21 15-5-5L5 18" />
+                    </svg>
+                    <span className={styles.uploadText}>Click to upload Hero Banner (2040 × 600)</span>
+                    <span className={styles.uploadSubtext}>Wide panoramic format (Max 8MB)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          if (url) setSubCategoryHeroBannerUrl(url);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  {subCategoryHeroBannerUrl && (
+                    <div style={{ marginTop: '12px', position: 'relative', width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                      <img src={subCategoryHeroBannerUrl} alt="Subcategory Hero Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => setSubCategoryHeroBannerUrl('')}
+                        style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   )}
                 </div>
@@ -3007,6 +3260,21 @@ export default function AdminDashboard() {
                         <option key={sub._id} value={sub._id}>{sub.name}</option>
                       ))}
                   </select>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label} htmlFor="product-display-order">
+                    Display Order / Sequence Number <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(e.g. 1 = 1st, 2 = 2nd, 3 = 3rd... 0 = default unranked)</span>
+                  </label>
+                  <input
+                    id="product-display-order"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 1"
+                    className={styles.input}
+                    value={productDisplayOrder}
+                    onChange={(e) => setProductDisplayOrder(parseInt(e.target.value) || 0)}
+                  />
                 </div>
 
                 <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
@@ -5405,12 +5673,19 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                {/* 1. Card Image (800x800) */}
                 <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
-                    Cover Image
-                  </label>
-                  <label className={styles.uploadBox} style={{ padding: '16px' }}>
-                    <span className={styles.uploadText}>Click to replace Subcategory Image</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155' }}>
+                      Card Image (800 × 800 px)
+                    </label>
+                    <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Square 1:1</span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 8px 0' }}>
+                    Clean square photo for subcategory cards and menus.
+                  </p>
+                  <label className={styles.uploadBox} style={{ padding: '14px' }}>
+                    <span className={styles.uploadText}>Click to replace Card Image (800 × 800)</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -5425,12 +5700,56 @@ export default function AdminDashboard() {
                     />
                   </label>
                   {editSubCategoryImgUrl && (
-                    <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={editSubCategoryImgUrl} alt="Preview" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
-                      <button type="button" onClick={() => setEditSubCategoryImgUrl('')} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
-                        Remove Image
+                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src={editSubCategoryImgUrl} alt="Card Preview" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'contain', border: '1px solid #e2e8f0', background: '#f8fafc', padding: '4px' }} />
+                      <button type="button" onClick={() => setEditSubCategoryImgUrl('')} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.82rem' }}>
+                        Remove Card Image
                       </button>
                     </div>
+                  )}
+                </div>
+
+                {/* 2. Hero Banner (2040x600) */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#334155' }}>
+                      Hero Banner (2040 × 600 px) <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#64748b' }}>(Optional)</span>
+                    </label>
+                    <span style={{ fontSize: '0.72rem', background: '#f0fdf4', color: '#166534', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Panoramic</span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 8px 0' }}>
+                    Wide panoramic banner specifically for the page header when this subcategory is opened.
+                  </p>
+                  <label className={styles.uploadBox} style={{ padding: '14px' }}>
+                    <span className={styles.uploadText}>Click to upload Hero Banner (2040 × 600)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className={styles.fileInput}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = await handleFileUpload(file);
+                          if (url) setEditSubCategoryHeroBannerUrl(url);
+                        }
+                      }}
+                    />
+                  </label>
+                  {editSubCategoryHeroBannerUrl ? (
+                    <div style={{ marginTop: '8px', position: 'relative', width: '100%', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                      <img src={editSubCategoryHeroBannerUrl} alt="Hero Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => setEditSubCategoryHeroBannerUrl('')}
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.65)', color: '#fff', border: 'none', borderRadius: '50%', width: '22px', height: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '6px 0 0 0' }}>
+                      No hero banner set (falls back to Card Image).
+                    </p>
                   )}
                 </div>
               </div>

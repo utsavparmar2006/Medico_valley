@@ -10,6 +10,7 @@ export interface IProduct extends Document {
   catalogUrl?: string;
   keyFeatures?: string[];
   isActive: boolean;
+  displayOrder?: number;
   ratingMode?: 'manual' | 'auto';
   manualRating?: number;
   manualRatingCount?: number;
@@ -30,6 +31,7 @@ const ProductSchema: Schema = new Schema(
     catalogUrl: { type: String },
     keyFeatures: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    displayOrder: { type: Number, default: 0, index: true },
     ratingMode: { type: String, enum: ['manual', 'auto'], default: 'manual' },
     manualRating: { type: Number, min: 1, max: 5, default: 5.0 },
     manualRatingCount: { type: Number, min: 0, default: 25 },
@@ -38,6 +40,9 @@ const ProductSchema: Schema = new Schema(
   },
   { timestamps: true }
 );
+
+ProductSchema.index({ category: 1, displayOrder: 1, name: 1 });
+ProductSchema.index({ subcategory: 1, displayOrder: 1, name: 1 });
 
 const Product: Model<IProduct> =
   mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);

@@ -467,8 +467,8 @@ export default function SimulationCentrePage() {
                 <div className={styles.contactChips}>
                   <span>🌐 medicovalley.in</span>
                   <span>✉️ info@medicovalley.in</span>
-                  <a href="tel:+919820939291" style={{ color: 'inherit', textDecoration: 'none' }}>
-                    <span>📞 +91 98209 39291</span>
+                  <a href="tel:+919768156266" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <span>📞 +91 97681 56266</span>
                   </a>
                 </div>
               </div>
