@@ -31,13 +31,10 @@ export default function FeaturedSpotlightSection() {
   const [loading, setLoading] = useState(true);
   const [quoteOpen, setQuoteOpen] = useState(false);
 
-  const sectionRef = useRef<HTMLElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
-
   useEffect(() => {
     async function fetchSpotlight() {
       try {
-        const url = getBackendUrl('http://localhost:5000/api/public/spotlight');
+        const url = getBackendUrl('http://localhost:5001/api/public/spotlight');
         const res = await fetch(`${url}?t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
@@ -63,7 +60,7 @@ export default function FeaturedSpotlightSection() {
   const hasAnyButton = spotlight.showPrimaryBtn || spotlight.showSecondaryBtn || spotlight.showQuoteBtn;
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section className={styles.section}>
       {/* Decorative background blobs */}
       <div className={styles.blobLeft} aria-hidden="true" />
       <div className={styles.blobRight} aria-hidden="true" />
@@ -72,9 +69,9 @@ export default function FeaturedSpotlightSection() {
         {/* LEFT — Content */}
         <motion.div
           className={styles.content}
-          initial={{ opacity: 0, x: -40 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Badge */}
           {spotlight.badge && (
@@ -125,10 +122,10 @@ export default function FeaturedSpotlightSection() {
                 </Link>
               )}
 
-              {spotlight.showSecondaryBtn && spotlight.secondaryBtnHref && (
+              {spotlight.showSecondaryBtn && (
                 <a
-                  href={spotlight.secondaryBtnHref}
-                  target="_blank"
+                  href={spotlight.secondaryBtnHref || '#'}
+                  target={spotlight.secondaryBtnHref ? "_blank" : "_self"}
                   rel="noopener noreferrer"
                   className={styles.secondaryBtn}
                 >
@@ -155,16 +152,12 @@ export default function FeaturedSpotlightSection() {
         {/* RIGHT — Product Image */}
         <motion.div
           className={styles.imageWrap}
-          initial={{ opacity: 0, x: 40, scale: 0.94 }}
-          animate={isInView ? { opacity: 1, x: 0, scale: 1 } : {}}
-          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
           <div className={styles.imageGlow} aria-hidden="true" />
-          <motion.div
-            className={styles.imageCard}
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          >
+          <div className={styles.imageCard}>
             {spotlight.imageUrl ? (
               <Image
                 src={spotlight.imageUrl}
@@ -173,6 +166,7 @@ export default function FeaturedSpotlightSection() {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className={styles.productImage}
                 priority
+                unoptimized
               />
             ) : (
               <div className={styles.imagePlaceholder}>
@@ -181,7 +175,7 @@ export default function FeaturedSpotlightSection() {
                 </span>
               </div>
             )}
-          </motion.div>
+          </div>
         </motion.div>
       </div>
 

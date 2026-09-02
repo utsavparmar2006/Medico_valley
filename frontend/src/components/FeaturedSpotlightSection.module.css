@@ -42,6 +42,8 @@
   grid-template-columns: 1fr 1fr;
   align-items: center;
   gap: 72px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Content (Left Column) ── */

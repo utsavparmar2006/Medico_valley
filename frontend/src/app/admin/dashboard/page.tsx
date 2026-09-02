@@ -413,7 +413,7 @@ export default function AdminDashboard() {
 
         try {
           // Send request to token refresh endpoint (automatically shares cookie)
-          const refreshRes = await fetch(getBackendUrl('http://localhost:5000/api/admin/refresh'), {
+          const refreshRes = await fetch(getBackendUrl('http://localhost:5001/api/admin/refresh'), {
             method: 'POST',
             credentials: 'include',
           });
@@ -503,49 +503,49 @@ export default function AdminDashboard() {
     }
     try {
       // Fetch Categories
-      const catRes = await fetch(getBackendUrl('http://localhost:5000/api/public/categories'));
+      const catRes = await fetch(getBackendUrl('http://localhost:5001/api/public/categories'));
       const catData = await catRes.json();
       if (catRes.ok && catData.success) {
         setCategoriesList(catData.data);
       }
 
       // Fetch Subcategories
-      const subRes = await authFetch('http://localhost:5000/api/admin/subcategories');
+      const subRes = await authFetch('http://localhost:5001/api/admin/subcategories');
       const subData = await subRes.json();
       if (subRes.ok && subData.success) {
         setSubcategoriesList(subData.data);
       }
 
       // Fetch Products
-      const prodRes = await fetch(getBackendUrl('http://localhost:5000/api/public/products'));
+      const prodRes = await fetch(getBackendUrl('http://localhost:5001/api/public/products'));
       const prodData = await prodRes.json();
       if (prodRes.ok && prodData.success) {
         setProductsList(prodData.data);
       }
 
       // Fetch Inquiries (protected)
-      const inqRes = await authFetch('http://localhost:5000/api/admin/inquiries');
+      const inqRes = await authFetch('http://localhost:5001/api/admin/inquiries');
       const inqData = await inqRes.json();
       if (inqRes.ok && inqData.success) {
         setInquiriesList(inqData.data);
       }
 
       // Fetch Delta Difference cards (protected)
-      const deltaRes = await authFetch('http://localhost:5000/api/admin/delta-difference');
+      const deltaRes = await authFetch('http://localhost:5001/api/admin/delta-difference');
       const deltaData = await deltaRes.json();
       if (deltaRes.ok && deltaData.success) {
         setDeltaCardsList(deltaData.data);
       }
 
       // Fetch Blogs
-      const blogRes = await fetch(getBackendUrl('http://localhost:5000/api/public/blogs'));
+      const blogRes = await fetch(getBackendUrl('http://localhost:5001/api/public/blogs'));
       const blogData = await blogRes.json();
       if (blogRes.ok && blogData.success) {
         setBlogsList(blogData.data);
       }
 
       // Fetch Clients
-      const clientRes = await fetch(getBackendUrl(`http://localhost:5000/api/public/clients?t=${Date.now()}`), {
+      const clientRes = await fetch(getBackendUrl(`http://localhost:5001/api/public/clients?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -558,7 +558,7 @@ export default function AdminDashboard() {
       }
 
       // Fetch Sectors / Labs
-      const sectorRes = await fetch(getBackendUrl(`http://localhost:5000/api/public/sectors?t=${Date.now()}`), {
+      const sectorRes = await fetch(getBackendUrl(`http://localhost:5001/api/public/sectors?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -573,14 +573,14 @@ export default function AdminDashboard() {
 
 
       // Fetch Tailored Solutions
-      const solutionRes = await authFetch('http://localhost:5000/api/admin/solutions');
+      const solutionRes = await authFetch('http://localhost:5001/api/admin/solutions');
       const solutionData = await solutionRes.json();
       if (solutionRes.ok && solutionData.success) {
         setSolutionsList(solutionData.data);
       }
 
       // Fetch Featured Spotlight
-      const spotlightRes = await authFetch('http://localhost:5000/api/admin/spotlight');
+      const spotlightRes = await authFetch('http://localhost:5001/api/admin/spotlight');
       const spotlightData = await spotlightRes.json();
       if (spotlightRes.ok && spotlightData.success) {
         setSpotlightList(spotlightData.data);
@@ -606,7 +606,7 @@ export default function AdminDashboard() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const targetUrl = getBackendUrl('http://localhost:5000/api/admin/upload');
+      const targetUrl = getBackendUrl('http://localhost:5001/api/admin/upload');
       const token = typeof window !== 'undefined' ? localStorage.getItem('adminAccessToken') : null;
 
       const xhr = new XMLHttpRequest();
@@ -679,8 +679,8 @@ export default function AdminDashboard() {
 
     const isNew = editingBlog.isNew;
     const url = isNew
-      ? 'http://localhost:5000/api/admin/blogs'
-      : `http://localhost:5000/api/admin/blogs/${editingBlog._id}`;
+      ? 'http://localhost:5001/api/admin/blogs'
+      : `http://localhost:5001/api/admin/blogs/${editingBlog._id}`;
     const method = isNew ? 'POST' : 'PUT';
 
     startTransition(async () => {
@@ -726,7 +726,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch(`http://localhost:5000/api/admin/blogs/${id}`, {
+        const response = await authFetch(`http://localhost:5001/api/admin/blogs/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -760,7 +760,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch('http://localhost:5000/api/admin/categories', {
+        const response = await authFetch('http://localhost:5001/api/admin/categories', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -805,7 +805,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch('http://localhost:5000/api/admin/subcategories', {
+        const response = await authFetch('http://localhost:5001/api/admin/subcategories', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -862,7 +862,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch('http://localhost:5000/api/admin/products', {
+        const response = await authFetch('http://localhost:5001/api/admin/products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -949,7 +949,7 @@ export default function AdminDashboard() {
     setStatusMessage(null);
     startTransition(async () => {
       try {
-        const response = await authFetch(`http://localhost:5000/api/admin/categories/${selectedCategory._id}`, {
+        const response = await authFetch(`http://localhost:5001/api/admin/categories/${selectedCategory._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -996,7 +996,7 @@ export default function AdminDashboard() {
     setStatusMessage(null);
     startTransition(async () => {
       try {
-        const response = await authFetch(`http://localhost:5000/api/admin/products/${selectedProduct._id}`, {
+        const response = await authFetch(`http://localhost:5001/api/admin/products/${selectedProduct._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1037,7 +1037,7 @@ export default function AdminDashboard() {
     setShowConfirmDeleteProductModal(null);
     setStatusMessage(null);
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/products/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/products/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1084,7 +1084,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch(`http://localhost:5000/api/admin/subcategories/${editingSubcategory._id}`, {
+        const response = await authFetch(`http://localhost:5001/api/admin/subcategories/${editingSubcategory._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1115,7 +1115,7 @@ export default function AdminDashboard() {
     setShowConfirmDeleteSubcategoryModal(null);
     setStatusMessage(null);
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/subcategories/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/subcategories/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1161,7 +1161,7 @@ export default function AdminDashboard() {
     setShowConfirmDeleteModal(null);
     setStatusMessage(null);
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/categories/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/categories/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1188,7 +1188,7 @@ export default function AdminDashboard() {
   // Admin Logout Handler
   const handleLogout = async () => {
     try {
-      await authFetch('http://localhost:5000/api/admin/logout', {
+      await authFetch('http://localhost:5001/api/admin/logout', {
         method: 'POST',
         credentials: 'include',
       });
@@ -1204,7 +1204,7 @@ export default function AdminDashboard() {
   // Inquiry Status Handler
   const handleUpdateInquiryStatus = async (inquiryId: string, newStatus: string) => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/admin/inquiries/${inquiryId}/status`, {
+      const res = await authFetch(`http://localhost:5001/api/admin/inquiries/${inquiryId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1243,7 +1243,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch('http://localhost:5000/api/admin/delta-difference', {
+        const response = await authFetch('http://localhost:5001/api/admin/delta-difference', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1290,7 +1290,7 @@ export default function AdminDashboard() {
 
     startTransition(async () => {
       try {
-        const response = await authFetch(`http://localhost:5000/api/admin/delta-difference/${editingDeltaCard._id}`, {
+        const response = await authFetch(`http://localhost:5001/api/admin/delta-difference/${editingDeltaCard._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1330,7 +1330,7 @@ export default function AdminDashboard() {
     setStatusMessage(null);
 
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/delta-difference/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/delta-difference/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1406,8 +1406,8 @@ export default function AdminDashboard() {
     startTransition(async () => {
       try {
         const url = editingClient 
-          ? `http://localhost:5000/api/admin/clients/${editingClient._id}`
-          : 'http://localhost:5000/api/admin/clients';
+          ? `http://localhost:5001/api/admin/clients/${editingClient._id}`
+          : 'http://localhost:5001/api/admin/clients';
         const method = editingClient ? 'PUT' : 'POST';
 
         const response = await authFetch(url, {
@@ -1441,7 +1441,7 @@ export default function AdminDashboard() {
     setStatusMessage(null);
 
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/clients/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/clients/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1548,8 +1548,8 @@ export default function AdminDashboard() {
     };
 
     const targetUrl = editingSector
-      ? `http://localhost:5000/api/admin/sectors/${editingSector._id}`
-      : 'http://localhost:5000/api/admin/sectors';
+      ? `http://localhost:5001/api/admin/sectors/${editingSector._id}`
+      : 'http://localhost:5001/api/admin/sectors';
     const method = editingSector ? 'PUT' : 'POST';
 
     try {
@@ -1581,7 +1581,7 @@ export default function AdminDashboard() {
     setStatusMessage(null);
 
     try {
-      const response = await authFetch(`http://localhost:5000/api/admin/sectors/${id}`, {
+      const response = await authFetch(`http://localhost:5001/api/admin/sectors/${id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -1640,8 +1640,8 @@ export default function AdminDashboard() {
     startTransition(async () => {
       try {
         const url = editingSolution
-          ? `http://localhost:5000/api/admin/solutions/${editingSolution._id}`
-          : 'http://localhost:5000/api/admin/solutions';
+          ? `http://localhost:5001/api/admin/solutions/${editingSolution._id}`
+          : 'http://localhost:5001/api/admin/solutions';
         const method = editingSolution ? 'PUT' : 'POST';
 
         const res = await authFetch(url, {
@@ -1678,7 +1678,7 @@ export default function AdminDashboard() {
     setShowConfirmDeleteSolutionModal(null);
     setStatusMessage(null);
     try {
-      const res = await authFetch(`http://localhost:5000/api/admin/solutions/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`http://localhost:5001/api/admin/solutions/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         setStatusMessage({ type: 'success', text: 'Solution card deleted successfully!' });
@@ -1746,8 +1746,8 @@ export default function AdminDashboard() {
     startTransition(async () => {
       try {
         const url = editingSpotlight
-          ? `http://localhost:5000/api/admin/spotlight/${editingSpotlight._id}`
-          : 'http://localhost:5000/api/admin/spotlight';
+          ? `http://localhost:5001/api/admin/spotlight/${editingSpotlight._id}`
+          : 'http://localhost:5001/api/admin/spotlight';
         const method = editingSpotlight ? 'PUT' : 'POST';
         const featuresArray = spotFeaturesText
           .split('\n')
@@ -1793,7 +1793,7 @@ export default function AdminDashboard() {
     setShowConfirmDeleteSpotlightModal(null);
     setStatusMessage(null);
     try {
-      const res = await authFetch(`http://localhost:5000/api/admin/spotlight/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`http://localhost:5001/api/admin/spotlight/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
         setStatusMessage({ type: 'success', text: 'Spotlight deleted successfully!' });
@@ -5225,19 +5225,36 @@ export default function AdminDashboard() {
               FEATURED PRODUCT SPOTLIGHT TAB
           ───────────────────────────────────────────────────────────── */}
           {activeTab === 'spotlight' && (
-            <motion.div key="spotlight" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#49D3E7' }}>stars</span>
-                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#E2E8F0', fontFamily: 'var(--font-sans)' }}>Featured Product Spotlight</span>
-                </div>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+            >
+              <div className={styles.listSectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 className={styles.listSectionTitle}>
+                  <span className="material-symbols-outlined">stars</span>
+                  <span>Featured Product Spotlight</span>
+                </h2>
                 {!isCreatingSpotlight && (
                   <button
                     type="button"
                     onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 20px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    style={{
+                      background: '#0a8d93',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)'
+                    }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                    <span className="material-symbols-outlined">add</span>
                     Add Spotlight
                   </button>
                 )}
@@ -5245,169 +5262,437 @@ export default function AdminDashboard() {
 
               {/* Spotlight Create / Edit Form */}
               {isCreatingSpotlight && (
-                <form onSubmit={handleSaveSpotlight} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px', marginBottom: '28px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
-                    <h3 style={{ color: '#E2E8F0', fontWeight: '700', margin: 0, fontFamily: 'var(--font-sans)' }}>
+                <motion.form
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onSubmit={handleSaveSpotlight}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '16px',
+                    padding: '32px',
+                    boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.08)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '24px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
                       {editingSpotlight ? 'Edit Spotlight' : 'Create New Spotlight'}
                     </h3>
-                    <button type="button" onClick={resetSpotlightForm} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', borderRadius: '8px', padding: '7px 16px', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+                    <button
+                      type="button"
+                      onClick={resetSpotlightForm}
+                      style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.25rem' }}
+                    >
+                      ✕
+                    </button>
                   </div>
 
-                  {/* Active toggle */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', padding: '14px 18px', background: 'rgba(12,143,151,0.06)', borderRadius: '10px', border: '1px solid rgba(12,143,151,0.15)' }}>
-                    <span style={{ color: '#E2E8F0', fontSize: '0.9rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Show on Homepage</span>
-                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', marginLeft: 'auto', cursor: 'pointer' }}>
+                  {/* Active Toggle Banner */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#f0fdfa', borderRadius: '12px', border: '1px solid #99f6e4' }}>
+                    <div>
+                      <span style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: 'bold', display: 'block' }}>Show on Homepage</span>
+                      <span style={{ color: '#0d9488', fontSize: '0.8rem' }}>When active, this spotlight is prominently featured between Tailored Solutions and Client Logos.</span>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', cursor: 'pointer', flexShrink: 0 }}>
                       <input type="checkbox" checked={spotIsActive} onChange={e => setSpotIsActive(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                      <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotIsActive ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s', cursor: 'pointer' }} />
-                      <span style={{ position: 'absolute', top: '3px', left: spotIsActive ? '22px' : '3px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                      <span style={{ position: 'absolute', inset: 0, borderRadius: '13px', background: spotIsActive ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
+                      <span style={{ position: 'absolute', top: '3px', left: spotIsActive ? '25px' : '3px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
                     </label>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                    {/* Title */}
-                    <div>
-                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Product Title *</label>
-                      <input type="text" value={spotTitle} onChange={e => setSpotTitle(e.target.value)} required placeholder="e.g. Human Anatomy Full Body Model" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                  {/* Fields Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Product Title *</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        value={spotTitle}
+                        onChange={e => setSpotTitle(e.target.value)}
+                        required
+                        placeholder="e.g. Human Anatomy Full Body Model"
+                      />
                     </div>
-                    {/* Badge */}
-                    <div>
-                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Badge Label</label>
-                      <input type="text" value={spotBadge} onChange={e => setSpotBadge(e.target.value)} placeholder="e.g. New Launch" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Badge Label</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        value={spotBadge}
+                        onChange={e => setSpotBadge(e.target.value)}
+                        placeholder="e.g. New Launch or Featured Product"
+                      />
                     </div>
-                    {/* Subtitle */}
-                    <div>
-                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Subtitle / Tagline</label>
-                      <input type="text" value={spotSubtitle} onChange={e => setSpotSubtitle(e.target.value)} placeholder="e.g. Life-size 3D anatomical model with 20 detachable parts" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Subtitle / Tagline</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        value={spotSubtitle}
+                        onChange={e => setSpotSubtitle(e.target.value)}
+                        placeholder="e.g. Life-size 3D anatomical model with 20 detachable parts"
+                      />
                     </div>
-                    {/* Display Order */}
-                    <div>
-                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Display Order</label>
-                      <input type="number" value={spotDisplayOrder} onChange={e => setSpotDisplayOrder(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Display Order</label>
+                      <input
+                        type="number"
+                        className={styles.input}
+                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                        value={spotDisplayOrder}
+                        onChange={e => setSpotDisplayOrder(Number(e.target.value))}
+                      />
                     </div>
                   </div>
 
                   {/* Description */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Description</label>
-                    <textarea value={spotDescription} onChange={e => setSpotDescription(e.target.value)} rows={3} placeholder="Brief product description..." style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', resize: 'vertical', boxSizing: 'border-box' }} />
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Description</label>
+                    <textarea
+                      className={styles.input}
+                      style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                      rows={3}
+                      value={spotDescription}
+                      onChange={e => setSpotDescription(e.target.value)}
+                      placeholder="Comprehensive description of the product launch or highlight..."
+                    />
                   </div>
 
                   {/* Key Features */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Key Features (one per line)</label>
-                    <textarea value={spotFeaturesText} onChange={e => setSpotFeaturesText(e.target.value)} rows={4} placeholder={"Life-size 3D model\n20 detachable parts\nDetailed colour coding"} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', resize: 'vertical', boxSizing: 'border-box' }} />
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Key Features (one per line)</label>
+                    <textarea
+                      className={styles.input}
+                      style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
+                      rows={4}
+                      value={spotFeaturesText}
+                      onChange={e => setSpotFeaturesText(e.target.value)}
+                      placeholder={"Life-size 3D model\n20 detachable anatomical parts\nDetailed colour coding & labeling\nDigital reference manual included"}
+                    />
                   </div>
 
-                  {/* Image URL */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Product Image URL</label>
-                    <input type="text" value={spotImageUrl} onChange={e => setSpotImageUrl(e.target.value)} placeholder="https://... (S3 URL or paste from product media)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
-                    {spotImageUrl && <img src={spotImageUrl} alt="Preview" style={{ marginTop: '10px', height: '80px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', objectFit: 'contain', background: '#fff' }} />}
+                  {/* Product Image Upload & URL */}
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Product Image</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label className={styles.uploadBox} style={{ padding: '20px', background: '#f8fafc', border: '2px dashed #cbd5e1' }}>
+                        <span className={styles.uploadText} style={{ color: '#475569', fontWeight: '500' }}>Click to upload Product Image</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className={styles.fileInput}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = await handleFileUpload(file);
+                              if (url) setSpotImageUrl(url);
+                            }
+                          }}
+                        />
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#64748b', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>Or Image URL:</span>
+                        <input
+                          type="text"
+                          className={styles.input}
+                          style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a', flex: 1 }}
+                          value={spotImageUrl}
+                          onChange={e => setSpotImageUrl(e.target.value)}
+                          placeholder="https://... (or /products/...)"
+                        />
+                      </div>
+                      {spotImageUrl && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                          <img src={spotImageUrl} alt="Preview" style={{ width: '90px', height: '70px', borderRadius: '8px', objectFit: 'contain', background: '#fff', border: '1px solid #cbd5e1' }} />
+                          <button type="button" onClick={() => setSpotImageUrl('')} style={{ color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                            Remove Image
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Button Controls */}
-                  <div style={{ background: 'rgba(12,143,151,0.05)', border: '1px solid rgba(12,143,151,0.12)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                    <p style={{ color: '#49D3E7', fontSize: '0.82rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', fontFamily: 'var(--font-sans)' }}>Button Visibility Controls</p>
+                  {/* Button Visibility Controls */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+                      <h4 style={{ margin: 0, color: '#0a8d93', fontSize: '0.95rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Button Controls & Visibility
+                      </h4>
+                      <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.82rem' }}>
+                        Toggle and configure which action buttons appear in the spotlight card.
+                      </p>
+                    </div>
 
                     {/* Primary Button */}
-                    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                    <div style={{ padding: '16px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spotShowPrimary ? '14px' : '0' }}>
+                        <div>
+                          <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Primary CTA Button</span>
+                          <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Solid colored highlight button (e.g. View Product)</span>
+                        </div>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
                           <input type="checkbox" checked={spotShowPrimary} onChange={e => setSpotShowPrimary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowPrimary ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowPrimary ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowPrimary ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowPrimary ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                         </label>
-                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Primary Button (View Product)</span>
                       </div>
                       {spotShowPrimary && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                          <input type="text" value={spotPrimaryText} onChange={e => setSpotPrimaryText(e.target.value)} placeholder="Button text" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
-                          <input type="text" value={spotPrimaryHref} onChange={e => setSpotPrimaryHref(e.target.value)} placeholder="Link URL e.g. /products/anatomy-models/skull" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 'bold' }}>Button Text</label>
+                            <input type="text" className={styles.input} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }} value={spotPrimaryText} onChange={e => setSpotPrimaryText(e.target.value)} placeholder="View Product" />
+                          </div>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 'bold' }}>Link Href</label>
+                            <input type="text" className={styles.input} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }} value={spotPrimaryHref} onChange={e => setSpotPrimaryHref(e.target.value)} placeholder="/products/..." />
+                          </div>
                         </div>
                       )}
                     </div>
 
                     {/* Secondary Button */}
-                    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                    <div style={{ padding: '16px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spotShowSecondary ? '14px' : '0' }}>
+                        <div>
+                          <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Secondary CTA Button</span>
+                          <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Outlined button for brochures/catalogues</span>
+                        </div>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
                           <input type="checkbox" checked={spotShowSecondary} onChange={e => setSpotShowSecondary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowSecondary ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowSecondary ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowSecondary ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowSecondary ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                         </label>
-                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Secondary Button (Download Catalogue)</span>
                       </div>
                       {spotShowSecondary && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                          <input type="text" value={spotSecondaryText} onChange={e => setSpotSecondaryText(e.target.value)} placeholder="Button text" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
-                          <input type="text" value={spotSecondaryHref} onChange={e => setSpotSecondaryHref(e.target.value)} placeholder="PDF or external URL" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 'bold' }}>Button Text</label>
+                            <input type="text" className={styles.input} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }} value={spotSecondaryText} onChange={e => setSpotSecondaryText(e.target.value)} placeholder="Download Catalogue" />
+                          </div>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 'bold' }}>Download URL / Link</label>
+                            <input type="text" className={styles.input} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }} value={spotSecondaryHref} onChange={e => setSpotSecondaryHref(e.target.value)} placeholder="https://... or /catalogue.pdf" />
+                          </div>
                         </div>
                       )}
                     </div>
 
                     {/* Quote Button */}
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                    <div style={{ padding: '16px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spotShowQuote ? '14px' : '0' }}>
+                        <div>
+                          <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Quote Request Button</span>
+                          <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Opens interactive quote dialog or contact page</span>
+                        </div>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
                           <input type="checkbox" checked={spotShowQuote} onChange={e => setSpotShowQuote(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowQuote ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowQuote ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowQuote ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowQuote ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                         </label>
-                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Quote Button (Request a Quote)</span>
                       </div>
                       {spotShowQuote && (
-                        <input type="text" value={spotQuoteText} onChange={e => setSpotQuoteText(e.target.value)} placeholder="Button text" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                        <div style={{ paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 'bold' }}>Button Text</label>
+                            <input type="text" className={styles.input} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }} value={spotQuoteText} onChange={e => setSpotQuoteText(e.target.value)} placeholder="Request a Quote" />
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Form Actions */}
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button type="button" onClick={resetSpotlightForm} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: '#94A3B8', padding: '12px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
-                    <button type="submit" style={{ flex: 2, background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                  {/* Form Submit & Cancel Buttons */}
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+                    <button
+                      type="button"
+                      onClick={resetSpotlightForm}
+                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', padding: '10px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPending || uploadingFile}
+                      style={{ background: '#0a8d93', color: '#ffffff', border: 'none', padding: '10px 28px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 2px 8px rgba(10, 141, 147, 0.25)' }}
+                    >
                       {isPending ? 'Saving...' : editingSpotlight ? 'Update Spotlight' : 'Create Spotlight'}
                     </button>
                   </div>
-                </form>
+                </motion.form>
               )}
 
-              {/* Spotlight List */}
-              <div>
-                {spotlightList.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {spotlightList.map((spot) => (
-                      <div key={spot._id} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${spot.isActive ? 'rgba(12,143,151,0.3)' : 'rgba(255,255,255,0.07)'}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        {spot.imageUrl && <img src={spot.imageUrl} alt={spot.title} style={{ width: '64px', height: '64px', borderRadius: '10px', objectFit: 'contain', background: '#fff', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <span style={{ color: '#E2E8F0', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{spot.title}</span>
-                            <span style={{ background: spot.isActive ? 'rgba(12,143,151,0.15)' : 'rgba(255,255,255,0.06)', color: spot.isActive ? '#49D3E7' : '#64748b', fontSize: '0.72rem', fontWeight: '700', padding: '2px 9px', borderRadius: '999px', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)' }}>{spot.isActive ? 'Active' : 'Hidden'}</span>
+              {/* Spotlight Cards Grid List */}
+              {loadingData ? (
+                <p>Loading spotlights...</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {spotlightList.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+                      {spotlightList.map((spot) => (
+                        <div
+                          key={spot._id}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            position: 'relative'
+                          }}
+                        >
+                          {/* Image preview & badges */}
+                          <div style={{ position: 'relative', height: '180px', background: '#f8fafc', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #e2e8f0' }}>
+                            {spot.imageUrl ? (
+                              <img
+                                src={spot.imageUrl}
+                                alt={spot.title}
+                                style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '16px' }}
+                              />
+                            ) : (
+                              <span className="material-symbols-outlined" style={{ fontSize: '64px', color: '#cbd5e1' }}>inventory_2</span>
+                            )}
+                            <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px' }}>
+                              <span style={{ background: spot.isActive ? '#0a8d93' : '#64748b', color: '#ffffff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                {spot.isActive ? 'Active on Homepage' : 'Hidden'}
+                              </span>
+                              {spot.badge && (
+                                <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0d9488', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                  {spot.badge}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(15, 23, 42, 0.75)', color: '#ffffff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                              Order: {spot.displayOrder || 0}
+                            </div>
                           </div>
-                          {spot.badge && <span style={{ color: '#0a8d93', fontSize: '0.78rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>{spot.badge}</span>}
-                          {spot.subtitle && <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0', fontFamily: 'var(--font-sans)' }}>{spot.subtitle}</p>}
-                          <div style={{ marginTop: '6px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {spot.showPrimaryBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.primaryBtnText || 'View Product'}</span>}
-                            {spot.showSecondaryBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.secondaryBtnText || 'Download Catalogue'}</span>}
-                            {spot.showQuoteBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.quoteBtnText || 'Request a Quote'}</span>}
+
+                          {/* Content */}
+                          <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+                              {spot.title}
+                            </h4>
+                            {spot.subtitle && (
+                              <p style={{ color: '#0a8d93', fontSize: '0.85rem', fontWeight: '600', margin: 0 }}>
+                                {spot.subtitle}
+                              </p>
+                            )}
+                            {spot.description && (
+                              <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '4px 0 0', lineHeight: 1.5 }}>
+                                {spot.description}
+                              </p>
+                            )}
+
+                            {/* Features Preview */}
+                            {spot.features && spot.features.length > 0 && (
+                              <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {spot.features.slice(0, 3).map((f: string, idx: number) => (
+                                  <span key={idx} style={{ background: '#f1f5f9', color: '#334155', fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px' }}>
+                                    ✓ {f}
+                                  </span>
+                                ))}
+                                {spot.features.length > 3 && (
+                                  <span style={{ color: '#64748b', fontSize: '0.72rem', alignSelf: 'center' }}>
+                                    +{spot.features.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Active buttons indicator */}
+                            <div style={{ marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {spot.showPrimaryBtn && (
+                                <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  Btn: {spot.primaryBtnText || 'View'}
+                                </span>
+                              )}
+                              {spot.showSecondaryBtn && (
+                                <span style={{ background: '#f3e8ff', color: '#7e22ce', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  Btn: {spot.secondaryBtnText || 'Catalogue'}
+                                </span>
+                              )}
+                              {spot.showQuoteBtn && (
+                                <span style={{ background: '#fef3c7', color: '#b45309', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  Btn: {spot.quoteBtnText || 'Quote'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Card Actions */}
+                          <div style={{ padding: '16px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => openSpotlightEdit(spot)}
+                              style={{
+                                flex: 1,
+                                background: '#ffffff',
+                                border: '1px solid #cbd5e1',
+                                color: '#0284c7',
+                                padding: '8px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmDeleteSpotlightModal(spot._id)}
+                              style={{
+                                flex: 1,
+                                background: '#ffffff',
+                                border: '1px solid #fecaca',
+                                color: '#ef4444',
+                                padding: '8px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                              Delete
+                            </button>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                          <button type="button" onClick={() => openSpotlightEdit(spot)} style={{ background: 'rgba(12,143,151,0.1)', border: '1px solid rgba(12,143,151,0.25)', color: '#49D3E7', borderRadius: '8px', padding: '7px 14px', fontSize: '0.82rem', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Edit</button>
-                          <button type="button" onClick={() => setShowConfirmDeleteSpotlightModal(spot._id)} style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', borderRadius: '8px', padding: '7px 14px', fontSize: '0.82rem', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Delete</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : !isCreatingSpotlight ? (
-                  <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'rgba(73,211,231,0.3)', display: 'block', marginBottom: '12px' }}>stars</span>
-                    <p style={{ color: '#475569', fontWeight: '500', fontFamily: 'var(--font-sans)' }}>No spotlight configured yet.</p>
-                    <button type="button" onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }} style={{ marginTop: '14px', background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 22px', fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>
-                      Add Your First Spotlight
-                    </button>
-                  </div>
-                ) : null}
-              </div>
+                      ))}
+                    </div>
+                  ) : !isCreatingSpotlight ? (
+                    <div style={{ textAlign: 'center', padding: '48px 0', background: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#94a3b8', display: 'block', marginBottom: '12px' }}>stars</span>
+                      <p style={{ color: '#475569', fontWeight: '500', margin: 0 }}>No product spotlight configured yet.</p>
+                      <button
+                        type="button"
+                        onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }}
+                        style={{ marginTop: '14px', background: '#0a8d93', color: '#ffffff', border: 'none', padding: '10px 22px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        Add Your First Spotlight
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </motion.div>
           )}
 
