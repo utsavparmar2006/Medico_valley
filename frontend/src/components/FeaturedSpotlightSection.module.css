@@ -6,73 +6,68 @@
 .section {
   position: relative;
   width: 100%;
-  padding: 60px 32px;
+  padding: 60px 24px;
   background: #ffffff;
 }
 
-/* ── Spotlight Framed Card Container ── */
-.cardContainer {
+.card {
+  position: relative;
   max-width: 1240px;
   margin: 0 auto;
-  position: relative;
-  border-radius: 32px;
-  border: 1.5px solid #caecef;
-  background: linear-gradient(135deg, #f9fdfd 0%, #f4fafb 100%);
-  overflow: hidden;
+  background: #ffffff;
+  border: 1.5px solid #d4ebf0;
+  border-radius: 28px;
   padding: 56px 64px;
+  overflow: hidden;
 }
 
-/* ── Decorative Side Shapes (from reference design) ── */
-/* Left: Solid teal half-oval on the left border */
-.shapeLeft {
+/* ── Decorative Side Geometric Shapes Matching Reference ── */
+.leftSideShape {
   position: absolute;
-  left: 0;
-  top: 48px;
-  width: 58px;
-  height: 190px;
-  border-top-right-radius: 95px;
-  border-bottom-right-radius: 95px;
-  background: #60b6bc;
+  top: 40px;
+  left: -80px;
+  width: 170px;
+  height: 230px;
+  border-radius: 50%;
+  background: rgba(56, 178, 172, 0.42);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
-/* Right: Two overlapping translucent organic teal curved shapes */
-.shapeRightTop {
+.rightSideShapeTop {
   position: absolute;
-  right: 0;
-  top: 28%;
-  width: 140px;
-  height: 260px;
-  border-top-left-radius: 130px;
-  border-bottom-left-radius: 130px;
-  background: rgba(96, 182, 188, 0.45);
+  top: 15%;
+  right: -70px;
+  width: 220px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(45, 175, 185, 0.45);
+  mix-blend-mode: multiply;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
-.shapeRightBottom {
+.rightSideShapeBottom {
   position: absolute;
-  right: 0;
-  bottom: -10px;
-  width: 155px;
-  height: 260px;
-  border-top-left-radius: 130px;
-  border-bottom-left-radius: 130px;
-  background: rgba(14, 142, 150, 0.38);
+  bottom: 8%;
+  right: -80px;
+  width: 240px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(80, 205, 210, 0.38);
+  mix-blend-mode: multiply;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 /* ── Inner Layout (Two Columns) ── */
 .inner {
-  width: 100%;
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 56px;
-  position: relative;
-  z-index: 1;
+  gap: 60px;
 }
 
 /* ── Content (Left Column) ── */
@@ -381,24 +376,24 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  .section { padding: 48px 24px; }
-  .cardContainer { padding: 44px 36px; border-radius: 26px; }
+  .section { padding: 48px 20px; }
+  .card { padding: 44px 36px; }
   .inner { gap: 40px; }
 }
 
 @media (max-width: 768px) {
-  .section { padding: 40px 16px; }
-  .cardContainer { padding: 32px 20px; border-radius: 20px; }
-  .shapeLeft { width: 36px; height: 130px; }
-  .shapeRightTop { width: 80px; height: 150px; }
-  .shapeRightBottom { width: 90px; height: 150px; }
+  .section { padding: 36px 16px; }
+  .card { padding: 36px 20px; border-radius: 20px; }
   .inner {
     grid-template-columns: 1fr;
     gap: 36px;
   }
   .imageWrap { order: -1; }
-  .imageCard { max-width: 100%; margin: 0 auto; }
+  .imageCard { max-width: 100%; aspect-ratio: 16 / 11; margin: 0 auto; }
   .title { font-size: 1.7rem; }
+  .leftSideShape { width: 110px; height: 150px; left: -50px; top: 20px; }
+  .rightSideShapeTop { width: 140px; height: 190px; right: -50px; }
+  .rightSideShapeBottom { width: 150px; height: 200px; right: -60px; }
   .btnRow { flex-direction: column; align-items: flex-start; }
   .primaryBtn,
   .secondaryBtn,
@@ -406,8 +401,8 @@
 }
 
 @media (max-width: 480px) {
-  .section { padding: 32px 12px; }
-  .cardContainer { padding: 24px 16px; border-radius: 16px; }
+  .section { padding: 24px 12px; }
+  .card { padding: 28px 16px; border-radius: 16px; }
   .title { font-size: 1.45rem; }
-  .modalBox { padding: 28px 22px; }
+  .modalBox { padding: 28px 20px; }
 }

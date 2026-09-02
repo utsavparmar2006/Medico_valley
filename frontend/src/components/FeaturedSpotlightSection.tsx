@@ -61,11 +61,11 @@ export default function FeaturedSpotlightSection() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.cardContainer}>
-        {/* Decorative Side Shapes matching reference design */}
-        <div className={styles.shapeLeft} aria-hidden="true" />
-        <div className={styles.shapeRightTop} aria-hidden="true" />
-        <div className={styles.shapeRightBottom} aria-hidden="true" />
+      <div className={styles.card}>
+        {/* Decorative side organic shape accents matching reference */}
+        <div className={styles.leftSideShape} aria-hidden="true" />
+        <div className={styles.rightSideShapeTop} aria-hidden="true" />
+        <div className={styles.rightSideShapeBottom} aria-hidden="true" />
 
         <div className={styles.inner}>
         {/* LEFT — Content */}
