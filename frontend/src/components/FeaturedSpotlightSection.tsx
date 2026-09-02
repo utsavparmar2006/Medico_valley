@@ -68,117 +68,127 @@ export default function FeaturedSpotlightSection() {
         <div className={styles.rightSideShapeBottom} aria-hidden="true" />
 
         <div className={styles.inner}>
-        {/* LEFT — Content */}
-        <motion.div
-          className={styles.content}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {/* Badge */}
-          {spotlight.badge && (
-            <span className={styles.badge}>
-              <span className={styles.badgeDot} />
-              {spotlight.badge}
-            </span>
-          )}
-
-          {/* Title */}
-          <h2 className={styles.title}>{spotlight.title}</h2>
-
-          {/* Subtitle */}
-          {spotlight.subtitle && (
-            <p className={styles.subtitle}>{spotlight.subtitle}</p>
-          )}
-
-          {/* Description */}
-          {spotlight.description && (
-            <p className={styles.description}>{spotlight.description}</p>
-          )}
-
-          {/* Key Features */}
-          {spotlight.features && spotlight.features.length > 0 && (
-            <ul className={styles.featureList}>
-              {spotlight.features.map((feat, i) => (
-                <li key={i} className={styles.featureItem}>
-                  <span className={styles.featureCheck} aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+          {/* LEFT — Product Image Showcase */}
+          <motion.div
+            className={styles.imageWrap}
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.div
+              className={styles.imageCard}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
+              {spotlight.imageUrl ? (
+                <Image
+                  src={spotlight.imageUrl}
+                  alt={spotlight.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className={styles.productImage}
+                  priority
+                  unoptimized
+                />
+              ) : (
+                <div className={styles.imagePlaceholder}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '80px', color: 'rgba(12,143,151,0.2)' }}>
+                    inventory_2
                   </span>
-                  {feat}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {/* CTA Buttons */}
-          {hasAnyButton && (
-            <div className={styles.btnRow}>
-              {spotlight.showPrimaryBtn && spotlight.primaryBtnHref && (
-                <Link href={spotlight.primaryBtnHref} className={styles.primaryBtn}>
-                  {spotlight.primaryBtnText || 'View Product'}
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </Link>
+                </div>
               )}
+            </motion.div>
+          </motion.div>
 
-              {spotlight.showSecondaryBtn && (
-                <a
-                  href={spotlight.secondaryBtnHref || '#'}
-                  target={spotlight.secondaryBtnHref ? "_blank" : "_self"}
-                  rel="noopener noreferrer"
-                  className={styles.secondaryBtn}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                  </svg>
-                  {spotlight.secondaryBtnText || 'Download Catalogue'}
-                </a>
-              )}
-
-              {spotlight.showQuoteBtn && (
-                <button
-                  onClick={() => setQuoteOpen(true)}
-                  className={styles.quoteBtn}
-                  type="button"
-                >
-                  {spotlight.quoteBtnText || 'Request a Quote'}
-                </button>
-              )}
+          {/* RIGHT — Product Details & Actions */}
+          <motion.div
+            className={styles.content}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+          >
+            {/* Top Brand Kicker */}
+            <div className={styles.kicker}>
+              <span className={styles.kickerText}>
+                {spotlight.badge ? spotlight.badge : 'NEW FROM MEDICOVALLEY'}
+              </span>
             </div>
-          )}
-        </motion.div>
 
-        {/* RIGHT — Product Image */}
-        <motion.div
-          className={styles.imageWrap}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-        >
-          <div className={styles.imageCard}>
-            {spotlight.imageUrl ? (
-              <Image
-                src={spotlight.imageUrl}
-                alt={spotlight.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className={styles.productImage}
-                priority
-                unoptimized
-              />
-            ) : (
-              <div className={styles.imagePlaceholder}>
-                <span className="material-symbols-outlined" style={{ fontSize: '80px', color: 'rgba(12,143,151,0.2)' }}>
-                  inventory_2
-                </span>
+            {/* Product Title */}
+            <h2 className={styles.title}>{spotlight.title}</h2>
+
+            {/* Subtitle / Tagline */}
+            {spotlight.subtitle && (
+              <p className={styles.subtitle}>{spotlight.subtitle}</p>
+            )}
+
+            {/* Description */}
+            {spotlight.description && (
+              <p className={styles.description}>{spotlight.description}</p>
+            )}
+
+            {/* Key Features with Clean Checkmarks */}
+            {spotlight.features && spotlight.features.length > 0 && (
+              <ul className={styles.featureList}>
+                {spotlight.features.map((feat, i) => (
+                  <li key={i} className={styles.featureItem}>
+                    <span className={styles.featureCheck} aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                        <path d="M2.5 7L5.5 10L11.5 4" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Status Pill Badge (e.g. COMING SOON / NEW LAUNCH) */}
+            {spotlight.badge && (
+              <div className={styles.badgeWrapper}>
+                <span className={styles.pillBadge}>{spotlight.badge}</span>
               </div>
             )}
-          </div>
-        </motion.div>
-      </div>
+
+            {/* CTA Action Buttons */}
+            {hasAnyButton && (
+              <div className={styles.btnRow}>
+                {spotlight.showPrimaryBtn && spotlight.primaryBtnHref && (
+                  <Link href={spotlight.primaryBtnHref} className={styles.primaryBtn}>
+                    {spotlight.primaryBtnText || 'View Product'}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+
+                {spotlight.showSecondaryBtn && (
+                  <a
+                    href={spotlight.secondaryBtnHref || '#'}
+                    target={spotlight.secondaryBtnHref ? "_blank" : "_self"}
+                    rel="noopener noreferrer"
+                    className={styles.secondaryBtn}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                    </svg>
+                    {spotlight.secondaryBtnText || 'Download Catalogue'}
+                  </a>
+                )}
+
+                {spotlight.showQuoteBtn && (
+                  <button
+                    onClick={() => setQuoteOpen(true)}
+                    className={styles.quoteBtn}
+                    type="button"
+                  >
+                    {spotlight.quoteBtnText || 'Request a Quote'}
+                  </button>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
 
       {/* Lightweight inline quote modal */}
