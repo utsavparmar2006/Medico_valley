@@ -61,10 +61,6 @@ export default function FeaturedSpotlightSection() {
 
   return (
     <section className={styles.section}>
-      {/* Decorative background blobs */}
-      <div className={styles.blobLeft} aria-hidden="true" />
-      <div className={styles.blobRight} aria-hidden="true" />
-
       <div className={styles.inner}>
         {/* LEFT — Content */}
         <motion.div
@@ -156,7 +152,6 @@ export default function FeaturedSpotlightSection() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
-          <div className={styles.imageGlow} aria-hidden="true" />
           <div className={styles.imageCard}>
             {spotlight.imageUrl ? (
               <Image
