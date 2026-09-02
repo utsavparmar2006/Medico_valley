@@ -16,6 +16,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 import ProcessFlowSection from "@/components/ProcessFlowSection";
 import SolutionsSection from "@/components/SolutionsSection";
+import FeaturedSpotlightSection from "@/components/FeaturedSpotlightSection";
 import ConsultationBannerSection from "@/components/ConsultationBannerSection";
 import ValuePropSection from "@/components/ValuePropSection";
 import InstitutionTrustSection from "@/components/InstitutionTrustSection";
@@ -863,6 +864,9 @@ export default function Home() {
 
         {/* SOLUTIONS Section & 5 Cards with Premium Difference UI */}
         <SolutionsSection />
+
+        {/* Featured Product Spotlight — admin-controlled, shows between Tailored Solutions & Clients */}
+        <FeaturedSpotlightSection />
 
         {/* Trust Banner & Logos */}
         <InstitutionTrustSection />

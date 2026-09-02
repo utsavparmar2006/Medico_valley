@@ -14,6 +14,7 @@ import Blog from '../models/Blog';
 import Client from '../models/Client';
 import Sector from '../models/Sector';
 import SolutionCard from '../models/SolutionCard';
+import FeaturedSpotlight from '../models/FeaturedSpotlight';
 
 const router = express.Router();
 
@@ -1789,6 +1790,19 @@ router.get('/clients', async (req, res) => {
     return res.json({ success: true, data: clients });
   } catch (error: any) {
     console.error('Fetch clients error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// GET active featured spotlight (returns the single active spotlight for the homepage)
+router.get('/spotlight', async (req, res) => {
+  try {
+    const spotlight = await FeaturedSpotlight.findOne({ isActive: true })
+      .sort({ displayOrder: 1, updatedAt: -1 })
+      .lean();
+    return res.json({ success: true, data: spotlight || null });
+  } catch (error: any) {
+    console.error('Fetch spotlight error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

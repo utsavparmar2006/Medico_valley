@@ -73,7 +73,7 @@ export default function AdminDashboard() {
 
   // Authentication & UI States
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'subcategories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors' | 'solutions'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'categories' | 'subcategories' | 'products' | 'manage' | 'categoryDetail' | 'productDetail' | 'inquiries' | 'difference' | 'blogs' | 'clients' | 'sectors' | 'solutions' | 'spotlight'>('overview');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [categoriesList, setCategoriesList] = useState<CategoryObj[]>([]);
   const [subcategoriesList, setSubcategoriesList] = useState<SubcategoryObj[]>([]);
@@ -89,6 +89,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Dashboard', icon: 'dashboard' },
     { id: 'manage', label: 'Catalog Listings', icon: 'manage_search' },
     { id: 'solutions', label: 'Tailored Solutions', icon: 'grid_view' },
+    { id: 'spotlight', label: 'Product Spotlight', icon: 'stars' },
     { id: 'categories', label: 'New Category', icon: 'category' },
     { id: 'subcategories', label: 'New Subcategory', icon: 'account_tree' },
     { id: 'products', label: 'New Product', icon: 'inventory' },
@@ -146,6 +147,28 @@ export default function AdminDashboard() {
   const [editingSolution, setEditingSolution] = useState<any | null>(null);
   const [isCreatingSolution, setIsCreatingSolution] = useState(false);
   const [showConfirmDeleteSolutionModal, setShowConfirmDeleteSolutionModal] = useState<string | null>(null);
+
+  // Featured Product Spotlight States
+  const [spotlightList, setSpotlightList] = useState<any[]>([]);
+  const [isCreatingSpotlight, setIsCreatingSpotlight] = useState(false);
+  const [editingSpotlight, setEditingSpotlight] = useState<any | null>(null);
+  const [showConfirmDeleteSpotlightModal, setShowConfirmDeleteSpotlightModal] = useState<string | null>(null);
+  const [spotIsActive, setSpotIsActive] = useState(true);
+  const [spotBadge, setSpotBadge] = useState('Featured Product');
+  const [spotTitle, setSpotTitle] = useState('');
+  const [spotSubtitle, setSpotSubtitle] = useState('');
+  const [spotDescription, setSpotDescription] = useState('');
+  const [spotImageUrl, setSpotImageUrl] = useState('');
+  const [spotFeaturesText, setSpotFeaturesText] = useState('');
+  const [spotShowPrimary, setSpotShowPrimary] = useState(true);
+  const [spotPrimaryText, setSpotPrimaryText] = useState('View Product');
+  const [spotPrimaryHref, setSpotPrimaryHref] = useState('/products');
+  const [spotShowSecondary, setSpotShowSecondary] = useState(true);
+  const [spotSecondaryText, setSpotSecondaryText] = useState('Download Catalogue');
+  const [spotSecondaryHref, setSpotSecondaryHref] = useState('');
+  const [spotShowQuote, setSpotShowQuote] = useState(true);
+  const [spotQuoteText, setSpotQuoteText] = useState('Request a Quote');
+  const [spotDisplayOrder, setSpotDisplayOrder] = useState<number>(0);
 
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
@@ -554,6 +577,13 @@ export default function AdminDashboard() {
       const solutionData = await solutionRes.json();
       if (solutionRes.ok && solutionData.success) {
         setSolutionsList(solutionData.data);
+      }
+
+      // Fetch Featured Spotlight
+      const spotlightRes = await authFetch('http://localhost:5000/api/admin/spotlight');
+      const spotlightData = await spotlightRes.json();
+      if (spotlightRes.ok && spotlightData.success) {
+        setSpotlightList(spotlightData.data);
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -1661,6 +1691,119 @@ export default function AdminDashboard() {
       }
     } catch {
       setStatusMessage({ type: 'error', text: 'Failed to delete solution card.' });
+    }
+  };
+
+  // ── Featured Spotlight Handlers ──
+  const resetSpotlightForm = () => {
+    setEditingSpotlight(null);
+    setIsCreatingSpotlight(false);
+    setSpotIsActive(true);
+    setSpotBadge('Featured Product');
+    setSpotTitle('');
+    setSpotSubtitle('');
+    setSpotDescription('');
+    setSpotImageUrl('');
+    setSpotFeaturesText('');
+    setSpotShowPrimary(true);
+    setSpotPrimaryText('View Product');
+    setSpotPrimaryHref('/products');
+    setSpotShowSecondary(true);
+    setSpotSecondaryText('Download Catalogue');
+    setSpotSecondaryHref('');
+    setSpotShowQuote(true);
+    setSpotQuoteText('Request a Quote');
+    setSpotDisplayOrder(0);
+  };
+
+  const openSpotlightEdit = (item: any) => {
+    setEditingSpotlight(item);
+    setIsCreatingSpotlight(true);
+    setSpotIsActive(item.isActive !== false);
+    setSpotBadge(item.badge || 'Featured Product');
+    setSpotTitle(item.title || '');
+    setSpotSubtitle(item.subtitle || '');
+    setSpotDescription(item.description || '');
+    setSpotImageUrl(item.imageUrl || '');
+    setSpotFeaturesText((item.features || []).join('\n'));
+    setSpotShowPrimary(item.showPrimaryBtn !== false);
+    setSpotPrimaryText(item.primaryBtnText || 'View Product');
+    setSpotPrimaryHref(item.primaryBtnHref || '/products');
+    setSpotShowSecondary(item.showSecondaryBtn !== false);
+    setSpotSecondaryText(item.secondaryBtnText || 'Download Catalogue');
+    setSpotSecondaryHref(item.secondaryBtnHref || '');
+    setSpotShowQuote(item.showQuoteBtn !== false);
+    setSpotQuoteText(item.quoteBtnText || 'Request a Quote');
+    setSpotDisplayOrder(item.displayOrder || 0);
+  };
+
+  const handleSaveSpotlight = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spotTitle.trim()) {
+      setStatusMessage({ type: 'error', text: 'Title is required.' });
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const url = editingSpotlight
+          ? `http://localhost:5000/api/admin/spotlight/${editingSpotlight._id}`
+          : 'http://localhost:5000/api/admin/spotlight';
+        const method = editingSpotlight ? 'PUT' : 'POST';
+        const featuresArray = spotFeaturesText
+          .split('\n')
+          .map((f) => f.trim())
+          .filter(Boolean);
+        const res = await authFetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isActive: spotIsActive,
+            badge: spotBadge,
+            title: spotTitle,
+            subtitle: spotSubtitle,
+            description: spotDescription,
+            imageUrl: spotImageUrl,
+            features: featuresArray,
+            showPrimaryBtn: spotShowPrimary,
+            primaryBtnText: spotPrimaryText,
+            primaryBtnHref: spotPrimaryHref,
+            showSecondaryBtn: spotShowSecondary,
+            secondaryBtnText: spotSecondaryText,
+            secondaryBtnHref: spotSecondaryHref,
+            showQuoteBtn: spotShowQuote,
+            quoteBtnText: spotQuoteText,
+            displayOrder: Number(spotDisplayOrder) || 0,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setStatusMessage({ type: 'success', text: `Spotlight ${editingSpotlight ? 'updated' : 'created'} successfully!` });
+          resetSpotlightForm();
+          await loadDashboardData();
+        } else {
+          setStatusMessage({ type: 'error', text: data.message || 'Saving spotlight failed.' });
+        }
+      } catch {
+        setStatusMessage({ type: 'error', text: 'An error occurred while saving spotlight.' });
+      }
+    });
+  };
+
+  const confirmDeleteSpotlight = async (id: string) => {
+    setShowConfirmDeleteSpotlightModal(null);
+    setStatusMessage(null);
+    try {
+      const res = await authFetch(`http://localhost:5000/api/admin/spotlight/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatusMessage({ type: 'success', text: 'Spotlight deleted successfully!' });
+        await loadDashboardData();
+        if (editingSpotlight?._id === id) resetSpotlightForm();
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Deletion failed.' });
+      }
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Failed to delete spotlight.' });
     }
   };
 
@@ -5078,7 +5221,195 @@ export default function AdminDashboard() {
             </motion.div>
           )}
 
+          {/* ─────────────────────────────────────────────────────────────
+              FEATURED PRODUCT SPOTLIGHT TAB
+          ───────────────────────────────────────────────────────────── */}
+          {activeTab === 'spotlight' && (
+            <motion.div key="spotlight" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#49D3E7' }}>stars</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#E2E8F0', fontFamily: 'var(--font-sans)' }}>Featured Product Spotlight</span>
+                </div>
+                {!isCreatingSpotlight && (
+                  <button
+                    type="button"
+                    onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 20px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                    Add Spotlight
+                  </button>
+                )}
+              </div>
 
+              {/* Spotlight Create / Edit Form */}
+              {isCreatingSpotlight && (
+                <form onSubmit={handleSaveSpotlight} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+                    <h3 style={{ color: '#E2E8F0', fontWeight: '700', margin: 0, fontFamily: 'var(--font-sans)' }}>
+                      {editingSpotlight ? 'Edit Spotlight' : 'Create New Spotlight'}
+                    </h3>
+                    <button type="button" onClick={resetSpotlightForm} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', borderRadius: '8px', padding: '7px 16px', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+                  </div>
+
+                  {/* Active toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', padding: '14px 18px', background: 'rgba(12,143,151,0.06)', borderRadius: '10px', border: '1px solid rgba(12,143,151,0.15)' }}>
+                    <span style={{ color: '#E2E8F0', fontSize: '0.9rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Show on Homepage</span>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', marginLeft: 'auto', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={spotIsActive} onChange={e => setSpotIsActive(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+                      <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotIsActive ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s', cursor: 'pointer' }} />
+                      <span style={{ position: 'absolute', top: '3px', left: spotIsActive ? '22px' : '3px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                    {/* Title */}
+                    <div>
+                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Product Title *</label>
+                      <input type="text" value={spotTitle} onChange={e => setSpotTitle(e.target.value)} required placeholder="e.g. Human Anatomy Full Body Model" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                    </div>
+                    {/* Badge */}
+                    <div>
+                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Badge Label</label>
+                      <input type="text" value={spotBadge} onChange={e => setSpotBadge(e.target.value)} placeholder="e.g. New Launch" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                    </div>
+                    {/* Subtitle */}
+                    <div>
+                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Subtitle / Tagline</label>
+                      <input type="text" value={spotSubtitle} onChange={e => setSpotSubtitle(e.target.value)} placeholder="e.g. Life-size 3D anatomical model with 20 detachable parts" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                    </div>
+                    {/* Display Order */}
+                    <div>
+                      <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Display Order</label>
+                      <input type="number" value={spotDisplayOrder} onChange={e => setSpotDisplayOrder(Number(e.target.value))} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Description</label>
+                    <textarea value={spotDescription} onChange={e => setSpotDescription(e.target.value)} rows={3} placeholder="Brief product description..." style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', resize: 'vertical', boxSizing: 'border-box' }} />
+                  </div>
+
+                  {/* Key Features */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Key Features (one per line)</label>
+                    <textarea value={spotFeaturesText} onChange={e => setSpotFeaturesText(e.target.value)} rows={4} placeholder={"Life-size 3D model\n20 detachable parts\nDetailed colour coding"} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', resize: 'vertical', boxSizing: 'border-box' }} />
+                  </div>
+
+                  {/* Image URL */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: '600', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>Product Image URL</label>
+                    <input type="text" value={spotImageUrl} onChange={e => setSpotImageUrl(e.target.value)} placeholder="https://... (S3 URL or paste from product media)" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 14px', color: '#E2E8F0', fontSize: '0.9rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                    {spotImageUrl && <img src={spotImageUrl} alt="Preview" style={{ marginTop: '10px', height: '80px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', objectFit: 'contain', background: '#fff' }} />}
+                  </div>
+
+                  {/* Button Controls */}
+                  <div style={{ background: 'rgba(12,143,151,0.05)', border: '1px solid rgba(12,143,151,0.12)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+                    <p style={{ color: '#49D3E7', fontSize: '0.82rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', fontFamily: 'var(--font-sans)' }}>Button Visibility Controls</p>
+
+                    {/* Primary Button */}
+                    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                          <input type="checkbox" checked={spotShowPrimary} onChange={e => setSpotShowPrimary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowPrimary ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowPrimary ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                        </label>
+                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Primary Button (View Product)</span>
+                      </div>
+                      {spotShowPrimary && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                          <input type="text" value={spotPrimaryText} onChange={e => setSpotPrimaryText(e.target.value)} placeholder="Button text" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                          <input type="text" value={spotPrimaryHref} onChange={e => setSpotPrimaryHref(e.target.value)} placeholder="Link URL e.g. /products/anatomy-models/skull" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Secondary Button */}
+                    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                          <input type="checkbox" checked={spotShowSecondary} onChange={e => setSpotShowSecondary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowSecondary ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowSecondary ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                        </label>
+                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Secondary Button (Download Catalogue)</span>
+                      </div>
+                      {spotShowSecondary && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                          <input type="text" value={spotSecondaryText} onChange={e => setSpotSecondaryText(e.target.value)} placeholder="Button text" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                          <input type="text" value={spotSecondaryHref} onChange={e => setSpotSecondaryHref(e.target.value)} placeholder="PDF or external URL" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quote Button */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                          <input type="checkbox" checked={spotShowQuote} onChange={e => setSpotShowQuote(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
+                          <span style={{ position: 'absolute', inset: 0, borderRadius: '11px', background: spotShowQuote ? '#0C8F96' : 'rgba(255,255,255,0.15)', transition: '0.2s' }} />
+                          <span style={{ position: 'absolute', top: '2px', left: spotShowQuote ? '20px' : '2px', width: '18px', height: '18px', background: '#fff', borderRadius: '50%', transition: '0.2s' }} />
+                        </label>
+                        <span style={{ color: '#E2E8F0', fontSize: '0.88rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>Quote Button (Request a Quote)</span>
+                      </div>
+                      {spotShowQuote && (
+                        <input type="text" value={spotQuoteText} onChange={e => setSpotQuoteText(e.target.value)} placeholder="Button text" style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '8px 12px', color: '#E2E8F0', fontSize: '0.85rem', fontFamily: 'var(--font-sans)', boxSizing: 'border-box' }} />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Form Actions */}
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button type="button" onClick={resetSpotlightForm} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: '#94A3B8', padding: '12px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Cancel</button>
+                    <button type="submit" style={{ flex: 2, background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                      {isPending ? 'Saving...' : editingSpotlight ? 'Update Spotlight' : 'Create Spotlight'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Spotlight List */}
+              <div>
+                {spotlightList.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {spotlightList.map((spot) => (
+                      <div key={spot._id} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${spot.isActive ? 'rgba(12,143,151,0.3)' : 'rgba(255,255,255,0.07)'}`, borderRadius: '12px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        {spot.imageUrl && <img src={spot.imageUrl} alt={spot.title} style={{ width: '64px', height: '64px', borderRadius: '10px', objectFit: 'contain', background: '#fff', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span style={{ color: '#E2E8F0', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{spot.title}</span>
+                            <span style={{ background: spot.isActive ? 'rgba(12,143,151,0.15)' : 'rgba(255,255,255,0.06)', color: spot.isActive ? '#49D3E7' : '#64748b', fontSize: '0.72rem', fontWeight: '700', padding: '2px 9px', borderRadius: '999px', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)' }}>{spot.isActive ? 'Active' : 'Hidden'}</span>
+                          </div>
+                          {spot.badge && <span style={{ color: '#0a8d93', fontSize: '0.78rem', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>{spot.badge}</span>}
+                          {spot.subtitle && <p style={{ color: '#64748b', fontSize: '0.82rem', margin: '2px 0 0', fontFamily: 'var(--font-sans)' }}>{spot.subtitle}</p>}
+                          <div style={{ marginTop: '6px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {spot.showPrimaryBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.primaryBtnText || 'View Product'}</span>}
+                            {spot.showSecondaryBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.secondaryBtnText || 'Download Catalogue'}</span>}
+                            {spot.showQuoteBtn && <span style={{ fontSize: '0.72rem', color: '#94A3B8', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '5px', padding: '2px 8px', fontFamily: 'var(--font-sans)' }}>{spot.quoteBtnText || 'Request a Quote'}</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                          <button type="button" onClick={() => openSpotlightEdit(spot)} style={{ background: 'rgba(12,143,151,0.1)', border: '1px solid rgba(12,143,151,0.25)', color: '#49D3E7', borderRadius: '8px', padding: '7px 14px', fontSize: '0.82rem', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Edit</button>
+                          <button type="button" onClick={() => setShowConfirmDeleteSpotlightModal(spot._id)} style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', borderRadius: '8px', padding: '7px 14px', fontSize: '0.82rem', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : !isCreatingSpotlight ? (
+                  <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'rgba(73,211,231,0.3)', display: 'block', marginBottom: '12px' }}>stars</span>
+                    <p style={{ color: '#475569', fontWeight: '500', fontFamily: 'var(--font-sans)' }}>No spotlight configured yet.</p>
+                    <button type="button" onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }} style={{ marginTop: '14px', background: 'linear-gradient(135deg,#0C8F96,#49D3E7)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 22px', fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>
+                      Add Your First Spotlight
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </motion.div>
+          )}
 
         </main>
       </div>
@@ -5931,6 +6262,68 @@ export default function AdminDashboard() {
                     transition: 'all 0.2s',
                     fontFamily: 'var(--font-sans)'
                   }}
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirm Delete Spotlight Modal */}
+      <AnimatePresence>
+        {showConfirmDeleteSpotlightModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(5, 11, 20, 0.85)',
+              backdropFilter: 'blur(8px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            }}
+            onClick={() => setShowConfirmDeleteSpotlightModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(145deg, #0d1b2a, #0a1628)',
+                border: '1px solid rgba(73, 211, 231, 0.2)',
+                borderRadius: '20px',
+                maxWidth: '440px',
+                width: '100%',
+                padding: '32px',
+                textAlign: 'center',
+                color: '#E2E8F0'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#49D3E7', marginBottom: '16px' }}>help</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px', color: '#49D3E7', fontFamily: 'var(--font-sans)' }}>Confirm Deletion</h3>
+              <p style={{ fontSize: '0.95rem', color: '#94A3B8', lineHeight: '1.6', marginBottom: '28px', fontFamily: 'var(--font-sans)' }}>
+                Are you sure you want to delete this spotlight? This will remove it from the homepage immediately.
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmDeleteSpotlightModal(null)}
+                  style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#94A3B8', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmDeleteSpotlight(showConfirmDeleteSpotlightModal)}
+                  style={{ flex: 1, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', padding: '12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
                 >
                   Delete
                 </button>

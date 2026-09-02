@@ -18,6 +18,7 @@ import Client from '../models/Client';
 import Sector from '../models/Sector';
 import Review from '../models/Review';
 import SolutionCard from '../models/SolutionCard';
+import FeaturedSpotlight from '../models/FeaturedSpotlight';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/auth';
 import { authMiddleware, AuthenticatedRequest } from '../middlewares/auth';
 
@@ -1212,6 +1213,113 @@ router.delete('/solutions/:id', authMiddleware, async (req: AuthenticatedRequest
     return res.json({ success: true, message: 'Solution card deleted successfully' });
   } catch (error: any) {
     console.error('Delete solution card error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// ==========================================
+// FEATURED SPOTLIGHT ROUTES
+// ==========================================
+
+// List all spotlights
+router.get('/spotlight', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const items = await FeaturedSpotlight.find({}).sort({ displayOrder: 1, updatedAt: -1 }).lean();
+    return res.json({ success: true, data: items });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Create a spotlight
+router.post('/spotlight', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const {
+    isActive, badge, title, subtitle, description, imageUrl, features,
+    showPrimaryBtn, primaryBtnText, primaryBtnHref,
+    showSecondaryBtn, secondaryBtnText, secondaryBtnHref,
+    showQuoteBtn, quoteBtnText, displayOrder,
+  } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ message: 'Title is required' });
+  }
+
+  try {
+    const spotlight = await FeaturedSpotlight.create({
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+      badge: badge?.trim() || 'Featured Product',
+      title: title.trim(),
+      subtitle: subtitle?.trim() || '',
+      description: description?.trim() || '',
+      imageUrl: imageUrl || '',
+      features: Array.isArray(features) ? features.map((f: string) => f.trim()).filter(Boolean) : [],
+      showPrimaryBtn: isActive !== undefined ? Boolean(showPrimaryBtn) : true,
+      primaryBtnText: primaryBtnText?.trim() || 'View Product',
+      primaryBtnHref: primaryBtnHref?.trim() || '/products',
+      showSecondaryBtn: showSecondaryBtn !== undefined ? Boolean(showSecondaryBtn) : true,
+      secondaryBtnText: secondaryBtnText?.trim() || 'Download Catalogue',
+      secondaryBtnHref: secondaryBtnHref?.trim() || '',
+      showQuoteBtn: showQuoteBtn !== undefined ? Boolean(showQuoteBtn) : true,
+      quoteBtnText: quoteBtnText?.trim() || 'Request a Quote',
+      displayOrder: typeof displayOrder === 'number' ? displayOrder : 0,
+    });
+    return res.status(201).json({ success: true, data: spotlight });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Update a spotlight
+router.put('/spotlight/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid ID format' });
+
+  const {
+    isActive, badge, title, subtitle, description, imageUrl, features,
+    showPrimaryBtn, primaryBtnText, primaryBtnHref,
+    showSecondaryBtn, secondaryBtnText, secondaryBtnHref,
+    showQuoteBtn, quoteBtnText, displayOrder,
+  } = req.body;
+
+  try {
+    const updated = await FeaturedSpotlight.findByIdAndUpdate(
+      id,
+      {
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ...(badge !== undefined && { badge: badge.trim() }),
+        ...(title !== undefined && { title: title.trim() }),
+        ...(subtitle !== undefined && { subtitle: subtitle.trim() }),
+        ...(description !== undefined && { description: description.trim() }),
+        ...(imageUrl !== undefined && { imageUrl }),
+        ...(features !== undefined && { features: Array.isArray(features) ? features.map((f: string) => f.trim()).filter(Boolean) : [] }),
+        ...(showPrimaryBtn !== undefined && { showPrimaryBtn: Boolean(showPrimaryBtn) }),
+        ...(primaryBtnText !== undefined && { primaryBtnText: primaryBtnText.trim() }),
+        ...(primaryBtnHref !== undefined && { primaryBtnHref: primaryBtnHref.trim() }),
+        ...(showSecondaryBtn !== undefined && { showSecondaryBtn: Boolean(showSecondaryBtn) }),
+        ...(secondaryBtnText !== undefined && { secondaryBtnText: secondaryBtnText.trim() }),
+        ...(secondaryBtnHref !== undefined && { secondaryBtnHref: secondaryBtnHref.trim() }),
+        ...(showQuoteBtn !== undefined && { showQuoteBtn: Boolean(showQuoteBtn) }),
+        ...(quoteBtnText !== undefined && { quoteBtnText: quoteBtnText.trim() }),
+        ...(typeof displayOrder === 'number' && { displayOrder }),
+      },
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Spotlight not found' });
+    return res.json({ success: true, data: updated });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Delete a spotlight
+router.delete('/spotlight/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid ID format' });
+  try {
+    const deleted = await FeaturedSpotlight.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'Spotlight not found' });
+    return res.json({ success: true, message: 'Spotlight deleted successfully' });
+  } catch (error: any) {
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
