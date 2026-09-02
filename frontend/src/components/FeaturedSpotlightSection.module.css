@@ -6,24 +6,71 @@
 .section {
   position: relative;
   width: 100%;
-  padding: 80px 40px;
+  padding: 60px 32px;
   background: #ffffff;
 }
 
-/* Background Blobs Removed for seamless homepage integration */
-.blobLeft,
-.blobRight {
-  display: none;
+/* ── Spotlight Framed Card Container ── */
+.cardContainer {
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 32px;
+  border: 1.5px solid #caecef;
+  background: linear-gradient(135deg, #f9fdfd 0%, #f4fafb 100%);
+  overflow: hidden;
+  padding: 56px 64px;
+}
+
+/* ── Decorative Side Shapes (from reference design) ── */
+/* Left: Solid teal half-oval on the left border */
+.shapeLeft {
+  position: absolute;
+  left: 0;
+  top: 48px;
+  width: 58px;
+  height: 190px;
+  border-top-right-radius: 95px;
+  border-bottom-right-radius: 95px;
+  background: #60b6bc;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Right: Two overlapping translucent organic teal curved shapes */
+.shapeRightTop {
+  position: absolute;
+  right: 0;
+  top: 28%;
+  width: 140px;
+  height: 260px;
+  border-top-left-radius: 130px;
+  border-bottom-left-radius: 130px;
+  background: rgba(96, 182, 188, 0.45);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shapeRightBottom {
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  width: 155px;
+  height: 260px;
+  border-top-left-radius: 130px;
+  border-bottom-left-radius: 130px;
+  background: rgba(14, 142, 150, 0.38);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── Inner Layout (Two Columns) ── */
 .inner {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 72px;
+  gap: 56px;
   position: relative;
   z-index: 1;
 }
@@ -334,18 +381,23 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  .section { padding: 80px 32px; }
-  .inner { gap: 48px; }
+  .section { padding: 48px 24px; }
+  .cardContainer { padding: 44px 36px; border-radius: 26px; }
+  .inner { gap: 40px; }
 }
 
 @media (max-width: 768px) {
-  .section { padding: 60px 20px; }
+  .section { padding: 40px 16px; }
+  .cardContainer { padding: 32px 20px; border-radius: 20px; }
+  .shapeLeft { width: 36px; height: 130px; }
+  .shapeRightTop { width: 80px; height: 150px; }
+  .shapeRightBottom { width: 90px; height: 150px; }
   .inner {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
   }
   .imageWrap { order: -1; }
-  .imageCard { max-width: 340px; margin: 0 auto; }
+  .imageCard { max-width: 100%; margin: 0 auto; }
   .title { font-size: 1.7rem; }
   .btnRow { flex-direction: column; align-items: flex-start; }
   .primaryBtn,
@@ -354,7 +406,8 @@
 }
 
 @media (max-width: 480px) {
-  .section { padding: 48px 16px; }
-  .title { font-size: 1.5rem; }
+  .section { padding: 32px 12px; }
+  .cardContainer { padding: 24px 16px; border-radius: 16px; }
+  .title { font-size: 1.45rem; }
   .modalBox { padding: 28px 22px; }
 }

@@ -61,7 +61,13 @@ export default function FeaturedSpotlightSection() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.inner}>
+      <div className={styles.cardContainer}>
+        {/* Decorative Side Shapes matching reference design */}
+        <div className={styles.shapeLeft} aria-hidden="true" />
+        <div className={styles.shapeRightTop} aria-hidden="true" />
+        <div className={styles.shapeRightBottom} aria-hidden="true" />
+
+        <div className={styles.inner}>
         {/* LEFT — Content */}
         <motion.div
           className={styles.content}
@@ -172,6 +178,7 @@ export default function FeaturedSpotlightSection() {
             )}
           </div>
         </motion.div>
+      </div>
       </div>
 
       {/* Lightweight inline quote modal */}
