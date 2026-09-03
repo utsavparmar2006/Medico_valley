@@ -1782,6 +1782,33 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDirectToggleSpotlight = async (id: string, newActiveState: boolean) => {
+    try {
+      const res = await authFetch(`http://localhost:5001/api/admin/spotlight/${id}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newActiveState }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatusMessage({
+          type: 'success',
+          text: `Spotlight is now ${newActiveState ? 'visible on' : 'hidden from'} the homepage!`,
+        });
+        setSpotlightList((prev) =>
+          prev.map((s) => (s._id === id ? { ...s, isActive: newActiveState } : s))
+        );
+        if (editingSpotlight && editingSpotlight._id === id) {
+          setSpotIsActive(newActiveState);
+        }
+      } else {
+        setStatusMessage({ type: 'error', text: data.message || 'Failed to toggle spotlight.' });
+      }
+    } catch {
+      setStatusMessage({ type: 'error', text: 'Error toggling spotlight status.' });
+    }
+  };
+
   const handleSaveSpotlight = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!spotTitle.trim()) {
@@ -5336,16 +5363,60 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Active Toggle Banner */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#f0fdfa', borderRadius: '12px', border: '1px solid #99f6e4' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: spotIsActive ? '#f0fdfa' : '#f8fafc', borderRadius: '12px', border: `1.5px solid ${spotIsActive ? '#99f6e4' : '#cbd5e1'}`, transition: 'all 0.2s ease' }}>
                     <div>
-                      <span style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: 'bold', display: 'block' }}>Show on Homepage</span>
-                      <span style={{ color: '#0d9488', fontSize: '0.8rem' }}>When active, this spotlight is prominently featured between Tailored Solutions and Client Logos.</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#0f172a', fontSize: '1rem', fontWeight: 'bold' }}>Show on Homepage</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '12px', background: spotIsActive ? '#0a8d93' : '#64748b', color: '#ffffff' }}>
+                          {spotIsActive ? 'ACTIVE' : 'OFF / HIDDEN'}
+                        </span>
+                      </div>
+                      <span style={{ color: spotIsActive ? '#0d9488' : '#64748b', fontSize: '0.8rem', display: 'block', marginTop: '2px' }}>
+                        {spotIsActive
+                          ? 'When active, this spotlight is featured between Tailored Solutions and Client Logos.'
+                          : 'When OFF, this spotlight section is completely hidden from the main website.'}
+                      </span>
                     </div>
-                    <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', cursor: 'pointer', flexShrink: 0 }}>
-                      <input type="checkbox" checked={spotIsActive} onChange={e => setSpotIsActive(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                      <span style={{ position: 'absolute', inset: 0, borderRadius: '13px', background: spotIsActive ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
-                      <span style={{ position: 'absolute', top: '3px', left: spotIsActive ? '25px' : '3px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
-                    </label>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={spotIsActive}
+                      onClick={async () => {
+                        const nextVal = !spotIsActive;
+                        setSpotIsActive(nextVal);
+                        if (editingSpotlight && editingSpotlight._id) {
+                          await handleDirectToggleSpotlight(editingSpotlight._id, nextVal);
+                        }
+                      }}
+                      style={{
+                        position: 'relative',
+                        width: '54px',
+                        height: '30px',
+                        borderRadius: '15px',
+                        background: spotIsActive ? '#0a8d93' : '#94a3b8',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        outline: 'none',
+                        transition: 'background 0.2s ease',
+                        flexShrink: 0
+                      }}
+                      title={spotIsActive ? 'Click to hide from homepage' : 'Click to show on homepage'}
+                    >
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '3px',
+                          left: spotIsActive ? '27px' : '3px',
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          background: '#ffffff',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+                          transition: 'left 0.2s ease'
+                        }}
+                      />
+                    </button>
                   </div>
 
                   {/* Select Existing Product Searchable Combobox */}
@@ -5683,11 +5754,39 @@ export default function AdminDashboard() {
                           <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Primary CTA Button</span>
                           <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Solid colored highlight button (e.g. View Product)</span>
                         </div>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
-                          <input type="checkbox" checked={spotShowPrimary} onChange={e => setSpotShowPrimary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowPrimary ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowPrimary ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                        </label>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={spotShowPrimary}
+                          onClick={() => setSpotShowPrimary(!spotShowPrimary)}
+                          style={{
+                            position: 'relative',
+                            width: '46px',
+                            height: '26px',
+                            borderRadius: '13px',
+                            background: spotShowPrimary ? '#0a8d93' : '#94a3b8',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            outline: 'none',
+                            transition: 'background 0.2s ease',
+                            flexShrink: 0
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '2px',
+                              left: spotShowPrimary ? '22px' : '2px',
+                              width: '22px',
+                              height: '22px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              transition: 'left 0.2s ease',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        </button>
                       </div>
                       {spotShowPrimary && (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
@@ -5710,11 +5809,39 @@ export default function AdminDashboard() {
                           <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Secondary CTA Button</span>
                           <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Outlined button for brochures/catalogues</span>
                         </div>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
-                          <input type="checkbox" checked={spotShowSecondary} onChange={e => setSpotShowSecondary(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowSecondary ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowSecondary ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                        </label>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={spotShowSecondary}
+                          onClick={() => setSpotShowSecondary(!spotShowSecondary)}
+                          style={{
+                            position: 'relative',
+                            width: '46px',
+                            height: '26px',
+                            borderRadius: '13px',
+                            background: spotShowSecondary ? '#0a8d93' : '#94a3b8',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            outline: 'none',
+                            transition: 'background 0.2s ease',
+                            flexShrink: 0
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '2px',
+                              left: spotShowSecondary ? '22px' : '2px',
+                              width: '22px',
+                              height: '22px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              transition: 'left 0.2s ease',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        </button>
                       </div>
                       {spotShowSecondary && (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
@@ -5737,11 +5864,39 @@ export default function AdminDashboard() {
                           <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.9rem' }}>Quote Request Button</span>
                           <span style={{ display: 'block', color: '#64748b', fontSize: '0.78rem' }}>Opens interactive quote dialog or contact page</span>
                         </div>
-                        <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer', flexShrink: 0 }}>
-                          <input type="checkbox" checked={spotShowQuote} onChange={e => setSpotShowQuote(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-                          <span style={{ position: 'absolute', inset: 0, borderRadius: '12px', background: spotShowQuote ? '#0a8d93' : '#cbd5e1', transition: '0.2s' }} />
-                          <span style={{ position: 'absolute', top: '2px', left: spotShowQuote ? '22px' : '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%', transition: '0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                        </label>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={spotShowQuote}
+                          onClick={() => setSpotShowQuote(!spotShowQuote)}
+                          style={{
+                            position: 'relative',
+                            width: '46px',
+                            height: '26px',
+                            borderRadius: '13px',
+                            background: spotShowQuote ? '#0a8d93' : '#94a3b8',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            outline: 'none',
+                            transition: 'background 0.2s ease',
+                            flexShrink: 0
+                          }}
+                        >
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '2px',
+                              left: spotShowQuote ? '22px' : '2px',
+                              width: '22px',
+                              height: '22px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              transition: 'left 0.2s ease',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        </button>
                       </div>
                       {spotShowQuote && (
                         <div style={{ paddingTop: '10px', borderTop: '1px dashed #e2e8f0' }}>
@@ -5807,12 +5962,50 @@ export default function AdminDashboard() {
                             ) : (
                               <span className="material-symbols-outlined" style={{ fontSize: '64px', color: '#cbd5e1' }}>inventory_2</span>
                             )}
-                            <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '8px' }}>
-                              <span style={{ background: spot.isActive ? '#0a8d93' : '#64748b', color: '#ffffff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                                {spot.isActive ? 'Active on Homepage' : 'Hidden'}
+                            <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={spot.isActive}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDirectToggleSpotlight(spot._id, !spot.isActive);
+                                }}
+                                style={{
+                                  position: 'relative',
+                                  width: '44px',
+                                  height: '24px',
+                                  borderRadius: '12px',
+                                  background: spot.isActive ? '#0a8d93' : '#64748b',
+                                  border: '1.5px solid #ffffff',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  outline: 'none',
+                                  transition: 'background 0.2s ease',
+                                  boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                                  flexShrink: 0
+                                }}
+                                title={spot.isActive ? 'Click to hide from homepage' : 'Click to show on homepage'}
+                              >
+                                <span
+                                  style={{
+                                    position: 'absolute',
+                                    top: '2px',
+                                    left: spot.isActive ? '22px' : '2px',
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    background: '#ffffff',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                    transition: 'left 0.2s ease'
+                                  }}
+                                />
+                              </button>
+                              <span style={{ background: spot.isActive ? 'rgba(10, 141, 147, 0.95)' : 'rgba(100, 116, 139, 0.95)', color: '#ffffff', padding: '3px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
+                                {spot.isActive ? 'Visible on Homepage' : 'Hidden'}
                               </span>
                               {spot.badge && (
-                                <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0d9488', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0d9488', padding: '3px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                                   {spot.badge}
                                 </span>
                               )}
@@ -5876,6 +6069,30 @@ export default function AdminDashboard() {
 
                           {/* Card Actions */}
                           <div style={{ padding: '16px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '10px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleDirectToggleSpotlight(spot._id, !spot.isActive)}
+                              style={{
+                                flex: 1,
+                                background: spot.isActive ? '#ffffff' : '#f0fdfa',
+                                border: spot.isActive ? '1px solid #cbd5e1' : '1.5px solid #0a8d93',
+                                color: spot.isActive ? '#64748b' : '#0a8d93',
+                                padding: '8px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                              }}
+                              title={spot.isActive ? 'Hide from homepage' : 'Show on homepage'}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                                {spot.isActive ? 'visibility_off' : 'visibility'}
+                              </span>
+                              {spot.isActive ? 'Hide' : 'Show'}
+                            </button>
                             <button
                               type="button"
                               onClick={() => openSpotlightEdit(spot)}

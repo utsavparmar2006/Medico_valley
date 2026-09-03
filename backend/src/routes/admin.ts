@@ -1311,6 +1311,26 @@ router.put('/spotlight/:id', authMiddleware, async (req: AuthenticatedRequest, r
   }
 });
 
+// Toggle spotlight active status
+router.patch('/spotlight/:id/toggle', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) return res.status(400).json({ message: 'Invalid ID format' });
+  try {
+    const { isActive } = req.body;
+    const spot = await FeaturedSpotlight.findById(id);
+    if (!spot) return res.status(404).json({ message: 'Spotlight not found' });
+    spot.isActive = isActive !== undefined ? Boolean(isActive) : !spot.isActive;
+    await spot.save();
+    return res.json({
+      success: true,
+      data: spot,
+      message: `Spotlight is now ${spot.isActive ? 'active' : 'hidden'} on homepage`
+    });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
 // Delete a spotlight
 router.delete('/spotlight/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
