@@ -169,6 +169,7 @@ export default function AdminDashboard() {
   const [spotShowQuote, setSpotShowQuote] = useState(true);
   const [spotQuoteText, setSpotQuoteText] = useState('Request a Quote');
   const [spotDisplayOrder, setSpotDisplayOrder] = useState<number>(0);
+  const [selectedCatalogProductId, setSelectedCatalogProductId] = useState<string>('');
 
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
@@ -1698,6 +1699,7 @@ export default function AdminDashboard() {
   const resetSpotlightForm = () => {
     setEditingSpotlight(null);
     setIsCreatingSpotlight(false);
+    setSelectedCatalogProductId('');
     setSpotIsActive(true);
     setSpotBadge('Featured Product');
     setSpotTitle('');
@@ -1719,6 +1721,8 @@ export default function AdminDashboard() {
   const openSpotlightEdit = (item: any) => {
     setEditingSpotlight(item);
     setIsCreatingSpotlight(true);
+    const matched = productsList.find((p) => p.name.trim().toLowerCase() === (item.title || '').trim().toLowerCase());
+    setSelectedCatalogProductId(matched ? matched._id : '');
     setSpotIsActive(item.isActive !== false);
     setSpotBadge(item.badge || 'Featured Product');
     setSpotTitle(item.title || '');
@@ -1735,6 +1739,36 @@ export default function AdminDashboard() {
     setSpotShowQuote(item.showQuoteBtn !== false);
     setSpotQuoteText(item.quoteBtnText || 'Request a Quote');
     setSpotDisplayOrder(item.displayOrder || 0);
+  };
+
+  const handleSelectProductForSpotlight = (productId: string) => {
+    setSelectedCatalogProductId(productId);
+    if (!productId) return;
+    const found = productsList.find((p) => p._id === productId);
+    if (!found) return;
+
+    setSpotTitle(found.name);
+    if (found.description) {
+      setSpotDescription(found.description);
+    }
+    if (found.category?.name) {
+      setSpotSubtitle(found.category.name);
+    }
+    if (found.mediaUrls && found.mediaUrls.length > 0) {
+      setSpotImageUrl(found.mediaUrls[0]);
+    }
+    if (found.keyFeatures && found.keyFeatures.length > 0) {
+      setSpotFeaturesText(found.keyFeatures.join('\n'));
+    }
+    if (found.category?.slug && found.slug) {
+      setSpotPrimaryHref(`/products/${found.category.slug}/${found.slug}`);
+    } else if (found.slug) {
+      setSpotPrimaryHref(`/products/${found.slug}`);
+    }
+    if (found.catalogUrl) {
+      setSpotSecondaryHref(found.catalogUrl);
+      setSpotShowSecondary(true);
+    }
   };
 
   const handleSaveSpotlight = async (e: React.FormEvent) => {
@@ -5303,19 +5337,73 @@ export default function AdminDashboard() {
                     </label>
                   </div>
 
+                  {/* Select Existing Product Dropdown */}
+                  <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                      <label style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="material-symbols-outlined" style={{ color: '#0a8d93', fontSize: '22px' }}>inventory_2</span>
+                        Select from Already Added Products
+                      </label>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        Auto-fills Title, Subtitle, Description, Image, Key Features & Link
+                      </span>
+                    </div>
+                    <select
+                      className={styles.input}
+                      style={{
+                        background: '#ffffff',
+                        border: '1.5px solid #0a8d93',
+                        color: '#0f172a',
+                        fontSize: '0.92rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        padding: '10px 14px'
+                      }}
+                      value={selectedCatalogProductId}
+                      onChange={(e) => handleSelectProductForSpotlight(e.target.value)}
+                    >
+                      <option value="">-- Choose a product from catalog to auto-fill --</option>
+                      {productsList.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.category?.name ? `[${p.category.name}] ` : ''}{p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Fields Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                     <div className={styles.inputGroup}>
-                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Product Title *</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Product Title *</label>
+                        {selectedCatalogProductId && (
+                          <span style={{ fontSize: '0.72rem', color: '#0a8d93', fontWeight: 'bold' }}>Linked to Catalog</span>
+                        )}
+                      </div>
                       <input
                         type="text"
+                        list="catalog-products-datalist"
                         className={styles.input}
                         style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
                         value={spotTitle}
-                        onChange={e => setSpotTitle(e.target.value)}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setSpotTitle(val);
+                          const matched = productsList.find((p) => p.name.trim().toLowerCase() === val.trim().toLowerCase());
+                          if (matched) {
+                            handleSelectProductForSpotlight(matched._id);
+                          }
+                        }}
                         required
-                        placeholder="e.g. Human Anatomy Full Body Model"
+                        placeholder="Select from dropdown or type title..."
                       />
+                      <datalist id="catalog-products-datalist">
+                        {productsList.map((p) => (
+                          <option key={p._id} value={p.name}>
+                            {p.category?.name ? `${p.category.name}` : ''}
+                          </option>
+                        ))}
+                      </datalist>
                     </div>
 
                     <div className={styles.inputGroup}>
