@@ -170,6 +170,8 @@ export default function AdminDashboard() {
   const [spotQuoteText, setSpotQuoteText] = useState('Request a Quote');
   const [spotDisplayOrder, setSpotDisplayOrder] = useState<number>(0);
   const [selectedCatalogProductId, setSelectedCatalogProductId] = useState<string>('');
+  const [spotlightProductSearch, setSpotlightProductSearch] = useState<string>('');
+  const [isSpotlightDropdownOpen, setIsSpotlightDropdownOpen] = useState<boolean>(false);
 
   // Blog Form States
   const [blogTitle, setBlogTitle] = useState('');
@@ -1700,6 +1702,8 @@ export default function AdminDashboard() {
     setEditingSpotlight(null);
     setIsCreatingSpotlight(false);
     setSelectedCatalogProductId('');
+    setSpotlightProductSearch('');
+    setIsSpotlightDropdownOpen(false);
     setSpotIsActive(true);
     setSpotBadge('Featured Product');
     setSpotTitle('');
@@ -1723,6 +1727,8 @@ export default function AdminDashboard() {
     setIsCreatingSpotlight(true);
     const matched = productsList.find((p) => p.name.trim().toLowerCase() === (item.title || '').trim().toLowerCase());
     setSelectedCatalogProductId(matched ? matched._id : '');
+    setSpotlightProductSearch(matched ? matched.name : (item.title || ''));
+    setIsSpotlightDropdownOpen(false);
     setSpotIsActive(item.isActive !== false);
     setSpotBadge(item.badge || 'Featured Product');
     setSpotTitle(item.title || '');
@@ -1743,10 +1749,15 @@ export default function AdminDashboard() {
 
   const handleSelectProductForSpotlight = (productId: string) => {
     setSelectedCatalogProductId(productId);
-    if (!productId) return;
+    setIsSpotlightDropdownOpen(false);
+    if (!productId) {
+      setSpotlightProductSearch('');
+      return;
+    }
     const found = productsList.find((p) => p._id === productId);
     if (!found) return;
 
+    setSpotlightProductSearch(found.name);
     setSpotTitle(found.name);
     if (found.description) {
       setSpotDescription(found.description);
@@ -5337,38 +5348,183 @@ export default function AdminDashboard() {
                     </label>
                   </div>
 
-                  {/* Select Existing Product Dropdown */}
-                  <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Select Existing Product Searchable Combobox */}
+                  <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', borderRadius: '12px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                       <label style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="material-symbols-outlined" style={{ color: '#0a8d93', fontSize: '22px' }}>inventory_2</span>
-                        Select from Already Added Products
+                        <span className="material-symbols-outlined" style={{ color: '#0a8d93', fontSize: '22px' }}>search</span>
+                        Search & Select from Already Added Products
                       </label>
                       <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                        Auto-fills Title, Subtitle, Description, Image, Key Features & Link
+                        Type to search any product • Auto-fills all details
                       </span>
                     </div>
-                    <select
-                      className={styles.input}
-                      style={{
-                        background: '#ffffff',
-                        border: '1.5px solid #0a8d93',
-                        color: '#0f172a',
-                        fontSize: '0.92rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        padding: '10px 14px'
-                      }}
-                      value={selectedCatalogProductId}
-                      onChange={(e) => handleSelectProductForSpotlight(e.target.value)}
-                    >
-                      <option value="">-- Choose a product from catalog to auto-fill --</option>
-                      {productsList.map((p) => (
-                        <option key={p._id} value={p._id}>
-                          {p.category?.name ? `[${p.category.name}] ` : ''}{p.name}
-                        </option>
-                      ))}
-                    </select>
+
+                    {/* Search Input Box */}
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#0a8d93', fontSize: '20px', pointerEvents: 'none' }}>
+                        search
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Type to search products (e.g. Stomach Model, MV-306, Anatomy...)"
+                        value={spotlightProductSearch}
+                        onChange={(e) => {
+                          setSpotlightProductSearch(e.target.value);
+                          setIsSpotlightDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsSpotlightDropdownOpen(true)}
+                        style={{
+                          width: '100%',
+                          background: '#ffffff',
+                          border: isSpotlightDropdownOpen ? '2px solid #0a8d93' : '1.5px solid #cbd5e1',
+                          borderRadius: '8px',
+                          padding: '11px 40px 11px 42px',
+                          color: '#0f172a',
+                          fontSize: '0.92rem',
+                          fontWeight: '600',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          boxShadow: isSpotlightDropdownOpen ? '0 0 0 3px rgba(10,141,147,0.12)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      />
+                      {spotlightProductSearch && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSpotlightProductSearch('');
+                            setSelectedCatalogProductId('');
+                            setIsSpotlightDropdownOpen(false);
+                          }}
+                          style={{
+                            position: 'absolute',
+                            right: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            color: '#94a3b8',
+                            cursor: 'pointer',
+                            fontSize: '1.1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '4px'
+                          }}
+                          title="Clear search"
+                        >
+                          ✕
+                        </button>
+                      )}
+
+                      {/* Dropdown Results Menu */}
+                      {isSpotlightDropdownOpen && (
+                        <>
+                          <div
+                            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                            onClick={() => setIsSpotlightDropdownOpen(false)}
+                          />
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 6px)',
+                              left: 0,
+                              right: 0,
+                              maxHeight: '300px',
+                              overflowY: 'auto',
+                              background: '#ffffff',
+                              border: '1.5px solid #0a8d93',
+                              borderRadius: '10px',
+                              boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
+                              zIndex: 50,
+                              display: 'flex',
+                              flexDirection: 'column'
+                            }}
+                          >
+                            {productsList.filter((p) => {
+                              if (!spotlightProductSearch.trim()) return true;
+                              const q = spotlightProductSearch.toLowerCase();
+                              return (
+                                p.name.toLowerCase().includes(q) ||
+                                (p.category?.name && p.category.name.toLowerCase().includes(q)) ||
+                                (p.subcategory?.name && p.subcategory.name.toLowerCase().includes(q))
+                              );
+                            }).length > 0 ? (
+                              productsList
+                                .filter((p) => {
+                                  if (!spotlightProductSearch.trim()) return true;
+                                  const q = spotlightProductSearch.toLowerCase();
+                                  return (
+                                    p.name.toLowerCase().includes(q) ||
+                                    (p.category?.name && p.category.name.toLowerCase().includes(q)) ||
+                                    (p.subcategory?.name && p.subcategory.name.toLowerCase().includes(q))
+                                  );
+                                })
+                                .map((p) => (
+                                  <div
+                                    key={p._id}
+                                    onClick={() => handleSelectProductForSpotlight(p._id)}
+                                    style={{
+                                      padding: '10px 16px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '12px',
+                                      cursor: 'pointer',
+                                      borderBottom: '1px solid #f1f5f9',
+                                      background: selectedCatalogProductId === p._id ? '#f0fdfa' : '#ffffff',
+                                      transition: 'background 0.15s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = '#f0fdfa';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = selectedCatalogProductId === p._id ? '#f0fdfa' : '#ffffff';
+                                    }}
+                                  >
+                                    {p.mediaUrls && p.mediaUrls[0] ? (
+                                      <img
+                                        src={p.mediaUrls[0]}
+                                        alt={p.name}
+                                        style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'contain', background: '#f8fafc', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                                      />
+                                    ) : (
+                                      <div style={{ width: '38px', height: '38px', borderRadius: '6px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#94a3b8' }}>inventory_2</span>
+                                      </div>
+                                    )}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        {p.category?.name && (
+                                          <span style={{ fontSize: '0.72rem', fontWeight: 'bold', background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                            {p.category.name}
+                                          </span>
+                                        )}
+                                        <span style={{ color: '#0f172a', fontWeight: 'bold', fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {p.name}
+                                        </span>
+                                      </div>
+                                      {p.description && (
+                                        <p style={{ color: '#64748b', fontSize: '0.75rem', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {p.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                    {selectedCatalogProductId === p._id && (
+                                      <span className="material-symbols-outlined" style={{ color: '#0a8d93', fontSize: '18px' }}>check_circle</span>
+                                    )}
+                                  </div>
+                                ))
+                            ) : (
+                              <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: '0.88rem' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#cbd5e1', display: 'block', marginBottom: '4px' }}>search_off</span>
+                                No products found matching &ldquo;{spotlightProductSearch}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Fields Grid */}
