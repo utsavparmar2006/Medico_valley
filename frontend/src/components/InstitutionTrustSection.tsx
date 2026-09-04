@@ -13,40 +13,13 @@ interface Client {
   logoUrl: string;
 }
 
-const FALLBACK_CLIENTS: Client[] = [
-  {
-    _id: 'client-1',
-    name: 'Academia Medica University of Health & Science',
-    location: 'India',
-    testimonial: 'Empowering our clinical students and medical staff with standard clinical simulators. The educational impact is highly quantifiable.',
-    type: 'Medical University',
-    logoUrl: '/uploads/client_logo_1.png',
-  },
-  {
-    _id: 'client-2',
-    name: 'Royal Medical College',
-    location: 'India',
-    testimonial: 'The turnkey simulation lab planning and high-fidelity task trainers transformed our practical clinical training curriculum.',
-    type: 'Medical College',
-    logoUrl: '/uploads/client_logo_2.png',
-  },
-  {
-    _id: 'client-3',
-    name: 'Apollo Healthcare & Hospitals Group',
-    location: 'India',
-    testimonial: 'Empowering our clinical students and medical staff with standard clinical simulators. The educational impact is highly quantifiable.',
-    type: 'Healthcare Institution',
-    logoUrl: '/uploads/client_logo_3.png',
-  },
-];
-
 export default function InstitutionTrustSection() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchClients = async () => {
     try {
-      const response = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/clients?t=${Date.now()}`), {
+      const response = await fetch(getBackendUrl(`http://127.0.0.1:5001/api/public/clients?t=${Date.now()}`), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -55,23 +28,25 @@ export default function InstitutionTrustSection() {
       }).catch(() => null);
       if (response && response.ok) {
         const data = await response.json().catch(() => null);
-        if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+        if (data && data.success && Array.isArray(data.data)) {
           setClients(data.data);
         }
       }
     } catch (err) {
       console.error('Failed to fetch clients:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchClients().finally(() => setLoading(false));
+    fetchClients();
   }, []);
 
-  const displayClients = clients.length > 0 ? clients : FALLBACK_CLIENTS;
-
   // Duplicate the list to support seamless infinite auto-scrolling loop
-  const listToRender = [...displayClients, ...displayClients, ...displayClients, ...displayClients];
+  const listToRender = clients.length > 0 
+    ? [...clients, ...clients, ...clients, ...clients] 
+    : [];
 
   return (
     <section className={styles.clientSection}>
@@ -84,34 +59,44 @@ export default function InstitutionTrustSection() {
           </p>
         </div>
 
-        {/* Endless Marquee Ticker */}
-        <div className={styles.clientSliderContainer}>
-          <div className={styles.clientSlider}>
-            {listToRender.map((client, idx) => (
-              <div key={`${client._id}-${idx}`} className={styles.logoCard}>
-                {/* Front: Dynamic sharp logo */}
-                <div className={styles.logoFront}>
-                  <img
-                    src={client.logoUrl ? (client.logoUrl.startsWith('http') ? client.logoUrl : getBackendUrl(`http://127.0.0.1:5000${client.logoUrl}`)) : ''}
-                    alt={client.name}
-                    className={styles.clientLogoImage}
-                  />
-                </div>
-
-                {/* Back/Hover: Testimonial details inside the card */}
-                <div className={styles.logoBackOverlay}>
-                  <div className={styles.cardQuoteMark}>“</div>
-                  <p className={styles.cardTestimonial}>
-                    {client.testimonial}
-                  </p>
-                  <span className={styles.cardClientAuthor}>
-                    — {client.name}
-                  </span>
-                </div>
-              </div>
-            ))}
+        {/* Endless Marquee Ticker or Empty State */}
+        {loading ? (
+          <div style={{ textAlign: 'center', width: '100%', color: '#94a3b8', padding: '30px 20px', fontSize: '0.95rem' }}>
+            Loading trusted institutions...
           </div>
-        </div>
+        ) : clients.length > 0 ? (
+          <div className={styles.clientSliderContainer}>
+            <div className={styles.clientSlider}>
+              {listToRender.map((client, idx) => (
+                <div key={`${client._id}-${idx}`} className={styles.logoCard}>
+                  {/* Front: Dynamic sharp logo */}
+                  <div className={styles.logoFront}>
+                    <img
+                      src={client.logoUrl ? (client.logoUrl.startsWith('http') ? client.logoUrl : getBackendUrl(`http://127.0.0.1:5001${client.logoUrl}`)) : ''}
+                      alt={client.name}
+                      className={styles.clientLogoImage}
+                    />
+                  </div>
+
+                  {/* Back/Hover: Testimonial details inside the card */}
+                  <div className={styles.logoBackOverlay}>
+                    <div className={styles.cardQuoteMark}>“</div>
+                    <p className={styles.cardTestimonial}>
+                      {client.testimonial}
+                    </p>
+                    <span className={styles.cardClientAuthor}>
+                      — {client.name}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '40px 20px', fontSize: '1rem', fontWeight: 500 }}>
+            No client institutions available at the moment.
+          </div>
+        )}
       </div>
     </section>
   );

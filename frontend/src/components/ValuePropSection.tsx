@@ -22,56 +22,7 @@ interface CollegeSector {
   linkUrl?: string;
 }
 
-const FALLBACK_SECTORS: CollegeSector[] = [
-  {
-    id: 'medical-colleges',
-    title: 'Medical Colleges & Universities',
-    desc: 'Foundational anatomy models, clinical skill task trainers, and high-fidelity patient simulators tailored for MBBS and postgraduate training.',
-    defaultImg: '/labs/anatomy_default.png',
-    hoverImg: '/labs/anatomy_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-  {
-    id: 'nursing-colleges',
-    title: 'Nursing Colleges & Schools',
-    desc: 'Comprehensive patient care mannequins, maternal/child simulators, and practical competency kits for nursing skills labs.',
-    defaultImg: '/labs/nursing_default.png',
-    hoverImg: '/labs/nursing_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-  {
-    id: 'hospitals-clinical',
-    title: 'Hospitals & Clinical Training Centres',
-    desc: 'High-fidelity simulation equipment, debriefing systems, and acute care scenarios for resident training and team assessment.',
-    defaultImg: '/labs/anatomy_default.png',
-    hoverImg: '/labs/anatomy_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-  {
-    id: 'dental-allied',
-    title: 'Dental, Physiotherapy & Allied Health',
-    desc: 'Specialized phantom heads, physical therapy trainers, and procedural skill kits for allied healthcare education.',
-    defaultImg: '/labs/homeopathy_default.png',
-    hoverImg: '/labs/homeopathy_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-  {
-    id: 'ayurveda-homeopathy',
-    title: 'Ayurveda & Homeopathy Colleges',
-    desc: 'Anatomical representations, embryology models, and physiological teaching aids designed for BAMS and BHMS curricula.',
-    defaultImg: '/labs/ayurvedic_default.png',
-    hoverImg: '/labs/ayurvedic_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-  {
-    id: 'independent-centres',
-    title: 'Independent Simulation Centres',
-    desc: 'Turnkey room planning, AV debriefing systems, and multi-specialty simulator suites for professional clinical training.',
-    defaultImg: '/labs/nursing_default.png',
-    hoverImg: '/labs/nursing_hover.png',
-    linkUrl: '/simulation-centre',
-  },
-];
+
 
 interface SectorCardItemProps {
   sector: CollegeSector;
@@ -166,12 +117,13 @@ export default function ValuePropSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const [sectors, setSectors] = useState<CollegeSector[]>(FALLBACK_SECTORS);
+  const [sectors, setSectors] = useState<CollegeSector[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadSectors() {
       try {
-        const targetUrl = getBackendUrl('http://localhost:5000/api/public/sectors');
+        const targetUrl = getBackendUrl('http://localhost:5001/api/public/sectors');
         const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
           cache: 'no-store',
           headers: {
@@ -182,12 +134,14 @@ export default function ValuePropSection() {
 
         if (res && res.ok) {
           const data = await res.json().catch(() => null);
-          if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+          if (data && data.success && Array.isArray(data.data)) {
             setSectors(data.data);
           }
         }
       } catch (err) {
-        // Fallback to default static sectors if backend fetch fails
+        console.error('Failed to load sectors:', err);
+      } finally {
+        setLoading(false);
       }
     }
     loadSectors();
@@ -216,25 +170,27 @@ export default function ValuePropSection() {
         }
       );
 
-      // Animate the 4 cards in a staggered fade-up layout when entering viewport
-      gsap.fromTo(
-        `.${styles.collegeCard}`,
-        { opacity: 0, y: 60 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          stagger: 0.15, // Smooth staggered transition between cards
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: gridRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
+      // Animate the cards in a staggered fade-up layout when entering viewport
+      if (gridRef.current) {
+        gsap.fromTo(
+          `.${styles.collegeCard}`,
+          { opacity: 0, y: 60 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            stagger: 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      }
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [sectors, loading] }
   );
 
   return (
@@ -251,12 +207,22 @@ export default function ValuePropSection() {
           </p>
         </div>
 
-        {/* Colleges Grid — 4 items rendered side by side with entrance animation */}
-        <div ref={gridRef} className={styles.collegesGrid}>
-          {sectors.map((sector, index) => (
-            <SectorCardItem key={sector._id || sector.id || index} sector={sector} index={index} />
-          ))}
-        </div>
+        {/* Colleges Grid or Empty State */}
+        {loading ? (
+          <div style={{ textAlign: 'center', width: '100%', color: '#94a3b8', padding: '60px 20px', fontSize: '1rem' }}>
+            Loading sectors...
+          </div>
+        ) : sectors.length > 0 ? (
+          <div ref={gridRef} className={styles.collegesGrid}>
+            {sectors.map((sector, index) => (
+              <SectorCardItem key={sector._id || sector.id || index} sector={sector} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '60px 20px', fontSize: '1.05rem', fontWeight: 500 }}>
+            No sectors available at the moment.
+          </div>
+        )}
       </div>
     </section>
   );

@@ -17,56 +17,9 @@ interface SolutionItem {
   imageUrl: string;
 }
 
-const SOLUTIONS: SolutionItem[] = [
-  {
-    title: 'Simulation Centre Planning & Design',
-    category: 'FLAGSHIP SERVICE',
-    description: 'Create efficient, future-ready learning spaces from concept and layout to integration and handover.',
-    initials: 'PS',
-    ctaText: 'Plan Your Centre',
-    href: '/simulation-centre',
-    imageUrl: '/solutions/solution_centre_planning.png',
-  },
-  {
-    title: 'Anatomy Models',
-    category: 'ANATOMY',
-    description: 'Make complex anatomy easier to see, understand and teach with accurate 3D learning aids.',
-    initials: 'AM',
-    ctaText: 'Explore Anatomy Models',
-    href: '/products/anatomy-models',
-    imageUrl: '/solutions/solution_anatomy_models.png',
-  },
-  {
-    title: 'Medical Simulators',
-    category: 'SIMULATORS',
-    description: 'Build clinical reasoning, teamwork and decision-making in safe, realistic scenarios.',
-    initials: 'MS',
-    ctaText: 'Explore Medical Simulators',
-    href: '/products/medical-simulators',
-    imageUrl: '/solutions/solution_medical_simulators.png',
-  },
-  {
-    title: 'Task Trainers',
-    category: 'TASK TRAINERS',
-    description: 'Develop procedural confidence through deliberate, repeatable hands-on practice.',
-    initials: 'TT',
-    ctaText: 'Explore Task Trainers',
-    href: '/products/task-trainers',
-    imageUrl: '/solutions/solution_task_trainers.png',
-  },
-  {
-    title: 'VR, AR & Immersive Learning',
-    category: 'INNOVATION',
-    description: 'Extend access to interactive clinical learning, visualisation and scenario practice.',
-    initials: 'VR',
-    ctaText: 'Explore Digital Learning',
-    href: '/products',
-    imageUrl: '/solutions/solution_vr_immersive.png',
-  },
-];
-
 export default function SolutionsSection() {
-  const [solutionsList, setSolutionsList] = useState<SolutionItem[]>(SOLUTIONS);
+  const [solutionsList, setSolutionsList] = useState<SolutionItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
   const isInteractingRef = useRef(false);
@@ -80,16 +33,18 @@ export default function SolutionsSection() {
   useEffect(() => {
     async function fetchSolutions() {
       try {
-        const targetUrl = getBackendUrl('http://localhost:5000/api/public/solutions');
+        const targetUrl = getBackendUrl('http://localhost:5001/api/public/solutions');
         const res = await fetch(targetUrl);
         if (res.ok) {
           const data = await res.json();
-          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          if (data.success && Array.isArray(data.data)) {
             setSolutionsList(data.data);
           }
         }
       } catch (err) {
-        console.warn('Backend server unreachable, using default solutions list.');
+        console.warn('Could not fetch solutions from server:', err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchSolutions();
@@ -231,78 +186,88 @@ export default function SolutionsSection() {
       </div>
 
       {/* Interactive Auto-Scrolling Slider Track */}
-      <div className={styles.solutionsSliderContainer}>
-        <div
-          ref={trackRef}
-          className={styles.solutionsTrack}
-          onMouseEnter={() => { isInteractingRef.current = true; }}
-          onMouseLeave={() => {
-            handleMouseUpOrLeave();
-            isInteractingRef.current = false;
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUpOrLeave}
-          onScroll={handleTrackScroll}
-          onTouchStart={() => { isInteractingRef.current = true; }}
-          onTouchMove={() => { isInteractingRef.current = true; }}
-          onTouchEnd={pauseAndAutoResume}
-          onTouchCancel={pauseAndAutoResume}
-        >
-          {listToRender.map((item, idx) => (
-            <div
-              key={`${item.title}-${idx}`}
-              className={styles.solutionCard}
-            >
-              {/* Top Expanded Image Banner */}
-              <div className={styles.cardImageWrap}>
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <div className={styles.cardImageOverlay} />
+      {loading ? (
+        <div style={{ textAlign: 'center', width: '100%', color: '#94a3b8', padding: '60px 20px', fontSize: '1rem' }}>
+          Loading solutions...
+        </div>
+      ) : solutionsList.length > 0 ? (
+        <div className={styles.solutionsSliderContainer}>
+          <div
+            ref={trackRef}
+            className={styles.solutionsTrack}
+            onMouseEnter={() => { isInteractingRef.current = true; }}
+            onMouseLeave={() => {
+              handleMouseUpOrLeave();
+              isInteractingRef.current = false;
+            }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onScroll={handleTrackScroll}
+            onTouchStart={() => { isInteractingRef.current = true; }}
+            onTouchMove={() => { isInteractingRef.current = true; }}
+            onTouchEnd={pauseAndAutoResume}
+            onTouchCancel={pauseAndAutoResume}
+          >
+            {listToRender.map((item, idx) => (
+              <div
+                key={`${item.title}-${idx}`}
+                className={styles.solutionCard}
+              >
+                {/* Top Expanded Image Banner */}
+                <div className={styles.cardImageWrap}>
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <div className={styles.cardImageOverlay} />
 
-                {/* Category Tag & Initials Overlay */}
-                <div className={styles.cardHeaderOverlay}>
-                  <span className={styles.categoryTag}>
-                    {item.category}
-                  </span>
+                  {/* Category Tag & Initials Overlay */}
+                  <div className={styles.cardHeaderOverlay}>
+                    <span className={styles.categoryTag}>
+                      {item.category}
+                    </span>
 
-                  <div className={styles.initialsBadge}>
-                    {item.initials}
+                    <div className={styles.initialsBadge}>
+                      {item.initials}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Bottom Content Body (Title & CTA Button) */}
-              <div className={styles.cardContent}>
-                <div>
-                  <h3 className={styles.cardTitle}>
-                    {item.title}
-                  </h3>
+                {/* Bottom Content Body (Title & CTA Button) */}
+                <div className={styles.cardContent}>
+                  <div>
+                    <h3 className={styles.cardTitle}>
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <Link
+                    href={item.href}
+                    className={styles.cardCtaBtn}
+                  >
+                    <span>{item.ctaText}</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </Link>
                 </div>
-
-                <Link
-                  href={item.href}
-                  className={styles.cardCtaBtn}
-                >
-                  <span>{item.ctaText}</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </Link>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ textAlign: 'center', width: '100%', color: '#64748b', padding: '60px 20px', fontSize: '1.05rem', fontWeight: 500 }}>
+          No tailored solutions available at the moment.
+        </div>
+      )}
     </section>
   );
 }
