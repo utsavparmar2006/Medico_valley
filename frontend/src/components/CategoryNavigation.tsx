@@ -60,7 +60,7 @@ export default function CategoryNavigation({
 
     categories.forEach(async (cat) => {
       try {
-        const targetUrl = getBackendUrl(`http://127.0.0.1:5000/api/public/categories/${cat.slug}/subcategories`);
+        const targetUrl = getBackendUrl(`http://127.0.0.1:5001/api/public/categories/${cat.slug}/subcategories`);
         const res = await fetch(targetUrl).catch(() => null);
         if (res && res.ok) {
           const data = await res.json().catch(() => null);

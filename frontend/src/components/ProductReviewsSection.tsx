@@ -53,7 +53,7 @@ export default function ProductReviewsSection({ productId, productName }: Props)
   const fetchReviews = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/products/${productId}/reviews`));
+      const res = await fetch(getBackendUrl(`http://127.0.0.1:5001/api/public/products/${productId}/reviews`));
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -87,7 +87,7 @@ export default function ProductReviewsSection({ productId, productName }: Props)
     }
 
     try {
-      const res = await fetch(getBackendUrl(`http://127.0.0.1:5000/api/public/products/${productId}/reviews`), {
+      const res = await fetch(getBackendUrl(`http://127.0.0.1:5001/api/public/products/${productId}/reviews`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

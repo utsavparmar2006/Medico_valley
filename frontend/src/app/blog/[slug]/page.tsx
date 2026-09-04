@@ -12,7 +12,7 @@ interface Props {
 
 async function getArticle(slug: string): Promise<Article | null> {
   try {
-    const res = await fetch(`http://localhost:5000/api/public/blogs/${slug}`, { cache: 'no-store' });
+    const res = await fetch(`http://localhost:5001/api/public/blogs/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const data = await res.json();
     return (data.data as Article) || null;

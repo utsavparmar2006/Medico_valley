@@ -145,7 +145,7 @@ export default function DifferenceSection() {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const apiBase = getBackendUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
+        const apiBase = getBackendUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api');
         const res = await fetch(`${apiBase}/public/delta-difference`);
         if (res.ok) {
           const result = await res.json();

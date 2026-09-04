@@ -54,7 +54,7 @@ export default function ContactUs() {
 
     try {
       // Submit Inquiry to MongoDB Database via public inquiries API route
-      const res = await fetch(getBackendUrl('http://127.0.0.1:5000/api/public/inquiries'), {
+      const res = await fetch(getBackendUrl('http://127.0.0.1:5001/api/public/inquiries'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

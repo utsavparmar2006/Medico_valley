@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { productSlug, categorySlug } = await params;
 
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/public/products/${productSlug}`);
+    const res = await fetch(`http://127.0.0.1:5001/api/public/products/${productSlug}`);
     const data = await res.json();
 
     if (res.ok && data.success) {
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // 2. Fetch specific product detail
 async function getProductDetail(productSlug: string) {
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/public/products/${productSlug}`, {
+    const res = await fetch(`http://127.0.0.1:5001/api/public/products/${productSlug}`, {
       cache: 'no-store',
     });
 
@@ -108,7 +108,7 @@ async function getRelatedProducts(categorySlug: string, productSlug: string, sub
     // Fetch products matching subcategory if subcategory is present
     if (subcategorySlug) {
       const subRes = await fetch(
-        `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subcategorySlug}`,
+        `http://127.0.0.1:5001/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subcategorySlug}`,
         { cache: 'no-store' }
       );
       if (subRes.ok) {
@@ -125,7 +125,7 @@ async function getRelatedProducts(categorySlug: string, productSlug: string, sub
 
     // Fallback/Supplement with parent category products
     const res = await fetch(
-      `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`,
+      `http://127.0.0.1:5001/api/public/categories/${categorySlug}/products?page=1&limit=12`,
       { cache: 'no-store' }
     );
 

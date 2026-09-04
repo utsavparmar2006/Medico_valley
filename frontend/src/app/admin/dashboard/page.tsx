@@ -1796,7 +1796,15 @@ export default function AdminDashboard() {
           text: `Spotlight is now ${newActiveState ? 'visible on' : 'hidden from'} the homepage!`,
         });
         setSpotlightList((prev) =>
-          prev.map((s) => (s._id === id ? { ...s, isActive: newActiveState } : s))
+          prev.map((s) => {
+            if (s._id === id) {
+              return { ...s, isActive: newActiveState };
+            }
+            if (newActiveState) {
+              return { ...s, isActive: false };
+            }
+            return s;
+          })
         );
         if (editingSpotlight && editingSpotlight._id === id) {
           setSpotIsActive(newActiveState);
@@ -1813,6 +1821,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!spotTitle.trim()) {
       setStatusMessage({ type: 'error', text: 'Title is required.' });
+      return;
+    }
+    if (!editingSpotlight && spotlightList.length >= 1) {
+      setStatusMessage({ type: 'error', text: 'Only 1 product spotlight is allowed. Please edit or delete the existing spotlight.' });
       return;
     }
     startTransition(async () => {
@@ -5308,7 +5320,7 @@ export default function AdminDashboard() {
                   <span className="material-symbols-outlined">stars</span>
                   <span>Featured Product Spotlight</span>
                 </h2>
-                {!isCreatingSpotlight && (
+                {!isCreatingSpotlight && spotlightList.length === 0 && (
                   <button
                     type="button"
                     onClick={() => { resetSpotlightForm(); setIsCreatingSpotlight(true); }}
@@ -5329,6 +5341,12 @@ export default function AdminDashboard() {
                     <span className="material-symbols-outlined">add</span>
                     Add Spotlight
                   </button>
+                )}
+                {!isCreatingSpotlight && spotlightList.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0fdfa', border: '1.5px solid #99f6e4', padding: '6px 14px', borderRadius: '20px', color: '#0d9488', fontSize: '0.82rem', fontWeight: '600' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#0a8d93' }}>check_circle</span>
+                    Product Spotlight Configured (Edit or Delete below to change)
+                  </div>
                 )}
               </div>
 
@@ -5656,17 +5674,6 @@ export default function AdminDashboard() {
                         placeholder="e.g. Life-size 3D anatomical model with 20 detachable parts"
                       />
                     </div>
-
-                    <div className={styles.inputGroup}>
-                      <label className={styles.label} style={{ color: '#334155', fontWeight: 'bold' }}>Display Order</label>
-                      <input
-                        type="number"
-                        className={styles.input}
-                        style={{ background: '#f8fafc', border: '1px solid #cbd5e1', color: '#0f172a' }}
-                        value={spotDisplayOrder}
-                        onChange={e => setSpotDisplayOrder(Number(e.target.value))}
-                      />
-                    </div>
                   </div>
 
                   {/* Description */}
@@ -5934,6 +5941,14 @@ export default function AdminDashboard() {
                 <p>Loading spotlights...</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {spotlightList.length > 1 && (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: '12px', color: '#92400e', fontSize: '0.88rem' }}>
+                      <span className="material-symbols-outlined" style={{ color: '#d97706', fontSize: '22px' }}>info</span>
+                      <div>
+                        <strong>Single Product Spotlight:</strong> Only 1 product can be active on the homepage at a time. Please delete any extra spotlights below to keep only the one you want.
+                      </div>
+                    </div>
+                  )}
                   {spotlightList.length > 0 ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                       {spotlightList.map((spot) => (
@@ -6009,9 +6024,6 @@ export default function AdminDashboard() {
                                   {spot.badge}
                                 </span>
                               )}
-                            </div>
-                            <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(15, 23, 42, 0.75)', color: '#ffffff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                              Order: {spot.displayOrder || 0}
                             </div>
                           </div>
 

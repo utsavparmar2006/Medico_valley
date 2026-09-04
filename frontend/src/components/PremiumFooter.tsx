@@ -80,7 +80,7 @@ export default function PremiumFooter() {
   const [productsLinks, setProductsLinks] = useState(LINKS.products);
 
   useEffect(() => {
-    fetch(getBackendUrl('http://localhost:5000/api/public/categories'))
+    fetch(getBackendUrl('http://localhost:5001/api/public/categories'))
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP status ${res.status}`);
         return res.json();

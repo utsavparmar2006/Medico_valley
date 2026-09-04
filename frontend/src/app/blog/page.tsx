@@ -4,7 +4,7 @@ import BlogInfiniteGrid from '@/components/BlogInfiniteGrid';
 
 async function getArticles() {
   try {
-    const res = await fetch('http://localhost:5000/api/public/blogs', { cache: 'no-store' });
+    const res = await fetch('http://localhost:5001/api/public/blogs', { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];

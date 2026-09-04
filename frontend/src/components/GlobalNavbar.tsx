@@ -52,7 +52,7 @@ export default function GlobalNavbar() {
   // Fetch products on demand when search is opened
   useEffect(() => {
     if (isSearchOpen && products.length === 0) {
-      fetch(getBackendUrl('http://127.0.0.1:5000/api/public/products'))
+      fetch(getBackendUrl('http://127.0.0.1:5001/api/public/products'))
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {

@@ -16,7 +16,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const { sub } = (await (searchParams || {})) || {};
 
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}`);
+    const res = await fetch(`http://127.0.0.1:5001/api/public/categories/${categorySlug}`);
     const data = await res.json();
 
     if (res.ok && data.success) {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
       // If a subcategory filter is requested, fetch subcategories to generate targeted SEO metadata
       if (sub) {
-        const prodRes = await fetch(`http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=1&sub=${sub}`).catch(() => null);
+        const prodRes = await fetch(`http://127.0.0.1:5001/api/public/categories/${categorySlug}/products?page=1&limit=1&sub=${sub}`).catch(() => null);
         const prodData = prodRes && prodRes.ok ? await prodRes.json().catch(() => null) : null;
         const matchingSub = prodData?.subcategories?.find((s: any) => s.slug === sub);
 
@@ -118,8 +118,8 @@ interface SubcategoryItem {
 async function getCategoryProducts(categorySlug: string, subSlug?: string) {
   try {
     const url = subSlug
-      ? `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subSlug}`
-      : `http://127.0.0.1:5000/api/public/categories/${categorySlug}/products?page=1&limit=12`;
+      ? `http://127.0.0.1:5001/api/public/categories/${categorySlug}/products?page=1&limit=12&sub=${subSlug}`
+      : `http://127.0.0.1:5001/api/public/categories/${categorySlug}/products?page=1&limit=12`;
 
     const res = await fetch(url, {
       cache: 'no-store',
@@ -138,7 +138,7 @@ async function getCategoryProducts(categorySlug: string, subSlug?: string) {
 
 async function getCategories() {
   try {
-    const res = await fetch('http://127.0.0.1:5000/api/public/categories', {
+    const res = await fetch('http://127.0.0.1:5001/api/public/categories', {
       cache: 'no-store',
     });
 

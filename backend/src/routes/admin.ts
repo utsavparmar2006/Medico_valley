@@ -1245,6 +1245,14 @@ router.post('/spotlight', authMiddleware, async (req: AuthenticatedRequest, res:
   }
 
   try {
+    const count = await FeaturedSpotlight.countDocuments();
+    if (count >= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only 1 product spotlight is allowed. Please edit or delete the existing spotlight.',
+      });
+    }
+
     const spotlight = await FeaturedSpotlight.create({
       isActive: isActive !== undefined ? Boolean(isActive) : true,
       badge: badge?.trim() || 'Featured Product',
@@ -1282,6 +1290,10 @@ router.put('/spotlight/:id', authMiddleware, async (req: AuthenticatedRequest, r
   } = req.body;
 
   try {
+    if (Boolean(isActive)) {
+      await FeaturedSpotlight.updateMany({ _id: { $ne: id } }, { isActive: false });
+    }
+
     const updated = await FeaturedSpotlight.findByIdAndUpdate(
       id,
       {
@@ -1321,6 +1333,12 @@ router.patch('/spotlight/:id/toggle', authMiddleware, async (req: AuthenticatedR
     if (!spot) return res.status(404).json({ message: 'Spotlight not found' });
     spot.isActive = isActive !== undefined ? Boolean(isActive) : !spot.isActive;
     await spot.save();
+
+    // If activating this spotlight, deactivate all others so only ONE is active
+    if (spot.isActive) {
+      await FeaturedSpotlight.updateMany({ _id: { $ne: spot._id } }, { isActive: false });
+    }
+
     return res.json({
       success: true,
       data: spot,

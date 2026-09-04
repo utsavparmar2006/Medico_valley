@@ -148,7 +148,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const targetUrl = getBackendUrl("http://localhost:5000/api/public/products");
+        const targetUrl = getBackendUrl("http://localhost:5001/api/public/products");
         const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
           cache: 'no-store',
           headers: {
@@ -235,7 +235,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const targetUrl = getBackendUrl("http://localhost:5000/api/public/categories");
+        const targetUrl = getBackendUrl("http://localhost:5001/api/public/categories");
         const res = await fetch(`${targetUrl}?t=${Date.now()}`, {
           cache: 'no-store',
           headers: {

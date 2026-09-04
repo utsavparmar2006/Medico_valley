@@ -151,8 +151,8 @@ export default function ProductInfiniteGrid({
 
         try {
           const url = activeSub === 'all'
-            ? `http://localhost:5000/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}`
-            : `http://localhost:5000/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}&sub=${activeSub}`;
+            ? `http://localhost:5001/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}`
+            : `http://localhost:5001/api/public/categories/${categorySlug}/products?page=${nextPage}&limit=${PAGE_SIZE}&sub=${activeSub}`;
 
           const res = await fetch(getBackendUrl(url));
           const result = await res.json();

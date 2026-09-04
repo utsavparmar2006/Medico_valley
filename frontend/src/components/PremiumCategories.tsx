@@ -202,8 +202,8 @@ export default function PremiumCategories() {
     async function load() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch(getBackendUrl('http://localhost:5000/api/public/categories')).catch(() => null),
-          fetch(getBackendUrl('http://localhost:5000/api/public/products')).catch(() => null),
+          fetch(getBackendUrl('http://localhost:5001/api/public/categories')).catch(() => null),
+          fetch(getBackendUrl('http://localhost:5001/api/public/products')).catch(() => null),
         ]);
         if (!catRes || !catRes.ok) return;
         const catData = await catRes.json().catch(() => null);

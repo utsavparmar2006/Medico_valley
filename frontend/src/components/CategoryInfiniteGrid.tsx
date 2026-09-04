@@ -59,7 +59,7 @@ export default function CategoryInfiniteGrid({
 
         try {
           const res = await fetch(
-            getBackendUrl(`http://localhost:5000/api/public/categories?page=${nextPage}&limit=${pageSize}`)
+            getBackendUrl(`http://localhost:5001/api/public/categories?page=${nextPage}&limit=${pageSize}`)
           );
           const result = await res.json();
 
