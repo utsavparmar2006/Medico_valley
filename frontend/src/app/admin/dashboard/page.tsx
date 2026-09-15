@@ -14,6 +14,7 @@ interface CategoryObj {
   description: string;
   imageUrl: string;
   heroBannerUrl?: string;
+  displayOrder?: number;
 }
 
 interface SubcategoryObj {
@@ -188,6 +189,7 @@ export default function AdminDashboard() {
   const [editCategoryDesc, setEditCategoryDesc] = useState('');
   const [editCategoryImage, setEditCategoryImage] = useState('');
   const [editCategoryHeroBanner, setEditCategoryHeroBanner] = useState('');
+  const [editCategoryDisplayOrder, setEditCategoryDisplayOrder] = useState<number | string>(0);
   const [editProductName, setEditProductName] = useState('');
   const [editProductDesc, setEditProductDesc] = useState('');
   const [editProductCategoryId, setEditProductCategoryId] = useState('');
@@ -352,6 +354,7 @@ export default function AdminDashboard() {
   const [categoryDesc, setCategoryDesc] = useState('');
   const [categoryImgUrl, setCategoryImgUrl] = useState('');
   const [categoryHeroBannerUrl, setCategoryHeroBannerUrl] = useState('');
+  const [categoryDisplayOrder, setCategoryDisplayOrder] = useState<number | string>(0);
 
   // Form State: Subcategories
   const [subCategoryName, setSubCategoryName] = useState('');
@@ -773,6 +776,7 @@ export default function AdminDashboard() {
             description: categoryDesc,
             imageUrl: categoryImgUrl,
             heroBannerUrl: categoryHeroBannerUrl,
+            displayOrder: Number(categoryDisplayOrder) || 0,
           }),
         });
 
@@ -784,6 +788,7 @@ export default function AdminDashboard() {
           setCategoryDesc('');
           setCategoryImgUrl('');
           setCategoryHeroBannerUrl('');
+          setCategoryDisplayOrder(0);
           loadDashboardData();
           setActiveTab('overview');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -918,9 +923,26 @@ export default function AdminDashboard() {
     setEditCategoryDesc(category.description);
     setEditCategoryImage(category.imageUrl);
     setEditCategoryHeroBanner(category.heroBannerUrl || '');
+    setEditCategoryDisplayOrder(typeof category.displayOrder === 'number' ? category.displayOrder : 0);
     setStatusMessage(null);
     setActiveTab('categoryDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleQuickCategoryOrder = async (categoryId: string, newOrder: number) => {
+    try {
+      const response = await authFetch(`http://localhost:5001/api/admin/categories/${categoryId}/order`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayOrder: newOrder }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        await loadDashboardData(true);
+      }
+    } catch {
+      // silent fallback
+    }
   };
 
   const openProductDetail = (product: ProductObj, returnTab: 'overview' | 'manage' = 'overview') => {
@@ -960,6 +982,7 @@ export default function AdminDashboard() {
             description: editCategoryDesc,
             imageUrl: editCategoryImage,
             heroBannerUrl: editCategoryHeroBanner,
+            displayOrder: Number(editCategoryDisplayOrder) || 0,
           }),
         });
         const data = await response.json();
@@ -2124,9 +2147,22 @@ export default function AdminDashboard() {
                         <div className={styles.categoryOverviewImage}>
                           <Image src={cat.imageUrl} alt={cat.name} fill sizes="(max-width: 900px) 100vw, 33vw" />
                         </div>
-                        <div className={styles.categoryOverviewName}>
-                          <h3>{cat.name}</h3>
-                          <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                        <div className={styles.categoryOverviewName} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                            <h3>{cat.name}</h3>
+                            <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                            {typeof cat.displayOrder === 'number' && cat.displayOrder > 0 ? (
+                              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0369a1', background: '#e0f2fe', padding: '2px 7px', borderRadius: '4px' }}>
+                                Homepage Order #{cat.displayOrder}
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', padding: '2px 7px', borderRadius: '4px' }}>
+                                Default Order (0)
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </button>
                     ))}
@@ -2309,6 +2345,25 @@ export default function AdminDashboard() {
                   <div className={styles.inputGroup}>
                     <label className={styles.label} htmlFor="edit-category-description">Description</label>
                     <textarea id="edit-category-description" className={styles.input} rows={8} value={editCategoryDesc} onChange={(e) => setEditCategoryDesc(e.target.value)} required />
+                  </div>
+                  <div className={styles.inputGroup}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <label className={styles.label} htmlFor="edit-category-order">Display Order (Homepage &amp; Catalog)</label>
+                      <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                        Homepage Order
+                      </span>
+                    </div>
+                    <input
+                      id="edit-category-order"
+                      type="number"
+                      min="0"
+                      className={styles.input}
+                      value={editCategoryDisplayOrder}
+                      onChange={(e) => setEditCategoryDisplayOrder(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                    />
+                    <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                      Controls sequence on the Homepage showcase slider. Enter 1 for 1st slide, 2 for 2nd slide, etc. (Default is 0).
+                    </p>
                   </div>
                   <div className={styles.detailActions}>
                     <button type="button" className={styles.secondaryButton} onClick={() => setActiveTab(detailReturnTab)}>Cancel</button>
@@ -3006,9 +3061,40 @@ export default function AdminDashboard() {
                                 <div className={styles.categoryOverviewImage}>
                                   <Image src={cat.imageUrl} alt={cat.name} fill sizes="(max-width: 900px) 100vw, 33vw" />
                                 </div>
-                                <div className={styles.categoryOverviewName}>
-                                  <h3>{cat.name}</h3>
-                                  <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                                <div className={styles.categoryOverviewName} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                    <h3>{cat.name}</h3>
+                                    <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: '2px' }}>
+                                    {typeof cat.displayOrder === 'number' && cat.displayOrder > 0 ? (
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0369a1', background: '#e0f2fe', padding: '2px 7px', borderRadius: '4px' }}>
+                                        Homepage Order #{cat.displayOrder}
+                                      </span>
+                                    ) : (
+                                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b', background: '#f1f5f9', padding: '2px 7px', borderRadius: '4px' }}>
+                                        Default Order (0)
+                                      </span>
+                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
+                                      <button
+                                        type="button"
+                                        title="Increase order"
+                                        style={{ border: '1px solid #cbd5e1', background: '#ffffff', borderRadius: '4px', padding: '1px 6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
+                                        onClick={() => handleQuickCategoryOrder(cat._id, Math.max(0, (cat.displayOrder || 0) + 1))}
+                                      >
+                                        +
+                                      </button>
+                                      <button
+                                        type="button"
+                                        title="Decrease order"
+                                        style={{ border: '1px solid #cbd5e1', background: '#ffffff', borderRadius: '4px', padding: '1px 6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
+                                        onClick={() => handleQuickCategoryOrder(cat._id, Math.max(0, (cat.displayOrder || 0) - 1))}
+                                      >
+                                        -
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </motion.button>
                             ))}
@@ -3171,6 +3257,29 @@ export default function AdminDashboard() {
 
                     required
                   />
+                </div>
+
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className={styles.label} htmlFor="category-order">
+                      Display Order (Homepage &amp; Catalog)
+                    </label>
+                    <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                      Homepage Order
+                    </span>
+                  </div>
+                  <input
+                    id="category-order"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 1 (lower numbers show first)"
+                    className={styles.input}
+                    value={categoryDisplayOrder}
+                    onChange={(e) => setCategoryDisplayOrder(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                  />
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                    Controls sequence on the Homepage showcase slider. Enter 1 for 1st slide, 2 for 2nd slide, etc. (Default is 0).
+                  </p>
                 </div>
 
                 {/* 1. Card Image (800x800) */}

@@ -28,6 +28,7 @@ interface Category {
   slug: string;
   description: string;
   imageUrl: string;
+  displayOrder?: number;
 }
 
 interface Product {
@@ -246,7 +247,8 @@ export default function Home() {
         if (res && res.ok) {
           const data = await res.json().catch(() => null);
           if (data && data.success) {
-            setCategories(data.data);
+            const sorted = [...data.data].sort((a: Category, b: Category) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+            setCategories(sorted);
           }
         }
       } catch (err) {
@@ -859,7 +861,7 @@ export default function Home() {
           {/* Drum Wheel Progress Indicator Removed */}
         </section>
 
-        {/* New Section 1: "From an Empty Space to a Faculty-Ready Simulation Centre" */}
+        {/* New Section 1: "From Vision to a Fully Operational Simulation Centre" */}
         <ProcessFlowSection />
 
         {/* SOLUTIONS Section & 5 Cards with Premium Difference UI */}

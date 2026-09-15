@@ -25,7 +25,7 @@ function useCountUp(target: number, duration = 1800, trigger: boolean) {
 
 export default function SimulationCentrePage() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'skills' | 'icu' | 'debrief' | 'seminar'>('skills');
+  const [activeTab, setActiveTab] = useState<'skills' | 'hifi' | 'control' | 'debrief'>('skills');
   const [statsVisible, setStatsVisible] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
 
@@ -45,71 +45,71 @@ export default function SimulationCentrePage() {
 
   const labZones = {
     skills: {
-      title: 'Skills Lab & Task Trainer Zone',
-      tagline: 'Foundational clinical procedure training for medical & nursing students.',
+      title: 'Skills & Task Training Lab',
+      tagline: 'A flexible multi-station environment for repeated practice of essential clinical procedures.',
       features: [
-        'Multi-station procedure tables for IV, CPR, and catheterization trainers',
-        'Ergonomic storage carts for seamless consumable replenishment',
-        'High-durability easy-clean flooring and task lighting',
+        'Modular workstations for CPR, airway management, IV access, injection, catheterisation, nursing and examination skills',
+        'Durable work surfaces, task lighting, utility points and clear instructor sightlines',
+        'Nearby storage for task trainers, consumables and frequently used accessories',
       ],
-      icon: '💉',
+      icon: '🔬',
       accentColor: '#0a8d93',
       lightBg: '#e6f7f4',
       stats: [
-        { label: 'Training Stations', value: '12+' },
-        { label: 'Skill Modules', value: '30+' },
-        { label: 'Setup Days', value: '3–5' },
+        { value: 'Modular', label: 'Station Layout' },
+        { value: 'Intake-led', label: 'Capacity Planning' },
+        { value: 'Utility-ready', label: 'Infrastructure' },
       ],
     },
-    icu: {
-      title: 'High-Fidelity ICU & Operating Theater',
-      tagline: 'Realistic critical care environment for team-based emergency simulations.',
+    hifi: {
+      title: 'High-Fidelity Simulation Room',
+      tagline: 'A reconfigurable clinical environment for realistic individual and team-based scenarios.',
       features: [
-        'Pendant-mounted medical gas lines and surgical booms',
-        'Full-body wireless patient simulators with realistic vitals streaming',
-        'Ceiling-mounted multi-angle HD cameras with motorized zoom',
+        'Adaptable layouts for emergency, critical-care, ward, maternal, paediatric and perioperative simulations',
+        'Medical gases, suction, power, network and equipment locations planned around selected simulators',
+        'Integrated cameras, microphones and clear circulation for observation and team performance',
       ],
       icon: '🏥',
       accentColor: '#0B6FAD',
       lightBg: '#e0f2fe',
       stats: [
-        { label: 'HD Cameras', value: '6–8' },
-        { label: 'Simulator Beds', value: '2–4' },
-        { label: 'Fidelity Level', value: 'High' },
+        { value: 'Configurable', label: 'Clinical Environment' },
+        { value: 'Scenario-led', label: 'Equipment Planning' },
+        { value: 'AV-integrated', label: 'Observation & Recording' },
       ],
     },
-    debrief: {
-      title: 'Control Room & Video Debriefing Studio',
-      tagline: 'Centralized command center for real-time scenario control & video analysis.',
+    control: {
+      title: 'Control & Observation Room',
+      tagline: 'An enclosed operational space for managing scenarios without interrupting learner immersion.',
       features: [
-        'One-way acoustic glass window overlooking simulation suites',
-        'Multi-channel video recorder with synchronized patient vitals overlay',
-        'Comfortable debriefing lounge for reflective team discussions',
+        'Located adjacent to the simulation room with observation glazing or secure live-video feeds',
+        'Workstations for simulator operation, patient-monitor control, intercom and AV recording',
+        'Acoustic separation, controlled access and clear communication with instructors and technicians',
       ],
-      icon: '🎥',
+      icon: '🖥️',
       accentColor: '#6d28d9',
       lightBg: '#ede9fe',
       stats: [
-        { label: 'Video Channels', value: '4–8' },
-        { label: 'Viewing Seats', value: '10–20' },
-        { label: 'Sync Latency', value: '<200ms' },
+        { value: 'Adjacent', label: 'Room Relationship' },
+        { value: 'Restricted', label: 'Operational Access' },
+        { value: 'Integrated', label: 'Simulator & AV Control' },
       ],
     },
-    seminar: {
-      title: 'Multidisciplinary Seminar Suite',
-      tagline: 'Flexible didactic classroom space integrated with live lab streaming.',
+    debrief: {
+      title: 'Debriefing Room',
+      tagline: 'A private learning environment for structured reflection and performance review.',
       features: [
-        'Interactive smart displays for live case study reviews',
-        'Modular reconfigurable seating for small-group discussions',
-        'Direct low-latency audio link to simulation control consoles',
+        'Synchronized playback of scenario video, audio and simulated patient data',
+        'Flexible seating arranged for facilitator-led discussion and clear screen visibility',
+        'Positioned close to simulation rooms while remaining separated from live activity and participant movement',
       ],
-      icon: '🏫',
-      accentColor: '#b45309',
-      lightBg: '#fef3c7',
+      icon: '👥',
+      accentColor: '#0891b2',
+      lightBg: '#ecfeff',
       stats: [
-        { label: 'Seating Capacity', value: '30–60' },
-        { label: 'Display Screens', value: '2–4' },
-        { label: 'Live Streams', value: 'Real-time' },
+        { value: 'Private', label: 'Learning Environment' },
+        { value: 'Flexible', label: 'Seating Layout' },
+        { value: 'Playback-ready', label: 'Review Infrastructure' },
       ],
     },
   };
@@ -296,14 +296,16 @@ export default function SimulationCentrePage() {
         <section className={styles.labExplorerSection}>
           <div className={styles.labExplorerInner}>
             <div className={styles.sectionHeaderCenter}>
-              <span className={styles.badgeTeal}>LAB ZONE BLUEPRINTS</span>
-              <h2 className={styles.sectionTitle}>Explore Customized Simulation Zones</h2>
-              <p className={styles.sectionSub}>Select a zone to preview spatial architecture and equipment requirements.</p>
+              <span className={styles.badgeTeal}>SIMULATION CENTRE ZONES</span>
+              <h2 className={styles.sectionTitle}>Explore the Spaces Behind Effective Simulation Training</h2>
+              <p className={styles.sectionSub}>
+                Every simulation centre is planned around its curriculum, learner capacity, available space and budget. Select a zone to understand its purpose, key design priorities and typical infrastructure.
+              </p>
             </div>
 
             <div className={styles.zoneExplorerLayout}>
               <div className={styles.zoneSidebar}>
-                {(['skills', 'icu', 'debrief', 'seminar'] as const).map((key) => {
+                {(['skills', 'hifi', 'control', 'debrief'] as const).map((key) => {
                   const isActive = activeTab === key;
                   return (
                     <React.Fragment key={key}>
@@ -336,13 +338,18 @@ export default function SimulationCentrePage() {
                                 </div>
                               ))}
                             </div>
-                            <div className={styles.zoneStatsStrip} style={{ borderTop: 'none', paddingTop: 0 }}>
-                              {labZones[key].stats.map((stat, i) => (
-                                <div key={i} className={styles.zoneStat}>
-                                  <span className={styles.zoneStatValue} style={{ color: labZones[key].accentColor }}>{stat.value}</span>
-                                  <span className={styles.zoneStatLabel}>{stat.label}</span>
-                                </div>
-                              ))}
+                            <div style={{ marginTop: '4px' }}>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                                Indicators
+                              </span>
+                              <div className={styles.zoneStatsStrip} style={{ borderTop: 'none', paddingTop: 0 }}>
+                                {labZones[key].stats.map((stat, i) => (
+                                  <div key={i} className={styles.zoneStat}>
+                                    <span className={styles.zoneStatValue} style={{ color: labZones[key].accentColor }}>{stat.value}</span>
+                                    <span className={styles.zoneStatLabel}>{stat.label}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -380,13 +387,18 @@ export default function SimulationCentrePage() {
                         </div>
                       ))}
                     </div>
-                    <div className={styles.zoneStatsStrip}>
-                      {labZones[activeTab].stats.map((stat, i) => (
-                        <div key={i} className={styles.zoneStat}>
-                          <span className={styles.zoneStatValue} style={{ color: labZones[activeTab].accentColor }}>{stat.value}</span>
-                          <span className={styles.zoneStatLabel}>{stat.label}</span>
-                        </div>
-                      ))}
+                    <div style={{ marginTop: '16px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '10px' }}>
+                        Indicators
+                      </span>
+                      <div className={styles.zoneStatsStrip} style={{ borderTop: 'none', paddingTop: 0 }}>
+                        {labZones[activeTab].stats.map((stat, i) => (
+                          <div key={i} className={styles.zoneStat}>
+                            <span className={styles.zoneStatValue} style={{ color: labZones[activeTab].accentColor }}>{stat.value}</span>
+                            <span className={styles.zoneStatLabel}>{stat.label}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

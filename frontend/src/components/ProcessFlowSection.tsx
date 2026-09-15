@@ -152,7 +152,7 @@ export default function ProcessFlowSection() {
             marginBottom: '24px',
             letterSpacing: '0.5px',
           }}>
-            How we build your simulation centre
+            END-TO-END SIMULATION CENTRE DEVELOPMENT
           </div>
 
           <h2 style={{
@@ -164,7 +164,7 @@ export default function ProcessFlowSection() {
             margin: 0,
             fontFamily: 'var(--font-display)',
           }}>
-            From an Empty Space to a Faculty-Ready Simulation Centre
+            From Vision to a Fully Operational Simulation Centre
           </h2>
         </div>
 

@@ -188,7 +188,7 @@ router.post('/upload', authMiddleware, upload.single('file'), (req: Authenticate
 
 // Create Category
 router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, imageUrl, heroBannerUrl } = req.body;
+  const { name, description, imageUrl, heroBannerUrl, displayOrder } = req.body;
 
   if (!name || !description || !imageUrl) {
     return res.status(400).json({ message: 'Name, description, and imageUrl are required' });
@@ -209,6 +209,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
       description,
       imageUrl,
       heroBannerUrl: heroBannerUrl || '',
+      displayOrder: typeof displayOrder === 'number' ? displayOrder : (parseInt(displayOrder) || 0),
     });
 
     return res.status(201).json({ success: true, data: category });
@@ -273,7 +274,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
 // Update Category
 router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, imageUrl, heroBannerUrl } = req.body;
+  const { name, description, imageUrl, heroBannerUrl, displayOrder } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Category ID format' });
@@ -299,6 +300,9 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
     if (heroBannerUrl !== undefined) {
       updateFields.heroBannerUrl = heroBannerUrl;
     }
+    if (displayOrder !== undefined) {
+      updateFields.displayOrder = typeof displayOrder === 'number' ? displayOrder : (parseInt(displayOrder) || 0);
+    }
 
     const category = await Category.findByIdAndUpdate(
       id,
@@ -313,6 +317,34 @@ router.put('/categories/:id', authMiddleware, async (req: AuthenticatedRequest, 
     return res.json({ success: true, data: category });
   } catch (error: any) {
     console.error('Update category error:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+// Quick update Category Display Order
+router.patch('/categories/:id/order', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params;
+  const { displayOrder } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid Category ID format' });
+  }
+
+  try {
+    const orderNum = typeof displayOrder === 'number' ? displayOrder : (parseInt(displayOrder) || 0);
+    const category = await Category.findByIdAndUpdate(
+      id,
+      { displayOrder: orderNum },
+      { new: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    return res.json({ success: true, data: category });
+  } catch (error: any) {
+    console.error('Update category order error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });

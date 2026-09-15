@@ -48,7 +48,7 @@ router.get('/categories', async (req, res) => {
 
   try {
     const query = {};
-    const categoriesQuery = Category.find(query).sort({ name: 1 }).lean();
+    const categoriesQuery = Category.find(query).sort({ displayOrder: 1, name: 1 }).lean();
 
     if (page > 0 && limit > 0) {
       categoriesQuery.skip((page - 1) * limit).limit(limit);
