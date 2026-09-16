@@ -118,8 +118,12 @@ export default function ContactUs() {
               <div className={styles.watermark}>Contact Us</div>
               <h1 className={styles.connectTitle}>Get In Touch</h1>
               <div className={styles.underline} />
-              <p className={styles.leftText1}>We would love to hear from you !</p>
-              <p className={styles.leftText2}>Feel free to drop a line about queries or requests.</p>
+              <p className={styles.leftText1}>
+                Tell us which product you need or what you are planning for your skills lab or simulation centre.
+              </p>
+              <p className={styles.leftText2}>
+                Our team will review your requirement and contact you with the appropriate next steps.
+              </p>
             </div>
 
             {/* Right Column: Form Card */}
