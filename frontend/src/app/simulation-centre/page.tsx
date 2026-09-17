@@ -6,42 +6,9 @@ import PremiumFooter from '@/components/PremiumFooter';
 import RequestQuoteModal from '@/components/RequestQuoteModal';
 import styles from './SimulationCentre.module.css';
 
-/* ── Animated counter hook ────────────────────────────── */
-function useCountUp(target: number, duration = 1800, trigger: boolean) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!trigger) return;
-    let start = 0;
-    const step = Math.ceil(target / (duration / 16));
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { setCount(target); clearInterval(timer); }
-      else setCount(start);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [trigger, target, duration]);
-  return count;
-}
-
 export default function SimulationCentrePage() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'skills' | 'hifi' | 'control' | 'debrief'>('skills');
-  const [statsVisible, setStatsVisible] = useState(false);
-  const statsRef = useRef<HTMLDivElement>(null);
-
-  /* Intersection observer for stats count-up */
-  useEffect(() => {
-    const el = statsRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setStatsVisible(true); },
-      { threshold: 0.4 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const count100 = useCountUp(100, 1600, statsVisible);
 
   const labZones = {
     skills: {
@@ -235,36 +202,36 @@ export default function SimulationCentrePage() {
           <div className={styles.heroContainer}>
             <div className={styles.heroTextCol}>
               <div className={styles.heroKicker}>
-                <span className={styles.sparkle}>✦</span> Architectural &amp; Simulation Excellence
+                <span className={styles.sparkle}>✦</span> SIMULATION CENTRE PLANNING &amp; DESIGN
               </div>
               <h1 className={styles.heroHeadline}>
-                Design A <span className={styles.highlightText}>Simulation Centre</span> That Inspires Better Learning
+                Design a <span className={styles.highlightText}>Simulation Centre</span> That Enables Better Clinical Learning
               </h1>
               <p className={styles.heroSubline}>
-                A well-designed simulation center is more than a space — it&apos;s a high-impact learning environment that elevates clinical skills, faculty engagement, and student outcomes.
+                A well-planned simulation centre brings together educational objectives, clinical workflows, technology and faculty needs&mdash;creating an effective environment for realistic training, structured debriefing and better learner outcomes.
               </p>
 
-              {/* Animated stats */}
-              <div className={styles.heroStatsRow} ref={statsRef}>
+              {/* Stats row */}
+              <div className={styles.heroStatsRow}>
                 <div className={styles.statItem}>
-                  <div className={styles.statNumber}>{statsVisible ? `${count100}+` : '0+'}</div>
-                  <div className={styles.statLabel}>Labs Planned</div>
+                  <div className={styles.statNumber}>End-to-End</div>
+                  <div className={styles.statLabel}>PLANNING &amp; PROJECT SUPPORT</div>
                 </div>
                 <div className={styles.statDivider} />
                 <div className={styles.statItem}>
-                  <div className={styles.statNumber}>Global</div>
-                  <div className={styles.statLabel}>Brand Solutions</div>
+                  <div className={styles.statNumber}>Global Brands</div>
+                  <div className={styles.statLabel}>INTEGRATED SOLUTIONS</div>
                 </div>
                 <div className={styles.statDivider} />
                 <div className={styles.statItem}>
-                  <div className={styles.statNumber}>100%</div>
-                  <div className={styles.statLabel}>Customized Design</div>
+                  <div className={styles.statNumber}>Fully</div>
+                  <div className={styles.statLabel}>CUSTOMISED DESIGN</div>
                 </div>
               </div>
 
               <div className={styles.heroCtaGroup}>
                 <button type="button" className={styles.heroBtnPrimary} onClick={() => setIsQuoteModalOpen(true)}>
-                  <span>Book Free Consultation</span>
+                  <span>Book a Free Consultation</span>
                   <span className={styles.arrowIcon}>→</span>
                 </button>
               </div>

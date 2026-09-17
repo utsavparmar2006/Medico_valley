@@ -117,18 +117,19 @@
 .statItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 18px 28px;
+  gap: 6px;
+  padding: 18px 22px;
   flex: 1;
 }
 
 .statNumber {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #0a8d93;
   font-family: var(--font-display), sans-serif;
-  line-height: 1;
+  line-height: 1.2;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .statLabel {
@@ -136,7 +137,8 @@
   color: #94a3b8;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
 }
 
 .statDivider {
