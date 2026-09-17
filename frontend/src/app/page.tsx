@@ -759,12 +759,12 @@ export default function Home() {
 
             {/* CTAs */}
             <div ref={heroCtaWrapperRef} className={styles.heroCtaWrapper}>
-              <Link href="/products" style={{ textDecoration: 'none' }}>
+              <Link href="/contact-us" style={{ textDecoration: 'none' }}>
                 <button
                   ref={btnRef}
                   className={styles.ctaButton}
                 >
-                  <span>Explore Products</span>
+                  <span>Book Your free Consultation</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -779,9 +779,6 @@ export default function Home() {
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </button>
-              </Link>
-              <Link href="/simulation-centre" className={styles.secondaryCtaButton}>
-                Plan Your Simulation Centre
               </Link>
             </div>
           </div>
