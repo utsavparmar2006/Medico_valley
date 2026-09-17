@@ -4,6 +4,7 @@ import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import { getBackendUrl } from "@/utils/api";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -55,7 +56,9 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // Hero media ref
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const mediaWrapperRef = useRef<HTMLDivElement>(null);
 
   const [isHovered, setIsHovered] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -69,8 +72,12 @@ export default function Home() {
 
   const catalogSectionRef = useRef<HTMLDivElement>(null);
 
-  // Scoped Refs
+  // Scoped Refs for elements animated with GSAP
   const heroSectionRef = useRef<HTMLDivElement>(null);
+  const heroGlassPanelRef = useRef<HTMLDivElement>(null);
+  const heroTaglineRef = useRef<HTMLSpanElement>(null);
+  const heroSubtitleRef = useRef<HTMLParagraphElement>(null);
+  const heroCtaWrapperRef = useRef<HTMLDivElement>(null);
   const catalogHeaderRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -288,12 +295,152 @@ export default function Home() {
     }
   };
 
-  // Ensure hero video autoplays smoothly
+  // Parallax spring configuration
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { stiffness: 100, damping: 22, mass: 0.5 };
+
+  // Glass card movement and rotation (5-10px parallax)
+  const cardTranslateX = useSpring(useTransform(mouseX, [-0.5, 0.5], [-12, 12]), springConfig);
+  const cardTranslateY = useSpring(useTransform(mouseY, [-0.5, 0.5], [-12, 12]), springConfig);
+  const cardRotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), springConfig);
+  const cardRotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), springConfig);
+
+  // Background floating elements parallax (opposite directions for 3D depth)
+  const layer1X = useSpring(useTransform(mouseX, [-0.5, 0.5], [35, -35]), springConfig);
+  const layer1Y = useSpring(useTransform(mouseY, [-0.5, 0.5], [35, -35]), springConfig);
+
+  const layer2X = useSpring(useTransform(mouseX, [-0.5, 0.5], [-20, 20]), springConfig);
+  const layer2Y = useSpring(useTransform(mouseY, [-0.5, 0.5], [-20, 20]), springConfig);
+
+  // Magnetic button motion variables
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const btnX = useMotionValue(0);
+  const btnY = useMotionValue(0);
+  const springBtnX = useSpring(btnX, { stiffness: 180, damping: 15 });
+  const springBtnY = useSpring(btnY, { stiffness: 180, damping: 15 });
+
+  const handleBtnMouseMove = (e: React.MouseEvent) => {
+    if (btnRef.current) {
+      const { left, top, width, height } = btnRef.current.getBoundingClientRect();
+      const centerX = left + width / 2;
+      const centerY = top + height / 2;
+      const distX = e.clientX - centerX;
+      const distY = e.clientY - centerY;
+      btnX.set(distX * 0.35);
+      btnY.set(distY * 0.35);
+    }
+  };
+
+  const handleBtnMouseLeave = () => {
+    btnX.set(0);
+    btnY.set(0);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = e;
+    const { width, height, left, top } = currentTarget.getBoundingClientRect();
+    const xVal = (clientX - left) / width - 0.5;
+    const yVal = (clientY - top) / height - 0.5;
+    mouseX.set(xVal);
+    mouseY.set(yVal);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+    setIsHovered(false);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  // Autoplay hero video smoothly
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
+    if (heroVideoRef.current) {
+      heroVideoRef.current.play().catch(() => {});
     }
   }, []);
+
+  // GSAP Animations using safe scoped React refs
+  useGSAP(
+    () => {
+      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const heroTl = gsap.timeline();
+
+      if (isReduced) {
+        if (heroGlassPanelRef.current) {
+          heroTl.fromTo(
+            heroGlassPanelRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 1.2, ease: "power2.out" }
+          );
+        }
+      } else {
+        if (heroGlassPanelRef.current) {
+          heroTl.fromTo(
+            heroGlassPanelRef.current,
+            { opacity: 0, scale: 0.95 },
+            { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }
+          );
+        }
+
+        if (heroTaglineRef.current) {
+          heroTl.fromTo(
+            heroTaglineRef.current,
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+            "-=0.4"
+          );
+        }
+
+        const heroWords = heroGlassPanelRef.current?.querySelectorAll(".hero-word");
+        if (heroWords && heroWords.length > 0) {
+          heroTl.fromTo(
+            heroWords,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: "power3.out" },
+            "-=0.3"
+          );
+        }
+
+        if (heroSubtitleRef.current) {
+          heroTl.fromTo(
+            heroSubtitleRef.current,
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+            "-=0.4"
+          );
+        }
+
+        if (heroCtaWrapperRef.current) {
+          heroTl.fromTo(
+            heroCtaWrapperRef.current,
+            { opacity: 0, x: -20 },
+            { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" },
+            "-=0.4"
+          );
+        }
+      }
+
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      if (mediaWrapperRef.current && heroSectionRef.current && !isMobile) {
+        gsap.to(mediaWrapperRef.current, {
+          yPercent: 15,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroSectionRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        });
+      }
+    },
+    { scope: containerRef }
+  );
 
   // ScrollTriggers that depend on categories loading — Fade + Scale Zoom (Apple style)
   useGSAP(
@@ -385,22 +532,145 @@ export default function Home() {
   return (
     <div ref={containerRef} className={styles.pageWrapper}>
       <main className={styles.mainContent}>
-        {/* Hero Section - Clean Video Only */}
+        {/* Hero Section - Rebuilt with premium interactions */}
         <section
           ref={heroSectionRef}
           className={styles.heroSection}
         >
-          <div className={styles.heroVideo}>
+          {/* Background Hero Media Container */}
+          <div ref={mediaWrapperRef} className={styles.heroVideo}>
             <video
-              ref={videoRef}
+              ref={heroVideoRef}
               src={HERO_VIDEO_SRC}
-              className={styles.heroVideoElement}
+              className={styles.heroMediaChild}
               autoPlay
               muted
               loop
               playsInline
               preload="auto"
             />
+          </div>
+
+          {/* Content Overlay */}
+          <div className={styles.heroOverlay} />
+
+          {/* Floating Medical Icons with parallax depth layers */}
+          <motion.div
+            style={{ x: layer1X, y: layer1Y, top: "15%", right: "20%" }}
+            className={styles.floatingIcon}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="56"
+              height="56"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </motion.div>
+
+          <motion.div
+            style={{ x: layer2X, y: layer2Y, bottom: "25%", left: "10%" }}
+            className={styles.floatingIcon}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="44"
+              height="44"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 12h14M12 5v14" />
+            </svg>
+          </motion.div>
+
+          <motion.div
+            style={{ x: layer1X, y: layer1Y, bottom: "15%", right: "15%" }}
+            className={styles.floatingIcon}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+              <path d="m8.5 11.5 7 7" />
+            </svg>
+          </motion.div>
+
+          <motion.div
+            style={{ x: layer2X, y: layer2Y, top: "20%", left: "45%" }}
+            className={styles.floatingIcon}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+              <path d="M12 8v8M9 12h6" />
+            </svg>
+          </motion.div>
+
+          {/* Static Clean Card Panel */}
+          <div
+            ref={heroGlassPanelRef}
+            className={styles.heroGlassPanel}
+          >
+            {/* Word-by-word headline layout */}
+            <h1 className={styles.heroTitle}>
+              Medical Simulation &amp; Skills Lab Solutions for Better Clinical Training
+            </h1>
+
+            <p ref={heroSubtitleRef} className={styles.heroSubtitle}>
+              MedicoValley plans, designs, equips and supports future-ready simulation centres and skills labs with advanced simulators, task trainers, anatomy models, immersive learning technology and faculty development.
+            </p>
+
+            {/* CTAs */}
+            <div ref={heroCtaWrapperRef} className={styles.heroCtaWrapper}>
+              <Link href="/contact-us" style={{ textDecoration: 'none' }}>
+                <button
+                  ref={btnRef}
+                  className={styles.ctaButton}
+                >
+                  <span>Book Your free Consultation</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </Link>
+            </div>
           </div>
         </section>
 
