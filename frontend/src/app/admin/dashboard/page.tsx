@@ -55,6 +55,8 @@ interface ProductObj {
   manualRatingCount?: number;
   autoRatingAverage?: number;
   autoRatingCount?: number;
+  showRating?: boolean;
+  ctaText?: string;
 }
 
 interface DeltaDifferenceCardObj {
@@ -203,6 +205,8 @@ export default function AdminDashboard() {
   const [editProductManualRatingCount, setEditProductManualRatingCount] = useState<number>(25);
   const [editProductAutoAvg, setEditProductAutoAvg] = useState<number>(5.0);
   const [editProductAutoCount, setEditProductAutoCount] = useState<number>(0);
+  const [editProductShowRating, setEditProductShowRating] = useState<boolean>(true);
+  const [editProductCtaText, setEditProductCtaText] = useState<string>('Request Quote & Pricing');
 
   // Subcategory Editing & Deleting States
   const [editingSubcategory, setEditingSubcategory] = useState<SubcategoryObj | null>(null);
@@ -375,6 +379,8 @@ export default function AdminDashboard() {
   const [productRatingMode, setProductRatingMode] = useState<'manual' | 'auto'>('manual');
   const [productManualRating, setProductManualRating] = useState<number>(5.0);
   const [productManualRatingCount, setProductManualRatingCount] = useState<number>(25);
+  const [productShowRating, setProductShowRating] = useState<boolean>(true);
+  const [productCtaText, setProductCtaText] = useState<string>('Request Quote & Pricing');
 
   // Delta Difference Cards states
   const [deltaCardsList, setDeltaCardsList] = useState<DeltaDifferenceCardObj[]>([]);
@@ -887,6 +893,8 @@ export default function AdminDashboard() {
             ratingMode: productRatingMode,
             manualRating: productManualRating,
             manualRatingCount: productManualRatingCount,
+            showRating: productShowRating,
+            ctaText: productCtaText.trim() || 'Request Quote & Pricing',
           }),
         });
 
@@ -905,6 +913,8 @@ export default function AdminDashboard() {
           setProductRatingMode('manual');
           setProductManualRating(5.0);
           setProductManualRatingCount(25);
+          setProductShowRating(true);
+          setProductCtaText('Request Quote & Pricing');
           loadDashboardData();
           setActiveTab('overview');
         } else {
@@ -962,6 +972,8 @@ export default function AdminDashboard() {
     setEditProductManualRatingCount(typeof product.manualRatingCount === 'number' ? product.manualRatingCount : 25);
     setEditProductAutoAvg(typeof product.autoRatingAverage === 'number' ? product.autoRatingAverage : 5.0);
     setEditProductAutoCount(typeof product.autoRatingCount === 'number' ? product.autoRatingCount : 0);
+    setEditProductShowRating(product.showRating !== false);
+    setEditProductCtaText(product.ctaText || 'Request Quote & Pricing');
     setStatusMessage(null);
     setActiveTab('productDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1037,6 +1049,8 @@ export default function AdminDashboard() {
             ratingMode: editProductRatingMode,
             manualRating: editProductManualRating,
             manualRatingCount: editProductManualRatingCount,
+            showRating: editProductShowRating,
+            ctaText: editProductCtaText.trim() || 'Request Quote & Pricing',
           }),
         });
         const data = await response.json();
@@ -2551,6 +2565,41 @@ export default function AdminDashboard() {
                       </span>
                     </div>
 
+                    {/* Rating Visibility Toggle */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 14px',
+                      background: editProductShowRating ? '#f0fdf4' : '#fef2f2',
+                      border: `1px solid ${editProductShowRating ? '#bbf7d0' : '#fecaca'}`,
+                      borderRadius: '8px',
+                      marginBottom: '14px',
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '0.86rem', fontWeight: 700, color: editProductShowRating ? '#166534' : '#991b1b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{editProductShowRating ? '👁️' : '🚫'}</span>
+                          <span>Rating Section: {editProductShowRating ? 'Visible on Product Page' : 'Hidden on Product Page'}</span>
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
+                          {editProductShowRating
+                            ? 'The star rating and review widget are displayed on this product detail page.'
+                            : 'The star rating and review widget are completely hidden on this product detail page.'}
+                        </div>
+                      </div>
+                      <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '8px', userSelect: 'none' }}>
+                        <input
+                          type="checkbox"
+                          checked={editProductShowRating}
+                          onChange={(e) => setEditProductShowRating(e.target.checked)}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#16a34a' }}
+                        />
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: editProductShowRating ? '#166534' : '#991b1b' }}>
+                          {editProductShowRating ? 'SHOW' : 'HIDE'}
+                        </span>
+                      </label>
+                    </div>
+
                     {/* Mode Selector Toggle */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                       <button
@@ -2638,6 +2687,29 @@ export default function AdminDashboard() {
                         📊 <strong>Live User Stats:</strong> {editProductAutoAvg.toFixed(1)} ★ based on {editProductAutoCount} real visitor star submissions.
                       </div>
                     )}
+                  </div>
+
+                  {/* 🔘 Custom Call to Action (CTA) Button Text Card */}
+                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '18px', marginTop: '16px', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🎯</span>
+                      <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                        Product CTA Button Label
+                      </h4>
+                    </div>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
+                      Customize the text for the primary call-to-action button on this product detail page (e.g., &quot;Request Quote &amp; Pricing&quot;, &quot;Book Free Consultation&quot;, &quot;Enquire Now&quot;).
+                    </p>
+                    <div>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        placeholder="Request Quote & Pricing"
+                        value={editProductCtaText}
+                        onChange={(e) => setEditProductCtaText(e.target.value)}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
                   </div>
 
                   <div className={styles.detailActions}>
@@ -3734,6 +3806,41 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Rating Visibility Toggle */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    background: productShowRating ? '#f0fdf4' : '#fef2f2',
+                    border: `1px solid ${productShowRating ? '#bbf7d0' : '#fecaca'}`,
+                    borderRadius: '8px',
+                    marginBottom: '14px',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 700, color: productShowRating ? '#166534' : '#991b1b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>{productShowRating ? '👁️' : '🚫'}</span>
+                        <span>Rating Section: {productShowRating ? 'Visible on Product Page' : 'Hidden on Product Page'}</span>
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
+                        {productShowRating
+                          ? 'The star rating and review widget are displayed on this product detail page.'
+                          : 'The star rating and review widget are completely hidden on this product detail page.'}
+                      </div>
+                    </div>
+                    <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '8px', userSelect: 'none' }}>
+                      <input
+                        type="checkbox"
+                        checked={productShowRating}
+                        onChange={(e) => setProductShowRating(e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#16a34a' }}
+                      />
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: productShowRating ? '#166534' : '#991b1b' }}>
+                        {productShowRating ? 'SHOW' : 'HIDE'}
+                      </span>
+                    </label>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                     <button
                       type="button"
@@ -3800,6 +3907,28 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* 🔘 Custom Call to Action (CTA) Button Text Card */}
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '18px', margin: '8px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🎯</span>
+                    <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                      Product CTA Button Label
+                    </h4>
+                  </div>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
+                    Customize the text for the primary call-to-action button on this product detail page (e.g., &quot;Request Quote &amp; Pricing&quot;, &quot;Book Free Consultation&quot;, &quot;Enquire Now&quot;).
+                  </p>
+                  <div>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      placeholder="Request Quote & Pricing"
+                      value={productCtaText}
+                      onChange={(e) => setProductCtaText(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 

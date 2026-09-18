@@ -221,7 +221,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
 
 // Create Product
 router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText } = req.body;
 
   if (!name || !description || !categoryId || !mediaUrls || !Array.isArray(mediaUrls)) {
     return res.status(400).json({ message: 'Name, description, categoryId, and mediaUrls (array) are required' });
@@ -262,6 +262,8 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
       manualRatingCount: typeof manualRatingCount === 'number' ? Math.max(0, manualRatingCount) : 25,
       autoRatingAverage: 5.0,
       autoRatingCount: 0,
+      showRating: showRating !== undefined ? Boolean(showRating) : true,
+      ctaText: typeof ctaText === 'string' && ctaText.trim() ? ctaText.trim() : 'Request Quote & Pricing',
     });
 
     return res.status(201).json({ success: true, data: product });
@@ -352,7 +354,7 @@ router.patch('/categories/:id/order', authMiddleware, async (req: AuthenticatedR
 // Update Product
 router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Product ID format' });
@@ -405,6 +407,12 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
     }
     if (typeof manualRatingCount === 'number') {
       updatePayload.manualRatingCount = Math.max(0, manualRatingCount);
+    }
+    if (showRating !== undefined) {
+      updatePayload.showRating = Boolean(showRating);
+    }
+    if (ctaText !== undefined) {
+      updatePayload.ctaText = typeof ctaText === 'string' && ctaText.trim() ? ctaText.trim() : 'Request Quote & Pricing';
     }
 
     const product = await Product.findByIdAndUpdate(

@@ -191,13 +191,16 @@ export default async function ProductDetailPage({ params }: Props) {
               <h1 className={styles.productTitle}>{product.name}</h1>
             </div>
 
-            <ProductRatingWidget
-              productId={product._id}
-              productSlug={productSlug}
-              categorySlug={categorySlug}
-            />
-
-            <div className={styles.divider} style={{ margin: '12px 0 8px 0' }} />
+            {product.showRating !== false && (
+              <>
+                <ProductRatingWidget
+                  productId={product._id}
+                  productSlug={productSlug}
+                  categorySlug={categorySlug}
+                />
+                <div className={styles.divider} style={{ margin: '12px 0 8px 0' }} />
+              </>
+            )}
 
             <ProductActionButtons
               productId={product._id}
@@ -205,6 +208,7 @@ export default async function ProductDetailPage({ params }: Props) {
               productSlug={productSlug}
               categoryName={product.category?.name || ''}
               catalogUrl={product.catalogUrl}
+              ctaText={product.ctaText}
             />
           </aside>
         </div>

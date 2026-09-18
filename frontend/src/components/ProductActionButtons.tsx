@@ -12,6 +12,7 @@ interface Props {
   productSlug: string;
   categoryName: string;
   catalogUrl?: string;
+  ctaText?: string;
 }
 
 export default function ProductActionButtons({
@@ -20,13 +21,16 @@ export default function ProductActionButtons({
   productSlug,
   categoryName,
   catalogUrl,
+  ctaText,
 }: Props) {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+
+  const displayCtaText = ctaText && ctaText.trim() ? ctaText.trim() : 'Request Quote & Pricing';
 
   return (
     <>
       <div className={styles.actionButtonsContainer}>
-        {/* Row 1: Primary CTA (Request Quote & Pricing) + Share Button side-by-side */}
+        {/* Row 1: Primary CTA + Share Button side-by-side */}
         <div className={styles.primaryRow}>
           <button
             type="button"
@@ -40,7 +44,7 @@ export default function ProductActionButtons({
               <line x1="9" y1="16" x2="15" y2="16" />
               <line x1="9" y1="8" x2="13" y2="8" />
             </svg>
-            <span className={styles.quoteBtnText}>Request Quote &amp; Pricing</span>
+            <span className={styles.quoteBtnText}>{displayCtaText}</span>
             <span className={styles.quoteArrow}>&rarr;</span>
           </button>
 

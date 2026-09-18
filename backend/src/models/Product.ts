@@ -16,6 +16,8 @@ export interface IProduct extends Document {
   manualRatingCount?: number;
   autoRatingAverage?: number;
   autoRatingCount?: number;
+  showRating?: boolean;
+  ctaText?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +39,8 @@ const ProductSchema: Schema = new Schema(
     manualRatingCount: { type: Number, min: 0, default: 25 },
     autoRatingAverage: { type: Number, min: 1, max: 5, default: 5.0 },
     autoRatingCount: { type: Number, min: 0, default: 0 },
+    showRating: { type: Boolean, default: true },
+    ctaText: { type: String, default: 'Request Quote & Pricing', trim: true },
   },
   { timestamps: true }
 );
