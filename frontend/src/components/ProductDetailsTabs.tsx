@@ -62,9 +62,11 @@ export default function ProductDetailsTabs({ description, productName, categoryN
       {/* ── Tabs Navigation ── */}
       <div style={{
         display: 'flex',
-        gap: '40px',
+        gap: '24px',
+        flexWrap: 'wrap',
+        maxWidth: '100%',
         borderBottom: '1px solid #e2e8f0',
-        marginBottom: '28px',
+        marginBottom: '24px',
         paddingBottom: '0.1px',
       }}>
         <button
