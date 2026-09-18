@@ -167,6 +167,28 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = result.data;
   const relatedProducts = await getRelatedProducts(categorySlug, productSlug, product.subcategory?.slug);
 
+  // Generate concise overview & key highlights when review section is hidden
+  const getQuickBullets = () => {
+    if (product.keyFeatures && product.keyFeatures.length > 0) {
+      return product.keyFeatures.slice(0, 3);
+    }
+    const sentences = (product.description || '')
+      .split(/(?<=[.?!])\s+/)
+      .filter((s: string) => s.trim().length > 12 && !s.toLowerCase().includes('for over a decade'));
+    const list = sentences.slice(0, 3);
+    if (list.length < 2) {
+      list.push('High-fidelity medical simulator engineered for realistic hands-on clinical training.');
+      list.push('Durable, medical-grade components designed for intensive institutional repeat practice.');
+      list.push('Complete turnkey setup with verified manufacturer warranty & expert technical support.');
+    }
+    return list.slice(0, 3);
+  };
+
+  const quickBullets = getQuickBullets();
+  const shortOverview = product.description && product.description.length > 220
+    ? product.description.substring(0, 220).trim() + '...'
+    : product.description;
+
   return (
     <div className={`${styles.productDetailPage} animate-fade-in`}>
       <div className={styles.productDetailShell}>
@@ -191,7 +213,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <h1 className={styles.productTitle}>{product.name}</h1>
             </div>
 
-            {product.showRating !== false && (
+            {product.showRating !== false ? (
               <>
                 <ProductRatingWidget
                   productId={product._id}
@@ -200,6 +222,31 @@ export default async function ProductDetailPage({ params }: Props) {
                 />
                 <div className={styles.divider} style={{ margin: '12px 0 8px 0' }} />
               </>
+            ) : (
+              <div className={styles.noReviewHeroBlock}>
+                {shortOverview && (
+                  <p className={styles.noReviewSummary}>{shortOverview}</p>
+                )}
+
+                {quickBullets.length > 0 && (
+                  <div className={styles.noReviewHighlights}>
+                    <div className={styles.highlightsHeader}>
+                      <span className={styles.highlightsIcon}>⚡</span>
+                      <span className={styles.highlightsTitle}>Key Features &amp; Specifications</span>
+                    </div>
+                    <ul className={styles.highlightsList}>
+                      {quickBullets.map((bullet: string, idx: number) => (
+                        <li key={idx} className={styles.highlightsItem}>
+                          <span className={styles.checkBadge}>✓</span>
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className={styles.divider} style={{ margin: '8px 0 6px 0' }} />
+              </div>
             )}
 
             <ProductActionButtons

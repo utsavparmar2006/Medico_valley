@@ -1,8 +1,8 @@
 .actionButtonsContainer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 22px;
+  gap: 14px;
+  margin-top: 14px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -11,7 +11,7 @@
 .primaryRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -20,37 +20,45 @@
 .quoteBtn {
   flex: 1;
   min-width: 0;
-  height: 48px;
+  min-height: 52px;
   background: linear-gradient(135deg, #0a8d93 0%, #00BFA6 100%);
   color: #ffffff;
   border: none;
-  padding: 0 16px;
+  padding: 10px 20px;
   border-radius: 12px;
   font-weight: 750;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(10, 141, 147, 0.3);
-  transition: all 0.22s ease;
+  box-shadow: 0 8px 24px rgba(10, 141, 147, 0.32);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .quoteBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(10, 141, 147, 0.45);
+  box-shadow: 0 12px 30px rgba(10, 141, 147, 0.45);
+  background: linear-gradient(135deg, #097d83 0%, #00a892 100%);
+}
+
+.quoteBtn:hover .quoteArrow {
+  transform: translateX(4px);
 }
 
 .quoteBtnText {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  display: inline-block;
+  line-height: 1.25;
+  font-weight: 750;
 }
 
 .quoteArrow {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -62,8 +70,8 @@
 .catalogBtn {
   width: 100%;
   max-width: 100%;
-  height: 46px;
-  background: transparent;
+  height: 48px;
+  background: #f8fafc;
   border: 1.5px solid #0a8d93;
   color: #0a8d93;
   padding: 0 16px;
@@ -85,15 +93,41 @@
   transform: translateY(-1px);
 }
 
+/* Trust Badges in Action Box */
+.trustBadgeContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.trustBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.trustBadgeIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
 @media (max-width: 480px) {
   .primaryRow {
     gap: 8px;
   }
 
   .quoteBtn {
-    height: 46px;
-    padding: 0 12px;
-    font-size: 0.84rem;
+    min-height: 48px;
+    padding: 8px 12px;
+    font-size: 0.86rem;
     gap: 6px;
   }
 
@@ -106,5 +140,10 @@
     height: 44px;
     font-size: 0.82rem;
     padding: 0 10px;
+  }
+
+  .trustBadgeContainer {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }

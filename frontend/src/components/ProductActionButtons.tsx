@@ -68,6 +68,26 @@ export default function ProductActionButtons({
             <span>Download Catalog PDF</span>
           </a>
         )}
+
+        {/* Row 3: Trust & Procurement Assurance Badges */}
+        <div className={styles.trustBadgeContainer}>
+          <div className={styles.trustBadgeItem}>
+            <span className={styles.trustBadgeIcon}>🛡️</span>
+            <span>Verified Medical Standard</span>
+          </div>
+          <div className={styles.trustBadgeItem}>
+            <span className={styles.trustBadgeIcon}>⚡</span>
+            <span>Fast Quote in &lt; 24h</span>
+          </div>
+          <div className={styles.trustBadgeItem}>
+            <span className={styles.trustBadgeIcon}>🚚</span>
+            <span>Pan-India &amp; Global Shipping</span>
+          </div>
+          <div className={styles.trustBadgeItem}>
+            <span className={styles.trustBadgeIcon}>👨‍⚕️</span>
+            <span>Clinical Onboarding &amp; Demo</span>
+          </div>
+        </div>
       </div>
 
       {/* Quotation Modal Popup */}
