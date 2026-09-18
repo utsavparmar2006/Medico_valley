@@ -16,17 +16,7 @@ const LINKS = {
   ],
   company: [
     { label: 'Contact Us', href: '/contact-us' },
-    { label: 'Global Partners', href: '#' },
-    { label: 'Research & Innovation', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'News & Media', href: '#' },
-  ],
-  support: [
-    { label: 'Help & FAQ', href: '#' },
-    { label: 'Technical Support', href: '#' },
-    { label: 'Product Catalogue', href: '#' },
-    { label: 'Shipping Policy', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
+    { label: 'Blog', href: '/blog' },
   ],
 };
 
@@ -184,11 +174,10 @@ export default function PremiumFooter() {
             </div>
           </motion.div>
 
-          {/* Columns 2, 3, 4: Link Columns */}
+          {/* Columns 2, 3: Link Columns */}
           {[
             { title: 'Products', links: productsLinks },
             { title: 'Company', links: LINKS.company },
-            { title: 'Support', links: LINKS.support },
           ].map((col, i) => (
             <motion.div
               key={col.title}

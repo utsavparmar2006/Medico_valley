@@ -56,10 +56,10 @@
   .container { padding: 36px 20px 24px; border-radius: 24px; }
 }
 
-/* ─── MAIN ROW: 4 Columns ─── */
+/* ─── MAIN ROW: 3 Columns ─── */
 .mainRow {
   display: grid;
-  grid-template-columns: 1.4fr repeat(3, 1fr);
+  grid-template-columns: 1.6fr 1fr 1fr;
   gap: 60px;
   padding-bottom: 48px;
   align-items: start;
@@ -76,12 +76,12 @@
 
 @media (max-width: 600px) {
   .mainRow {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     padding-bottom: 24px;
   }
   .brandCol {
-    grid-column: span 3;
+    grid-column: span 2;
     gap: 12px;
     margin-bottom: 8px;
   }
