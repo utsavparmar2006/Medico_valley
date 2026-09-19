@@ -2737,7 +2737,7 @@ export default function AdminDashboard() {
                       </h4>
                     </div>
                     <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
-                      Paste any YouTube video link (e.g. watch link, youtu.be, or shorts). It will be embedded on the product page.
+                      Paste a public YouTube product or demonstration link. (Tip: Ensure embedding is enabled by the video creator, which is standard for product and training videos).
                     </p>
                     <div>
                       <input
@@ -2759,7 +2759,8 @@ export default function AdminDashboard() {
                             src={getYouTubeEmbedUrl(editProductYoutubeUrl)!}
                             title="YouTube Video Preview"
                             style={{ width: '100%', height: '100%', border: 0 }}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin"
                             allowFullScreen
                           />
                         </div>
@@ -4003,7 +4004,7 @@ export default function AdminDashboard() {
                     </h4>
                   </div>
                   <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
-                    Paste any YouTube video link (e.g. watch link, youtu.be, or shorts). It will be embedded on the product page.
+                    Paste a public YouTube product or demonstration link. (Tip: Ensure embedding is enabled by the video creator, which is standard for product and training videos).
                   </p>
                   <div>
                     <input
@@ -4024,7 +4025,8 @@ export default function AdminDashboard() {
                           src={getYouTubeEmbedUrl(productYoutubeUrl)!}
                           title="YouTube Video Preview"
                           style={{ width: '100%', height: '100%', border: 0 }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
                           allowFullScreen
                         />
                       </div>
