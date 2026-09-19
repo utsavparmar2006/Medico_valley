@@ -6,6 +6,7 @@ import ProductMediaGallery from '@/components/ProductMediaGallery';
 import ProductDetailsTabs from '@/components/ProductDetailsTabs';
 import ProductActionButtons from '@/components/ProductActionButtons';
 import ProductRatingWidget from '@/components/ProductRatingWidget';
+import YouTubePlayer from '@/components/YouTubePlayer';
 import { getYouTubeEmbedUrl } from '@/utils/youtube';
 import styles from '../../products.module.css';
 
@@ -276,25 +277,10 @@ export default async function ProductDetailPage({ params }: Props) {
               </p>
             </div>
 
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '880px',
-              aspectRatio: '16/9',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              background: '#0a192f',
-              boxShadow: '0 10px 32px rgba(0, 0, 0, 0.12)',
-              border: '1px solid #e2e8f0',
-            }}>
-              <iframe
-                src={ytEmbedUrl}
-                title={`${product.name} Video Demonstration`}
-                style={{ width: '100%', height: '100%', border: 0 }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
+            <YouTubePlayer
+              youtubeUrl={product.youtubeUrl}
+              title={`${product.name} Video Demonstration`}
+            />
           </section>
         )}
 

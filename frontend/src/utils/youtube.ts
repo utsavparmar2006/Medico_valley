@@ -33,7 +33,7 @@ export function getYouTubeVideoId(url?: string | null): string | null {
 export function getYouTubeEmbedUrl(url?: string | null): string | null {
   const videoId = getYouTubeVideoId(url);
   if (!videoId) return null;
-  return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+  return `https://www.youtube-nocookie.com/embed/${videoId}?playsinline=1&rel=0&modestbranding=1&enablejsapi=1`;
 }
 
 export function getYouTubeThumbnail(url?: string | null, quality: 'default' | 'hq' | 'maxres' = 'hq'): string | null {
