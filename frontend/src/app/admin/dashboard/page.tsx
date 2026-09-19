@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBackendUrl } from '@/utils/api';
+import { getYouTubeEmbedUrl } from '@/utils/youtube';
 import styles from './dashboard.module.css';
 
 interface CategoryObj {
@@ -57,6 +58,7 @@ interface ProductObj {
   autoRatingCount?: number;
   showRating?: boolean;
   ctaText?: string;
+  youtubeUrl?: string;
 }
 
 interface DeltaDifferenceCardObj {
@@ -207,6 +209,7 @@ export default function AdminDashboard() {
   const [editProductAutoCount, setEditProductAutoCount] = useState<number>(0);
   const [editProductShowRating, setEditProductShowRating] = useState<boolean>(true);
   const [editProductCtaText, setEditProductCtaText] = useState<string>('Request Quote & Pricing');
+  const [editProductYoutubeUrl, setEditProductYoutubeUrl] = useState<string>('');
 
   // Subcategory Editing & Deleting States
   const [editingSubcategory, setEditingSubcategory] = useState<SubcategoryObj | null>(null);
@@ -381,6 +384,7 @@ export default function AdminDashboard() {
   const [productManualRatingCount, setProductManualRatingCount] = useState<number>(25);
   const [productShowRating, setProductShowRating] = useState<boolean>(true);
   const [productCtaText, setProductCtaText] = useState<string>('Request Quote & Pricing');
+  const [productYoutubeUrl, setProductYoutubeUrl] = useState<string>('');
 
   // Delta Difference Cards states
   const [deltaCardsList, setDeltaCardsList] = useState<DeltaDifferenceCardObj[]>([]);
@@ -895,6 +899,7 @@ export default function AdminDashboard() {
             manualRatingCount: productManualRatingCount,
             showRating: productShowRating,
             ctaText: productCtaText.trim() || 'Request Quote & Pricing',
+            youtubeUrl: productYoutubeUrl.trim() || undefined,
           }),
         });
 
@@ -915,6 +920,7 @@ export default function AdminDashboard() {
           setProductManualRatingCount(25);
           setProductShowRating(true);
           setProductCtaText('Request Quote & Pricing');
+          setProductYoutubeUrl('');
           loadDashboardData();
           setActiveTab('overview');
         } else {
@@ -974,6 +980,7 @@ export default function AdminDashboard() {
     setEditProductAutoCount(typeof product.autoRatingCount === 'number' ? product.autoRatingCount : 0);
     setEditProductShowRating(product.showRating !== false);
     setEditProductCtaText(product.ctaText || 'Request Quote & Pricing');
+    setEditProductYoutubeUrl(product.youtubeUrl || '');
     setStatusMessage(null);
     setActiveTab('productDetail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1051,6 +1058,7 @@ export default function AdminDashboard() {
             manualRatingCount: editProductManualRatingCount,
             showRating: editProductShowRating,
             ctaText: editProductCtaText.trim() || 'Request Quote & Pricing',
+            youtubeUrl: editProductYoutubeUrl.trim() || undefined,
           }),
         });
         const data = await response.json();
@@ -2712,6 +2720,53 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* YouTube Embedded Video URL */}
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '16px',
+                    background: '#ffffff',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#ef4444">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                      <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                        YouTube Video Link (Embedded Video)
+                      </h4>
+                    </div>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
+                      Paste any YouTube video link (e.g. watch link, youtu.be, or shorts). It will be embedded on the product page.
+                    </p>
+                    <div>
+                      <input
+                        type="url"
+                        className={styles.input}
+                        placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                        value={editProductYoutubeUrl}
+                        onChange={(e) => setEditProductYoutubeUrl(e.target.value)}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    {editProductYoutubeUrl && getYouTubeEmbedUrl(editProductYoutubeUrl) && (
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0a8d93', marginBottom: '6px' }}>
+                          ✓ Video Preview:
+                        </div>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '360px', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                          <iframe
+                            src={getYouTubeEmbedUrl(editProductYoutubeUrl)!}
+                            title="YouTube Video Preview"
+                            style={{ width: '100%', height: '100%', border: 0 }}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className={styles.detailActions}>
                     <button type="button" className={styles.secondaryButton} onClick={() => setActiveTab(detailReturnTab)}>Cancel</button>
                     <button type="submit" className={styles.primaryButton} disabled={isPending || uploadingFile}>
@@ -3929,6 +3984,52 @@ export default function AdminDashboard() {
                       onChange={(e) => setProductCtaText(e.target.value)}
                     />
                   </div>
+                </div>
+
+                {/* YouTube Embedded Video URL */}
+                <div style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  background: '#ffffff',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#ef4444">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 700, color: '#0f172a' }}>
+                      YouTube Video Link (Embedded Video)
+                    </h4>
+                  </div>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#64748b' }}>
+                    Paste any YouTube video link (e.g. watch link, youtu.be, or shorts). It will be embedded on the product page.
+                  </p>
+                  <div>
+                    <input
+                      type="url"
+                      className={styles.input}
+                      placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                      value={productYoutubeUrl}
+                      onChange={(e) => setProductYoutubeUrl(e.target.value)}
+                    />
+                  </div>
+                  {productYoutubeUrl && getYouTubeEmbedUrl(productYoutubeUrl) && (
+                    <div style={{ marginTop: '12px' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#0a8d93', marginBottom: '6px' }}>
+                        ✓ Video Preview:
+                      </div>
+                      <div style={{ position: 'relative', width: '100%', maxWidth: '360px', aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                        <iframe
+                          src={getYouTubeEmbedUrl(productYoutubeUrl)!}
+                          title="YouTube Video Preview"
+                          style={{ width: '100%', height: '100%', border: 0 }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

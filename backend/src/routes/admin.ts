@@ -221,7 +221,7 @@ router.post('/categories', authMiddleware, async (req: AuthenticatedRequest, res
 
 // Create Product
 router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText, youtubeUrl } = req.body;
 
   if (!name || !description || !categoryId || !mediaUrls || !Array.isArray(mediaUrls)) {
     return res.status(400).json({ message: 'Name, description, categoryId, and mediaUrls (array) are required' });
@@ -264,6 +264,7 @@ router.post('/products', authMiddleware, async (req: AuthenticatedRequest, res: 
       autoRatingCount: 0,
       showRating: showRating !== undefined ? Boolean(showRating) : true,
       ctaText: typeof ctaText === 'string' && ctaText.trim() ? ctaText.trim() : 'Request Quote & Pricing',
+      youtubeUrl: typeof youtubeUrl === 'string' && youtubeUrl.trim() ? youtubeUrl.trim() : undefined,
     });
 
     return res.status(201).json({ success: true, data: product });
@@ -354,7 +355,7 @@ router.patch('/categories/:id/order', authMiddleware, async (req: AuthenticatedR
 // Update Product
 router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText } = req.body;
+  const { name, description, categoryId, subcategoryId, mediaUrls, catalogUrl, keyFeatures, displayOrder, ratingMode, manualRating, manualRatingCount, showRating, ctaText, youtubeUrl } = req.body;
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid Product ID format' });
@@ -413,6 +414,9 @@ router.put('/products/:id', authMiddleware, async (req: AuthenticatedRequest, re
     }
     if (ctaText !== undefined) {
       updatePayload.ctaText = typeof ctaText === 'string' && ctaText.trim() ? ctaText.trim() : 'Request Quote & Pricing';
+    }
+    if (youtubeUrl !== undefined) {
+      updatePayload.youtubeUrl = typeof youtubeUrl === 'string' && youtubeUrl.trim() ? youtubeUrl.trim() : undefined;
     }
 
     const product = await Product.findByIdAndUpdate(

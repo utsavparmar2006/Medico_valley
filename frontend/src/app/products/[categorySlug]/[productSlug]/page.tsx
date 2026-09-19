@@ -6,6 +6,7 @@ import ProductMediaGallery from '@/components/ProductMediaGallery';
 import ProductDetailsTabs from '@/components/ProductDetailsTabs';
 import ProductActionButtons from '@/components/ProductActionButtons';
 import ProductRatingWidget from '@/components/ProductRatingWidget';
+import { getYouTubeEmbedUrl } from '@/utils/youtube';
 import styles from '../../products.module.css';
 
 interface Props {
@@ -166,6 +167,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const product = result.data;
   const relatedProducts = await getRelatedProducts(categorySlug, productSlug, product.subcategory?.slug);
+  const ytEmbedUrl = getYouTubeEmbedUrl(product.youtubeUrl);
 
   return (
     <div className={`${styles.productDetailPage} animate-fade-in`}>
@@ -181,7 +183,10 @@ export default async function ProductDetailPage({ params }: Props) {
         </Link>
 
         <div className={styles.detailGrid}>
-          <ProductMediaGallery mediaUrls={product.mediaUrls} productName={product.name} />
+          <ProductMediaGallery
+            mediaUrls={product.mediaUrls}
+            productName={product.name}
+          />
 
           <aside className={styles.infoSection}>
             <div className={styles.productHeadingBlock}>
@@ -219,6 +224,79 @@ export default async function ProductDetailPage({ params }: Props) {
           categoryName={product.category?.name}
           keyFeatures={product.keyFeatures}
         />
+
+        {/* ── Dedicated YouTube Video Demonstration Section ── */}
+        {ytEmbedUrl && (
+          <section
+            aria-labelledby="product-video-heading"
+            style={{
+              marginTop: '56px',
+              borderTop: '1px solid #e2e8f0',
+              paddingTop: '36px',
+              width: '100%',
+              fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
+            }}
+          >
+            <div style={{ marginBottom: '20px' }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '0.74rem',
+                fontWeight: 800,
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                color: '#ef4444',
+                background: '#fef2f2',
+                border: '1px solid #fee2e2',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                marginBottom: '8px',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                Video Demonstration
+              </span>
+              <h2 id="product-video-heading" style={{
+                fontSize: '1.35rem',
+                fontWeight: 800,
+                color: '#0f172a',
+                margin: '4px 0 0 0',
+                lineHeight: 1.3,
+              }}>
+                Watch {product.name} in Action
+              </h2>
+              <p style={{
+                fontSize: '0.88rem',
+                color: '#64748b',
+                margin: '6px 0 0 0',
+              }}>
+                Explore comprehensive features, real-world clinical application, and training workflow.
+              </p>
+            </div>
+
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '880px',
+              aspectRatio: '16/9',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              background: '#0a192f',
+              boxShadow: '0 10px 32px rgba(0, 0, 0, 0.12)',
+              border: '1px solid #e2e8f0',
+            }}>
+              <iframe
+                src={ytEmbedUrl}
+                title={`${product.name} Video Demonstration`}
+                style={{ width: '100%', height: '100%', border: 0 }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        )}
 
         {relatedProducts.length > 0 && (
           <section className={styles.relatedSection} aria-labelledby="related-products-title">

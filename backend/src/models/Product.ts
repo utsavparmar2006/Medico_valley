@@ -18,6 +18,7 @@ export interface IProduct extends Document {
   autoRatingCount?: number;
   showRating?: boolean;
   ctaText?: string;
+  youtubeUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,7 @@ const ProductSchema: Schema = new Schema(
     autoRatingCount: { type: Number, min: 0, default: 0 },
     showRating: { type: Boolean, default: true },
     ctaText: { type: String, default: 'Request Quote & Pricing', trim: true },
+    youtubeUrl: { type: String, trim: true },
   },
   { timestamps: true }
 );
