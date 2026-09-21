@@ -106,7 +106,16 @@ export default function Home() {
 
     // Update ScrollTrigger on scroll
     lenis.on("scroll", ScrollTrigger.update);
-    lenis.scrollTo(0, { immediate: true });
+    if (window.location.hash) {
+      const target = document.querySelector(window.location.hash);
+      if (target) {
+        lenis.scrollTo(target as HTMLElement, { offset: -80 });
+      } else {
+        lenis.scrollTo(0, { immediate: true });
+      }
+    } else {
+      lenis.scrollTo(0, { immediate: true });
+    }
 
     // Sync GSAP ticker with Lenis
     const updateTicker = (time: number) => {
@@ -640,11 +649,11 @@ export default function Home() {
           >
             {/* Word-by-word headline layout */}
             <h1 className={styles.heroTitle}>
-              Medical Simulation &amp; Skills Lab Solutions for Better Clinical Training
+              Build Your Simulation Center
             </h1>
 
             <p ref={heroSubtitleRef} className={styles.heroSubtitle}>
-              MedicoValley plans, designs, equips and supports future-ready simulation centres and skills labs with advanced simulators, task trainers, anatomy models, immersive learning technology and faculty development.
+              Whether you are building a new facility, upgrading an existing lab or sourcing a specific training solution, MedicoValley helps you move from requirement to implementation with clarity.
             </p>
 
             {/* CTAs */}

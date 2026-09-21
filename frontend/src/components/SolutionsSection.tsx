@@ -181,7 +181,7 @@ export default function SolutionsSection() {
           margin: '0 auto',
           maxWidth: '780px',
         }}>
-          Whether you are building a new facility, upgrading an existing lab or sourcing a specific training solution, MedicoValley helps you move from requirement to implementation with clarity.
+          From complete simulation centre planning to medical simulators, task trainers, anatomy models and immersive learning, explore solutions selected around your curriculum, learner needs, available space and budget.
         </p>
       </div>
 

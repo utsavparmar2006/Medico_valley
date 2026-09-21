@@ -11,7 +11,8 @@ import styles from './GlobalNavbar.module.css';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'Simulation Centre', href: '/simulation-centre' },
+  { label: 'Planning & Designing', href: '/simulation-centre' },
+  { label: 'Our Clients', href: '/#clients' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact Us', href: '/contact-us' },
 ];
@@ -129,20 +130,40 @@ export default function GlobalNavbar() {
     );
   });
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('/#')) {
+      if (pathname === '/') {
+        e.preventDefault();
+        const targetId = href.replace('/#', '');
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+          window.history.pushState(null, '', href);
+        }
+      }
+    }
+  };
+
   return (
     <>
-      <header className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`}>
-
-        <Link href="/" className={styles.logoContainer} aria-label="MedicoValley Home">
-          {/* Cropped icon-only PNG — clean teal lotus symbol */}
-          <img
+      <header
+        className={`${styles.navbar} ${
+          scrolled ? styles.navbarScrolled : ''
+        }`}
+      >
+        {/* Left side: Brand Logo */}
+        <Link href="/" className={styles.logoContainer}>
+          <Image
             src="/logo-icon-only.png"
-            alt="MedicoValley icon"
+            alt="MedicoValley Logo"
+            width={46}
+            height={46}
             className={styles.logoIconWrap}
+            priority
           />
-          {/* Brand text */}
           <div className={styles.logoBrandText}>
             <span className={styles.logoBrandName}>MedicoValley</span>
+            <span className={styles.logoBrandTagline}>Setting the Standard</span>
           </div>
         </Link>
 
@@ -154,6 +175,8 @@ export default function GlobalNavbar() {
               const isActive =
                 item.href === '/'
                   ? pathname === '/'
+                  : item.href.startsWith('/#')
+                  ? false
                   : pathname.startsWith(item.href);
 
               return (
@@ -161,6 +184,7 @@ export default function GlobalNavbar() {
                   key={item.label}
                   href={item.href}
                   className={isActive ? styles.navLinkActive : styles.navLink}
+                  onClick={(e) => handleNavClick(e, item.href)}
                 >
                   {item.label}
                 </Link>
@@ -201,13 +225,18 @@ export default function GlobalNavbar() {
             const isActive =
               item.href === '/'
                 ? pathname === '/'
+                : item.href.startsWith('/#')
+                ? false
                 : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.label}
                 href={item.href}
                 className={isActive ? styles.mobileNavLinkActive : styles.mobileNavLink}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  setIsMobileMenuOpen(false);
+                  handleNavClick(e, item.href);
+                }}
               >
                 {item.label}
               </Link>

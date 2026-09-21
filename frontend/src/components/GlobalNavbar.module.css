@@ -167,9 +167,34 @@
   color: var(--sterile-white);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1240px) {
+  .navRight {
+    gap: 20px;
+  }
+  .navLinks {
+    gap: 22px;
+  }
+}
+
+@media (max-width: 1040px) {
   .navbar {
-    padding: 0 28px;
+    padding: 0 24px;
+  }
+  .navRight {
+    gap: 16px;
+  }
+  .navLinks {
+    gap: 14px;
+  }
+  .navLink,
+  .navLinkActive {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .navLinks {
+    display: none;
   }
 }
 
@@ -280,7 +305,7 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .hamburgerBtn {
     display: flex;
   }
@@ -291,7 +316,7 @@
   display: none;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .mobileMenu {
     display: flex;
     flex-direction: column;

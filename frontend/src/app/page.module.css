@@ -2614,6 +2614,7 @@
 .clientSection {
   position: relative;
   width: 100%;
+  scroll-margin-top: 80px;
   padding: 60px 40px 24px 40px;
   background-color: #ffffff; /* Matches navbar bg */
   border-top: none;

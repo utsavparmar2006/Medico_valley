@@ -49,7 +49,7 @@ export default function InstitutionTrustSection() {
     : [];
 
   return (
-    <section className={styles.clientSection}>
+    <section id="clients" className={styles.clientSection}>
       <div className={styles.clientContainer}>
         {/* Header content */}
         <div className={styles.clientHeader}>

@@ -15,6 +15,7 @@ const LINKS = {
     { label: 'Lab Equipment', href: '#' },
   ],
   company: [
+    { label: 'Product Catalogue', href: '/products' },
     { label: 'Contact Us', href: '/contact-us' },
     { label: 'Blog', href: '/blog' },
   ],
@@ -151,7 +152,7 @@ export default function PremiumFooter() {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>Mumbai, Maharashtra, India</span>
+                <span>Baner, Pune, Maharashtra, India - 411045</span>
               </div>
             </div>
 
