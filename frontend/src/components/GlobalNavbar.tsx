@@ -8,10 +8,16 @@ import { usePathname } from 'next/navigation';
 import { ARTICLES_DATABASE } from '@/app/blog/data';
 import styles from './GlobalNavbar.module.css';
 
-const navItems = [
+interface NavItem {
+  label: string;
+  href: string;
+  isStacked?: boolean;
+}
+
+const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'Planning & Designing', href: '/simulation-centre' },
+  { label: 'Planning & Designing', href: '/simulation-centre', isStacked: true },
   { label: 'Our Clients', href: '/#clients' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact Us', href: '/contact-us' },
@@ -186,7 +192,15 @@ export default function GlobalNavbar() {
                   className={isActive ? styles.navLinkActive : styles.navLink}
                   onClick={(e) => handleNavClick(e, item.href)}
                 >
-                  {item.label}
+                  {item.isStacked ? (
+                    <span className={styles.stackedNavLink}>
+                      <span>Planning</span>
+                      <span className={styles.navAmpersand}>&amp;</span>
+                      <span>Designing</span>
+                    </span>
+                  ) : (
+                    item.label
+                  )}
                 </Link>
               );
             })}
@@ -238,7 +252,15 @@ export default function GlobalNavbar() {
                   handleNavClick(e, item.href);
                 }}
               >
-                {item.label}
+                {item.isStacked ? (
+                  <span className={styles.mobileStackedLabel}>
+                    <span>Planning</span>
+                    <span className={styles.mobileAmpersand}>&amp;</span>
+                    <span>Designing</span>
+                  </span>
+                ) : (
+                  item.label
+                )}
               </Link>
             );
           })}
