@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 import { connectDB } from './config/db';
 import adminRouter from './routes/admin';
 import publicRouter from './routes/public';
@@ -60,6 +61,7 @@ app.use(cors({
   ],
   credentials: true
 }));
+app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
 

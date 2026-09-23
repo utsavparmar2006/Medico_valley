@@ -138,14 +138,23 @@ export default function GlobalNavbar() {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('/#')) {
+      const targetId = href.replace('/#', '');
       if (pathname === '/') {
         e.preventDefault();
-        const targetId = href.replace('/#', '');
+        const lenis = (window as any).__lenis;
         const el = document.getElementById(targetId);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
+          if (lenis) {
+            lenis.scrollTo(el, { offset: -80, duration: 1.0 });
+          } else {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
           window.history.pushState(null, '', href);
         }
+      } else {
+        try {
+          sessionStorage.setItem('scroll_target_hash', `#${targetId}`);
+        } catch (_) {}
       }
     }
   };

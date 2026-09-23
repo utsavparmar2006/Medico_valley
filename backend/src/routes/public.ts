@@ -23,6 +23,7 @@ const router = express.Router();
 router.get('/sectors', async (req, res) => {
   try {
     const sectors = await Sector.find({}).sort({ displayOrder: 1 }).lean();
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     return res.json({ success: true, data: sectors });
   } catch (error: any) {
     console.error('Fetch sectors error:', error);
@@ -34,6 +35,7 @@ router.get('/sectors', async (req, res) => {
 router.get('/delta-difference', async (req, res) => {
   try {
     const cards = await DeltaDifferenceCard.find({ isActive: true }).sort({ displayOrder: 1 }).lean();
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     return res.json({ success: true, data: cards });
   } catch (error: any) {
     console.error('Fetch delta difference cards error:', error);
@@ -59,21 +61,27 @@ router.get('/categories', async (req, res) => {
       Category.countDocuments(query),
     ]);
 
-    // Fetch the first active product's image for each category to display on category cards
-    const data = await Promise.all(
-      categories.map(async (cat: any) => {
-        const firstProd = await Product.findOne({ category: cat._id, isActive: true })
-          .select('mediaUrls')
-          .sort({ name: 1 })
-          .lean();
-        const productImage = firstProd?.mediaUrls?.[0] || cat.imageUrl || '';
-        return {
-          ...cat,
-          productImage,
-        };
-      })
-    );
+    // Single aggregation query to fetch first active product image for each category (avoids N+1 round trips)
+    const catIds = categories.map((cat: any) => cat._id);
+    const firstProducts = await Product.aggregate([
+      { $match: { category: { $in: catIds }, isActive: true } },
+      { $sort: { name: 1 } },
+      { $group: { _id: '$category', firstMedia: { $first: '$mediaUrls' } } }
+    ]);
 
+    const mediaMap = new Map<string, string>();
+    firstProducts.forEach((p: any) => {
+      if (p.firstMedia && p.firstMedia[0]) {
+        mediaMap.set(p._id.toString(), p.firstMedia[0]);
+      }
+    });
+
+    const data = categories.map((cat: any) => ({
+      ...cat,
+      productImage: mediaMap.get(cat._id.toString()) || cat.imageUrl || '',
+    }));
+
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     return res.json({
       success: true,
       data,

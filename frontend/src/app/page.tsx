@@ -80,9 +80,38 @@ export default function Home() {
   const heroCtaWrapperRef = useRef<HTMLDivElement>(null);
   const catalogHeaderRef = useRef<HTMLDivElement>(null);
 
+  const scrollToTargetHash = (smooth = true) => {
+    if (typeof window === "undefined") return false;
+    const targetHash = window.location.hash || sessionStorage.getItem("scroll_target_hash");
+    if (!targetHash) return false;
+
+    const targetId = targetHash.replace(/^#/, "");
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return false;
+
+    const lenis = (window as any).__lenis;
+    if (lenis) {
+      lenis.scrollTo(targetEl, {
+        offset: -80,
+        immediate: !smooth,
+        duration: smooth ? 0.9 : 0,
+      });
+    } else {
+      const top = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
+    }
+    return true;
+  };
+
   useLayoutEffect(() => {
     ScrollTrigger.clearScrollMemory("manual");
-    window.scrollTo(0, 0);
+    const hasHash = Boolean(
+      (typeof window !== "undefined" && window.location.hash) ||
+      (typeof window !== "undefined" && sessionStorage.getItem("scroll_target_hash"))
+    );
+    if (!hasHash) {
+      window.scrollTo(0, 0);
+    }
 
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill(true));
@@ -104,15 +133,16 @@ export default function Home() {
       touchMultiplier: 1.5,
     });
 
+    (window as any).__lenis = lenis;
+
     // Update ScrollTrigger on scroll
     lenis.on("scroll", ScrollTrigger.update);
-    if (window.location.hash) {
-      const target = document.querySelector(window.location.hash);
-      if (target) {
-        lenis.scrollTo(target as HTMLElement, { offset: -80 });
-      } else {
-        lenis.scrollTo(0, { immediate: true });
-      }
+
+    const targetHash = window.location.hash || sessionStorage.getItem("scroll_target_hash");
+    if (targetHash) {
+      setTimeout(() => {
+        scrollToTargetHash(false);
+      }, 50);
     } else {
       lenis.scrollTo(0, { immediate: true });
     }
@@ -125,21 +155,36 @@ export default function Home() {
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      delete (window as any).__lenis;
       gsap.ticker.remove(updateTicker);
       lenis.off("scroll", ScrollTrigger.update);
       lenis.destroy();
     };
   }, []);
 
-  // Refresh ScrollTrigger layout once products and categories load to avoid blank gaps
+  // Handle native hashchange events
+  useEffect(() => {
+    const handleHashChange = () => {
+      scrollToTargetHash(true);
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  // Refresh ScrollTrigger layout once products and categories load and re-align to hash
   useEffect(() => {
     if (!categoriesLoading && !productsLoading) {
       const refresh = () => {
         ScrollTrigger.sort();
         ScrollTrigger.refresh();
+        const targetHash = window.location.hash || sessionStorage.getItem("scroll_target_hash");
+        if (targetHash) {
+          scrollToTargetHash(true);
+          sessionStorage.removeItem("scroll_target_hash");
+        }
       };
       const firstTimer = setTimeout(refresh, 100);
-      const secondTimer = setTimeout(refresh, 700);
+      const secondTimer = setTimeout(refresh, 600);
       window.addEventListener("load", refresh);
 
       return () => {
